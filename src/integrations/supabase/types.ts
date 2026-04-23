@@ -14,16 +14,304 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_logs: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
+      interview_questions: {
+        Row: {
+          answer_framework: string | null
+          category: string
+          created_at: string
+          difficulty: string | null
+          follow_up: string | null
+          id: string
+          note: string | null
+          position: number
+          practised: boolean
+          question: string
+          session_id: string
+          starred: boolean
+          user_id: string
+          what_good_covers: string | null
+          why_matters: string | null
+        }
+        Insert: {
+          answer_framework?: string | null
+          category: string
+          created_at?: string
+          difficulty?: string | null
+          follow_up?: string | null
+          id?: string
+          note?: string | null
+          position: number
+          practised?: boolean
+          question: string
+          session_id: string
+          starred?: boolean
+          user_id: string
+          what_good_covers?: string | null
+          why_matters?: string | null
+        }
+        Update: {
+          answer_framework?: string | null
+          category?: string
+          created_at?: string
+          difficulty?: string | null
+          follow_up?: string | null
+          id?: string
+          note?: string | null
+          position?: number
+          practised?: boolean
+          question?: string
+          session_id?: string
+          starred?: boolean
+          user_id?: string
+          what_good_covers?: string | null
+          why_matters?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_questions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "prep_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_attempts: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          question_id: string
+          self_rating: number | null
+          text_answer: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          question_id: string
+          self_rating?: number | null
+          text_answer?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          question_id?: string
+          self_rating?: number | null
+          text_answer?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "interview_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prep_sessions: {
+        Row: {
+          candidate_current_role: string | null
+          candidate_notes: string | null
+          candidate_summary: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string
+          cv_file_path: string | null
+          cv_text: string | null
+          difficulty: string
+          extracted_job_summary: Json | null
+          focus_mix: Json
+          full_name: string | null
+          id: string
+          include_answer_angles: boolean
+          include_followups: boolean
+          include_rubric: boolean
+          interview_style: string | null
+          interview_type: string | null
+          job_description: string | null
+          job_spec_url: string | null
+          job_title: string | null
+          linkedin_text: string | null
+          linkedin_url: string | null
+          num_questions: number
+          output_tone: string | null
+          red_flags: Json | null
+          role_summary: string | null
+          seniority_level: string | null
+          status: string
+          target_industry: string | null
+          target_role: string | null
+          title: string
+          top_themes: Json | null
+          updated_at: string
+          user_id: string
+          years_experience: string | null
+        }
+        Insert: {
+          candidate_current_role?: string | null
+          candidate_notes?: string | null
+          candidate_summary?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          cv_file_path?: string | null
+          cv_text?: string | null
+          difficulty?: string
+          extracted_job_summary?: Json | null
+          focus_mix?: Json
+          full_name?: string | null
+          id?: string
+          include_answer_angles?: boolean
+          include_followups?: boolean
+          include_rubric?: boolean
+          interview_style?: string | null
+          interview_type?: string | null
+          job_description?: string | null
+          job_spec_url?: string | null
+          job_title?: string | null
+          linkedin_text?: string | null
+          linkedin_url?: string | null
+          num_questions?: number
+          output_tone?: string | null
+          red_flags?: Json | null
+          role_summary?: string | null
+          seniority_level?: string | null
+          status?: string
+          target_industry?: string | null
+          target_role?: string | null
+          title: string
+          top_themes?: Json | null
+          updated_at?: string
+          user_id: string
+          years_experience?: string | null
+        }
+        Update: {
+          candidate_current_role?: string | null
+          candidate_notes?: string | null
+          candidate_summary?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          cv_file_path?: string | null
+          cv_text?: string | null
+          difficulty?: string
+          extracted_job_summary?: Json | null
+          focus_mix?: Json
+          full_name?: string | null
+          id?: string
+          include_answer_angles?: boolean
+          include_followups?: boolean
+          include_rubric?: boolean
+          interview_style?: string | null
+          interview_type?: string | null
+          job_description?: string | null
+          job_spec_url?: string | null
+          job_title?: string | null
+          linkedin_text?: string | null
+          linkedin_url?: string | null
+          num_questions?: number
+          output_tone?: string | null
+          red_flags?: Json | null
+          role_summary?: string | null
+          seniority_level?: string | null
+          status?: string
+          target_industry?: string | null
+          target_role?: string | null
+          title?: string
+          top_themes?: Json | null
+          updated_at?: string
+          user_id?: string
+          years_experience?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +438,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

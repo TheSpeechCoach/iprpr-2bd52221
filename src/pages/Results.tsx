@@ -379,12 +379,12 @@ const Results = () => {
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
           <Loader2 className="h-10 w-10 animate-spin text-accent" strokeWidth={1.5} />
-          <h1 className="mt-6 font-display text-3xl font-semibold">
-            Generating your interview pack
+          <div className="mt-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Preparing your pack</div>
+          <h1 className="mt-2 font-display text-3xl font-semibold">
+            We're writing your interview questions
           </h1>
-          <p className="mt-2 text-muted-foreground max-w-md">
-            This usually takes around 30–60 seconds. We're tailoring 100 questions
-            to your CV and the role.
+          <p className="mt-3 text-muted-foreground max-w-md">
+            Tailoring each question to your CV and the role. This usually takes 30–60 seconds — feel free to leave this page and come back from your dashboard.
           </p>
         </main>
       </div>
@@ -397,13 +397,14 @@ const Results = () => {
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
-          <h1 className="font-display text-3xl font-semibold">Generation didn't complete</h1>
-          <p className="mt-2 text-muted-foreground max-w-md">
-            We couldn't finish generating your pack. This is usually a temporary issue with the AI service. You can retry now or come back later.
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Something went wrong</div>
+          <h1 className="mt-2 font-display text-3xl font-semibold">We couldn't finish your pack</h1>
+          <p className="mt-3 text-muted-foreground max-w-md">
+            This is usually a brief hiccup with the AI service. Retry now, or come back in a minute or two — your inputs are saved.
           </p>
           <div className="mt-8 flex gap-3">
             <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">
-              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Retrying…</> : "Retry generation"}
+              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Retrying…</> : "Try again"}
             </Button>
             <Link to="/dashboard">
               <Button variant="outline">Back to dashboard</Button>
@@ -420,13 +421,19 @@ const Results = () => {
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
-          <h1 className="font-display text-3xl font-semibold">No questions yet</h1>
-          <p className="mt-2 text-muted-foreground max-w-md">
-            This pack doesn't have any questions yet.
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Empty pack</div>
+          <h1 className="mt-2 font-display text-3xl font-semibold">No questions to show</h1>
+          <p className="mt-3 text-muted-foreground max-w-md">
+            This session doesn't have any questions yet. Try regenerating, or start a fresh session.
           </p>
-          <Link to="/dashboard" className="mt-6">
-            <Button variant="outline">Back to dashboard</Button>
-          </Link>
+          <div className="mt-8 flex gap-3">
+            <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Regenerating…</> : "Regenerate"}
+            </Button>
+            <Link to="/dashboard">
+              <Button variant="outline">Back to dashboard</Button>
+            </Link>
+          </div>
         </main>
       </div>
     );

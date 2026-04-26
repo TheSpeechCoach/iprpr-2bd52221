@@ -92,13 +92,25 @@ const PrepWizard = () => {
 
   const handleGenerate = async () => {
     if (!user) return;
-    if (!form.target_role || (!form.job_description && !form.job_spec_url && !form.job_title)) {
-      toast({ title: "Missing details", description: "Add a target role and either a job title, description or URL.", variant: "destructive" });
+    if (!form.target_role.trim()) {
+      toast({ title: "Add a target role", description: "We need a target role to tailor questions.", variant: "destructive" });
+      setStep(0);
+      return;
+    }
+    if (!form.job_description.trim() && !form.job_spec_url.trim() && !form.job_title.trim()) {
+      toast({ title: "Add the role", description: "Paste a job description, a URL, or at least a job title.", variant: "destructive" });
+      setStep(2);
+      return;
+    }
+    if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim()) {
+      toast({ title: "Add your CV", description: "Upload a CV, paste CV text, or add a LinkedIn summary.", variant: "destructive" });
+      setStep(1);
       return;
     }
     setSubmitting(true);
+    let createdSessionId: string | null = null;
     try {
-      // Upload CV if present, then extract text server-side
+      // 1) Upload CV if present, then extract text server-side
       let cv_file_path: string | null = null;
       let extracted_cv_text = form.cv_text;
       if (cvFile) {
@@ -106,43 +118,56 @@ const PrepWizard = () => {
         const ext = cvFile.name.split(".").pop()?.toLowerCase();
         if (!["pdf", "docx"].includes(ext ?? "")) throw new Error("CV must be a PDF or DOCX file");
 
-        const path = `${user.id}/${Date.now()}_${cvFile.name}`;
+        const safeName = cvFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `${user.id}/${Date.now()}_${safeName}`;
         const { error: upErr } = await supabase.storage.from("cvs").upload(path, cvFile, {
-          contentType: cvFile.type,
+          contentType: cvFile.type || undefined,
           upsert: false,
         });
-        if (upErr) throw upErr;
+        if (upErr) throw new Error(`CV upload failed: ${upErr.message}`);
         cv_file_path = path;
 
-        toast({ title: "Extracting CV", description: "Reading your CV…" });
+        toast({ title: "Reading your CV", description: "Extracting text…" });
         const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
           body: { file_path: path, bucket: "cvs" },
         });
-        if (exErr) throw new Error(exErr.message);
+        if (exErr) throw new Error(`CV extraction failed: ${exErr.message}`);
+        if (ex?.error) throw new Error(ex.error);
         if (ex?.text) extracted_cv_text = ex.text;
       }
 
-      // Create session
+      // 2) Create session
       const { data: session, error: sErr } = await supabase.from("prep_sessions").insert({
         user_id: user.id,
-        title: `${form.target_role}${form.company_name ? ` · ${form.company_name}` : ""}`,
+        title: `${form.target_role.trim()}${form.company_name ? ` · ${form.company_name.trim()}` : ""}`,
         status: "generating",
         ...form,
+        num_questions: Math.max(20, Math.min(120, Number(form.num_questions) || 100)),
         cv_text: extracted_cv_text,
         cv_file_path,
       }).select().single();
-      if (sErr) throw sErr;
+      if (sErr) throw new Error(`Could not create session: ${sErr.message}`);
+      createdSessionId = session.id;
 
-      // Invoke edge function
-      const { error: fnErr } = await supabase.functions.invoke("generate-interview-pack", {
+      // 3) Kick off generation
+      const { data: genData, error: fnErr } = await supabase.functions.invoke("generate-interview-pack", {
         body: { session_id: session.id },
       });
-      if (fnErr) throw fnErr;
+      if (fnErr) throw new Error(fnErr.message || "Generation could not be started.");
+      if (genData?.error) throw new Error(genData.error);
 
       toast({ title: "Generating your pack", description: "Tailored questions are being prepared." });
       nav(`/prep/${session.id}/results`);
     } catch (err: any) {
-      toast({ title: "Could not generate", description: err.message, variant: "destructive" });
+      // Mark session failed so the Results page reflects it accurately
+      if (createdSessionId) {
+        await supabase.from("prep_sessions").update({ status: "failed" }).eq("id", createdSessionId);
+      }
+      toast({
+        title: "Could not generate",
+        description: err?.message ?? "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
       setSubmitting(false);
     }
   };

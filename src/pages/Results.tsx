@@ -1183,4 +1183,127 @@ const AnswerDirectionBlock = ({ direction }: { direction: AnswerDirection }) => 
   </div>
 );
 
+const TIER_META: { key: keyof ExampleAnswers; label: string; blurb: string }[] = [
+  { key: "foundation", label: "Foundation", blurb: "Clear, simple, direct." },
+  { key: "strong", label: "Strong", blurb: "Structured, confident, commercially aware." },
+  { key: "standout", label: "Standout", blurb: "Concise, high-impact, leadership-level." },
+];
+
+const ExampleAnswersBlock = ({ examples }: { examples: ExampleAnswers }) => {
+  const [open, setOpen] = useState<string | null>("strong");
+  return (
+    <div className="border border-foreground/15 bg-background rounded-sm overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-foreground/10 bg-foreground/[0.03] flex items-center gap-2">
+        <Quote className="h-3.5 w-3.5 text-accent" strokeWidth={1.5} />
+        <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Answer examples</span>
+        <span className="text-[10px] text-muted-foreground ml-auto">Spoken, not written</span>
+      </div>
+      <div className="divide-y divide-foreground/10">
+        {TIER_META.map((tier) => {
+          const body = examples[tier.key];
+          if (!body) return null;
+          const isOpen = open === tier.key;
+          return (
+            <Collapsible
+              key={tier.key}
+              open={isOpen}
+              onOpenChange={(v) => setOpen(v ? tier.key : null)}
+            >
+              <CollapsibleTrigger className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-foreground/[0.02] transition-colors">
+                <span className="font-display text-sm font-medium">{tier.label}</span>
+                <span className="text-xs text-muted-foreground hidden sm:inline">{tier.blurb}</span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 ml-auto text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
+                  strokeWidth={1.5}
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-4 pb-4 -mt-1">
+                  <div className="border-l-2 border-accent/40 pl-4 py-1">
+                    <p className="text-sm leading-relaxed text-foreground/90 italic">
+                      “{body}”
+                    </p>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const UserAnswerBlock = ({
+  q,
+  draft,
+  onChange,
+  saving,
+  saved,
+  onPractise,
+}: {
+  q: Question;
+  draft: string;
+  onChange: (val: string) => void;
+  saving: boolean;
+  saved: boolean;
+  onPractise: () => void;
+}) => (
+  <div className="border border-accent/30 bg-accent/[0.04] rounded-sm overflow-hidden">
+    <div className="px-4 py-2.5 border-b border-accent/20 bg-accent/[0.06] flex items-center gap-2">
+      <Pencil className="h-3.5 w-3.5 text-accent" strokeWidth={1.5} />
+      <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Your answer</span>
+      <span className="text-[10px] text-muted-foreground ml-auto">
+        {saving ? "Saving…" : saved ? "Saved" : "Autosaves as you type"}
+      </span>
+    </div>
+    <div className="p-4 space-y-3">
+      <p className="text-xs text-foreground/75 italic">
+        {AUTHENTICITY_PROMPT}
+      </p>
+      <Textarea
+        value={draft}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Strip it back. Make it sound like you'd actually say it…"
+        rows={4}
+        className="bg-background"
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          onClick={onPractise}
+          className="gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
+        >
+          <Mic className="h-3.5 w-3.5" /> Practise delivery
+        </Button>
+        <span className="text-[11px] text-muted-foreground self-center">
+          Take it into the Speech Coach app and rehearse out loud.
+        </span>
+      </div>
+    </div>
+  </div>
+);
+
+const REINFORCEMENT_LINES = [
+  "You don't get hired for memorising answers. You get hired for how you deliver them. Write the next ones in your own language.",
+  "Read the examples, then close them. Say it the way you'd say it in the room.",
+  "Models are scaffolding, not scripts. Strip them back until they sound like you.",
+  "Delivery beats wording. Keep it spoken, keep it short, keep it yours.",
+];
+
+const ReinforcementBanner = ({ index }: { index: number }) => {
+  const line = REINFORCEMENT_LINES[(index - 1) % REINFORCEMENT_LINES.length];
+  return (
+    <div className="my-6 border-l-2 border-accent bg-accent/[0.04] px-5 py-4 flex gap-3 items-start">
+      <Mic className="h-4 w-4 text-accent mt-0.5 shrink-0" strokeWidth={1.5} />
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.22em] text-accent font-medium mb-1">
+          A quick reminder
+        </div>
+        <p className="text-sm leading-relaxed text-foreground/90">{line}</p>
+      </div>
+    </div>
+  );
+};
+
 export default Results;

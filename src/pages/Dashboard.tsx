@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlan, FREE_SESSION_LIMIT } from "@/hooks/usePlan";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, ArrowRight } from "lucide-react";
+import { Plus, FileText, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Session {

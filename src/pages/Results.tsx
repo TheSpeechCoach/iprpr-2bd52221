@@ -110,6 +110,7 @@ interface Session {
 
 const Results = () => {
   const { id } = useParams();
+  const nav = useNavigate();
   const { plan, questionLimit } = usePlan();
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);

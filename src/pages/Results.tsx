@@ -209,12 +209,12 @@ const Results = () => {
     setQuestions((prev) =>
       prev.map((x) => (x.id === q.id ? { ...x, note: body } : x))
     );
-    toast({ title: "Note saved" });
+    toast({ title: "Note saved", description: "Your note will be here whenever you come back." });
   };
 
   const copyQuestion = (q: Question) => {
     navigator.clipboard.writeText(q.question);
-    toast({ title: "Copied to clipboard" });
+    toast({ title: "Copied", description: "Question copied to your clipboard." });
   };
 
   const exportPDF = () => {

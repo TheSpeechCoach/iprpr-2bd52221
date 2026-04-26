@@ -35,6 +35,187 @@ export type Database = {
         }
         Relationships: []
       }
+      candidate_inputs: {
+        Row: {
+          candidate_current_role: string | null
+          country: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          linkedin_text: string | null
+          linkedin_url: string | null
+          notes: string | null
+          seniority_level: string | null
+          session_id: string | null
+          target_industry: string | null
+          target_role: string | null
+          updated_at: string
+          user_id: string
+          years_experience: string | null
+        }
+        Insert: {
+          candidate_current_role?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          linkedin_text?: string | null
+          linkedin_url?: string | null
+          notes?: string | null
+          seniority_level?: string | null
+          session_id?: string | null
+          target_industry?: string | null
+          target_role?: string | null
+          updated_at?: string
+          user_id: string
+          years_experience?: string | null
+        }
+        Update: {
+          candidate_current_role?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          linkedin_text?: string | null
+          linkedin_url?: string | null
+          notes?: string | null
+          seniority_level?: string | null
+          session_id?: string | null
+          target_industry?: string | null
+          target_role?: string | null
+          updated_at?: string
+          user_id?: string
+          years_experience?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_inputs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "prep_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extracted_job_specs: {
+        Row: {
+          created_at: string
+          id: string
+          industry: string | null
+          job_input_id: string | null
+          raw: Json | null
+          requirements: Json | null
+          responsibilities: Json | null
+          seniority: string | null
+          session_id: string | null
+          skills: Json | null
+          summary: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          job_input_id?: string | null
+          raw?: Json | null
+          requirements?: Json | null
+          responsibilities?: Json | null
+          seniority?: string | null
+          session_id?: string | null
+          skills?: Json | null
+          summary?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          job_input_id?: string | null
+          raw?: Json | null
+          requirements?: Json | null
+          responsibilities?: Json | null
+          seniority?: string | null
+          session_id?: string | null
+          skills?: Json | null
+          summary?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extracted_job_specs_job_input_id_fkey"
+            columns: ["job_input_id"]
+            isOneToOne: false
+            referencedRelation: "job_inputs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extracted_job_specs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "prep_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      generated_interview_packs: {
+        Row: {
+          candidate_summary: string | null
+          created_at: string
+          id: string
+          model: string | null
+          prompt_version: string | null
+          red_flags: Json | null
+          role_summary: string | null
+          session_id: string
+          status: string
+          top_themes: Json | null
+          total_questions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          candidate_summary?: string | null
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt_version?: string | null
+          red_flags?: Json | null
+          role_summary?: string | null
+          session_id: string
+          status?: string
+          top_themes?: Json | null
+          total_questions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          candidate_summary?: string | null
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt_version?: string | null
+          red_flags?: Json | null
+          role_summary?: string | null
+          session_id?: string
+          status?: string
+          top_themes?: Json | null
+          total_questions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_interview_packs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "prep_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interview_questions: {
         Row: {
           answer_framework: string | null
@@ -90,6 +271,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "interview_questions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "prep_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_inputs: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          id: string
+          input_type: string
+          job_description: string | null
+          job_spec_url: string | null
+          job_title: string | null
+          session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          input_type?: string
+          job_description?: string | null
+          job_spec_url?: string | null
+          job_title?: string | null
+          session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          input_type?: string
+          job_description?: string | null
+          job_spec_url?: string | null
+          job_title?: string | null
+          session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_inputs_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "prep_sessions"
@@ -276,6 +504,175 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      question_notes: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          question_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          question_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_notes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "interview_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan: string
+          provider: string | null
+          provider_customer_id: string | null
+          provider_subscription_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          provider?: string | null
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          provider?: string | null
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      uploaded_files: {
+        Row: {
+          bucket: string
+          created_at: string
+          extracted_text: string | null
+          file_path: string
+          id: string
+          kind: string
+          mime_type: string | null
+          original_filename: string | null
+          session_id: string | null
+          size_bytes: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bucket?: string
+          created_at?: string
+          extracted_text?: string | null
+          file_path: string
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          original_filename?: string | null
+          session_id?: string | null
+          size_bytes?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          extracted_text?: string | null
+          file_path?: string
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          original_filename?: string | null
+          session_id?: string | null
+          size_bytes?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploaded_files_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "prep_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          default_difficulty: string
+          default_style: string
+          default_tone: string
+          id: string
+          locale: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_difficulty?: string
+          default_style?: string
+          default_tone?: string
+          id?: string
+          locale?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_difficulty?: string
+          default_style?: string
+          default_tone?: string
+          id?: string
+          locale?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

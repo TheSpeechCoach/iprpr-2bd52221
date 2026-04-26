@@ -48,10 +48,32 @@ const QUESTION_SCHEMA = {
           what_good_answers_should_cover: { type: "string" },
           optional_follow_up: { type: "string" },
           answer_framework: { type: "string" },
+          answer_direction: {
+            type: "object",
+            description: "Sharp, practical coaching for how to deliver the answer.",
+            properties: {
+              structure: {
+                type: "string",
+                description: "How a strong answer should be shaped (e.g. 'Situation → tension → action you owned → measurable result'). One tight sentence.",
+              },
+              length: {
+                type: "string",
+                description: "How concise. Use a target like '60–90 seconds' or '2–3 short paragraphs'. One short phrase.",
+              },
+              avoid: {
+                type: "array",
+                items: { type: "string" },
+                description: "2-4 specific traps to avoid (e.g. 'Rambling preamble', 'Hiding behind \"we\"', 'Jargon without proof'). Each item ≤ 8 words.",
+              },
+            },
+            required: ["structure", "length", "avoid"],
+            additionalProperties: false,
+          },
         },
         required: [
           "position", "category", "difficulty", "question",
           "why_this_question_matters", "what_good_answers_should_cover",
+          "answer_direction",
         ],
         additionalProperties: false,
       },

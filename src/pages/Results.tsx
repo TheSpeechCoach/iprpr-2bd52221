@@ -42,6 +42,7 @@ import {
   AlertTriangle,
   Target,
   Sparkles,
+  Lock,
   Lightbulb,
   HelpCircle,
   ListChecks,

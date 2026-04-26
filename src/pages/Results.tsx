@@ -38,7 +38,40 @@ import {
   FileText,
   FileType,
   SlidersHorizontal,
+  AlertTriangle,
+  Target,
+  Sparkles,
+  Lightbulb,
+  HelpCircle,
+  ListChecks,
+  CornerDownRight,
 } from "lucide-react";
+
+// Friendlier, plain-English category labels for the interviewer's lens.
+const CATEGORY_LABELS: Record<string, string> = {
+  "Opening": "Opening & rapport",
+  "CV/Background": "Career & background",
+  "Role-Fit": "Role fit",
+  "Behavioural": "Behavioural evidence",
+  "Strengths": "Strengths",
+  "Weaknesses": "Weaknesses & gaps",
+  "Leadership": "Leadership",
+  "Stakeholder": "Stakeholder management",
+  "Problem-Solving": "Problem solving",
+  "Company Motivation": "Motivation for the company",
+  "Commercial Awareness": "Commercial awareness",
+  "Technical": "Technical depth",
+  "Pressure": "Pressure & resilience",
+  "Closing": "Closing & questions back",
+};
+
+const prettyCategory = (c: string) => CATEGORY_LABELS[c] ?? c;
+
+const DIFFICULTY_TONE: Record<string, string> = {
+  easy: "border-border text-muted-foreground",
+  medium: "border-foreground/30 text-foreground",
+  hard: "border-accent/60 text-accent",
+};
 import { toast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";

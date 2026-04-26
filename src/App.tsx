@@ -12,6 +12,7 @@ import PrepWizard from "./pages/PrepWizard";
 import Results from "./pages/Results";
 import Practice from "./pages/Practice";
 import Upgrade from "./pages/Upgrade";
+import PractiseDelivery from "./pages/PractiseDelivery";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();

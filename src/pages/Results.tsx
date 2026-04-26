@@ -88,10 +88,17 @@ interface Question {
   what_good_covers: string | null;
   follow_up: string | null;
   answer_framework: string | null;
+  answer_direction: AnswerDirection | null;
   difficulty: string | null;
   starred: boolean;
   practised: boolean;
   note: string | null;
+}
+
+interface AnswerDirection {
+  structure?: string;
+  length?: string;
+  avoid?: string[];
 }
 
 interface Session {

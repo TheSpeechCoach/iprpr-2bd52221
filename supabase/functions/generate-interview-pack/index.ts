@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-pro";
-const PROMPT_VERSION = "v4-2026-04-26-answer-tiers";
+const PROMPT_VERSION = "v5-2026-04-26-standout-tight";
 
 const QUESTION_SCHEMA = {
   type: "object",

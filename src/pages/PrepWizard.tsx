@@ -433,10 +433,11 @@ const PrepWizard = () => {
   );
 };
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+const Field = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
   <div className="space-y-2">
     <Label className="text-xs uppercase tracking-widest text-muted-foreground">{label}</Label>
     {children}
+    {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
   </div>
 );
 

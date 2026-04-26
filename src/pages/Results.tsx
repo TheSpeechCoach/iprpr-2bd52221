@@ -209,12 +209,12 @@ const Results = () => {
     setQuestions((prev) =>
       prev.map((x) => (x.id === q.id ? { ...x, note: body } : x))
     );
-    toast({ title: "Note saved" });
+    toast({ title: "Note saved", description: "Your note will be here whenever you come back." });
   };
 
   const copyQuestion = (q: Question) => {
     navigator.clipboard.writeText(q.question);
-    toast({ title: "Copied to clipboard" });
+    toast({ title: "Copied", description: "Question copied to your clipboard." });
   };
 
   const exportPDF = () => {
@@ -379,12 +379,12 @@ const Results = () => {
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
           <Loader2 className="h-10 w-10 animate-spin text-accent" strokeWidth={1.5} />
-          <h1 className="mt-6 font-display text-3xl font-semibold">
-            Generating your interview pack
+          <div className="mt-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Preparing your pack</div>
+          <h1 className="mt-2 font-display text-3xl font-semibold">
+            We're writing your interview questions
           </h1>
-          <p className="mt-2 text-muted-foreground max-w-md">
-            This usually takes around 30–60 seconds. We're tailoring 100 questions
-            to your CV and the role.
+          <p className="mt-3 text-muted-foreground max-w-md">
+            Tailoring each question to your CV and the role. This usually takes 30–60 seconds — feel free to leave this page and come back from your dashboard.
           </p>
         </main>
       </div>
@@ -397,13 +397,14 @@ const Results = () => {
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
-          <h1 className="font-display text-3xl font-semibold">Generation didn't complete</h1>
-          <p className="mt-2 text-muted-foreground max-w-md">
-            We couldn't finish generating your pack. This is usually a temporary issue with the AI service. You can retry now or come back later.
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Something went wrong</div>
+          <h1 className="mt-2 font-display text-3xl font-semibold">We couldn't finish your pack</h1>
+          <p className="mt-3 text-muted-foreground max-w-md">
+            This is usually a brief hiccup with the AI service. Retry now, or come back in a minute or two — your inputs are saved.
           </p>
           <div className="mt-8 flex gap-3">
             <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">
-              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Retrying…</> : "Retry generation"}
+              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Retrying…</> : "Try again"}
             </Button>
             <Link to="/dashboard">
               <Button variant="outline">Back to dashboard</Button>
@@ -420,13 +421,19 @@ const Results = () => {
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
-          <h1 className="font-display text-3xl font-semibold">No questions yet</h1>
-          <p className="mt-2 text-muted-foreground max-w-md">
-            This pack doesn't have any questions yet.
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Empty pack</div>
+          <h1 className="mt-2 font-display text-3xl font-semibold">No questions to show</h1>
+          <p className="mt-3 text-muted-foreground max-w-md">
+            This session doesn't have any questions yet. Try regenerating, or start a fresh session.
           </p>
-          <Link to="/dashboard" className="mt-6">
-            <Button variant="outline">Back to dashboard</Button>
-          </Link>
+          <div className="mt-8 flex gap-3">
+            <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Regenerating…</> : "Regenerate"}
+            </Button>
+            <Link to="/dashboard">
+              <Button variant="outline">Back to dashboard</Button>
+            </Link>
+          </div>
         </main>
       </div>
     );
@@ -453,8 +460,8 @@ const Results = () => {
             <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight">
               {session?.title}
             </h1>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-              <span>{questions.length} questions</span>
+            <div className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span>{questions.length} {questions.length === 1 ? "question" : "questions"}</span>
               <span>·</span>
               <span>{starredCount} starred</span>
               <span>·</span>
@@ -519,7 +526,7 @@ const Results = () => {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search questions"
+              placeholder="Search questions or themes…"
               className="pl-10"
             />
           </div>
@@ -565,7 +572,7 @@ const Results = () => {
 
         <div className="text-xs text-muted-foreground mb-3 flex items-center gap-2">
           <SlidersHorizontal className="h-3 w-3" />
-          Showing {filtered.length} of {questions.length}
+          Showing {filtered.length} of {questions.length} {questions.length === 1 ? "question" : "questions"}
         </div>
 
         {/* Questions */}
@@ -585,7 +592,7 @@ const Results = () => {
                 setShowStarred(false);
               }}
             >
-              Clear filters
+              Reset filters
             </Button>
           </div>
         ) : (
@@ -669,7 +676,7 @@ const Results = () => {
                             [q.id]: e.target.value,
                           }))
                         }
-                        placeholder="Capture your structured answer or key points…"
+                        placeholder="Sketch your answer, key examples, or numbers to remember…"
                         rows={3}
                       />
                       <div className="mt-2 flex flex-wrap gap-2">

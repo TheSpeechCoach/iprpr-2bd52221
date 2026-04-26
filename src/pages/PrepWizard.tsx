@@ -54,20 +54,20 @@ const PrepWizard = () => {
   const updateMix = (k: string, v: number) => setForm((f) => ({ ...f, focus_mix: { ...f.focus_mix, [k]: v } }));
 
   const handleFetchSpec = async () => {
-    if (!form.job_spec_url) {
-      toast({ title: "Add a URL", description: "Paste a job-spec URL first.", variant: "destructive" });
+    if (!form.job_spec_url.trim()) {
+      toast({ title: "Add a link first", description: "Paste the URL of a public job posting.", variant: "destructive" });
       return;
     }
     setFetchingSpec(true);
     try {
       const { data, error } = await supabase.functions.invoke("fetch-job-spec", {
-        body: { url: form.job_spec_url },
+        body: { url: form.job_spec_url.trim() },
       });
       if (error) throw error;
       if (!data?.ok) {
         toast({
-          title: "Couldn't extract automatically",
-          description: data?.error ?? "Please paste the description manually.",
+          title: "Couldn't read that page",
+          description: data?.error ?? "Some sites block automated readers. Paste the description below instead.",
           variant: "destructive",
         });
         return;
@@ -78,11 +78,11 @@ const PrepWizard = () => {
         company_name: f.company_name || data.company_name || "",
         job_description: data.raw_text || f.job_description,
       }));
-      toast({ title: "Job spec extracted", description: "Review and edit before continuing." });
+      toast({ title: "Job spec loaded", description: "Have a quick read and edit anything that's off." });
     } catch (err: any) {
       toast({
-        title: "Fetch failed",
-        description: err.message ?? "Paste the description manually.",
+        title: "Couldn't fetch the page",
+        description: err?.message ?? "Paste the description below instead.",
         variant: "destructive",
       });
     } finally {
@@ -93,17 +93,17 @@ const PrepWizard = () => {
   const handleGenerate = async () => {
     if (!user) return;
     if (!form.target_role.trim()) {
-      toast({ title: "Add a target role", description: "We need a target role to tailor questions.", variant: "destructive" });
+      toast({ title: "Add a target role", description: "We need the role you're interviewing for to tailor the questions.", variant: "destructive" });
       setStep(0);
       return;
     }
     if (!form.job_description.trim() && !form.job_spec_url.trim() && !form.job_title.trim()) {
-      toast({ title: "Add the role", description: "Paste a job description, a URL, or at least a job title.", variant: "destructive" });
+      toast({ title: "Tell us about the role", description: "Paste the job description, share a link, or at least add a job title.", variant: "destructive" });
       setStep(2);
       return;
     }
     if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim()) {
-      toast({ title: "Add your CV", description: "Upload a CV, paste CV text, or add a LinkedIn summary.", variant: "destructive" });
+      toast({ title: "Add some career evidence", description: "Upload your CV, paste it as text, or add a LinkedIn summary.", variant: "destructive" });
       setStep(1);
       return;
     }
@@ -114,24 +114,25 @@ const PrepWizard = () => {
       let cv_file_path: string | null = null;
       let extracted_cv_text = form.cv_text;
       if (cvFile) {
-        if (cvFile.size > 10 * 1024 * 1024) throw new Error("CV exceeds 10MB limit");
+        if (cvFile.size > 10 * 1024 * 1024) throw new Error("Your CV is over 10 MB. Please upload a smaller file.");
         const ext = cvFile.name.split(".").pop()?.toLowerCase();
-        if (!["pdf", "docx"].includes(ext ?? "")) throw new Error("CV must be a PDF or DOCX file");
+        if (!["pdf", "docx"].includes(ext ?? "")) throw new Error("CVs must be PDF or DOCX. Please convert and try again.");
 
         const safeName = cvFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const path = `${user.id}/${Date.now()}_${safeName}`;
+        toast({ title: "Uploading your CV", description: "This usually takes a few seconds." });
         const { error: upErr } = await supabase.storage.from("cvs").upload(path, cvFile, {
           contentType: cvFile.type || undefined,
           upsert: false,
         });
-        if (upErr) throw new Error(`CV upload failed: ${upErr.message}`);
+        if (upErr) throw new Error(`We couldn't upload your CV: ${upErr.message}`);
         cv_file_path = path;
 
-        toast({ title: "Reading your CV", description: "Extracting text…" });
+        toast({ title: "Reading your CV", description: "Pulling out the text we'll use to tailor your pack." });
         const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
           body: { file_path: path, bucket: "cvs" },
         });
-        if (exErr) throw new Error(`CV extraction failed: ${exErr.message}`);
+        if (exErr) throw new Error(`We couldn't read your CV: ${exErr.message}`);
         if (ex?.error) throw new Error(ex.error);
         if (ex?.text) extracted_cv_text = ex.text;
       }
@@ -153,19 +154,18 @@ const PrepWizard = () => {
       const { data: genData, error: fnErr } = await supabase.functions.invoke("generate-interview-pack", {
         body: { session_id: session.id },
       });
-      if (fnErr) throw new Error(fnErr.message || "Generation could not be started.");
+      if (fnErr) throw new Error(fnErr.message || "We couldn't start the generator. Please try again.");
       if (genData?.error) throw new Error(genData.error);
 
-      toast({ title: "Generating your pack", description: "Tailored questions are being prepared." });
+      toast({ title: "We're on it", description: "Your pack is being written. This usually takes 30–60 seconds." });
       nav(`/prep/${session.id}/results`);
     } catch (err: any) {
-      // Mark session failed so the Results page reflects it accurately
       if (createdSessionId) {
         await supabase.from("prep_sessions").update({ status: "failed" }).eq("id", createdSessionId);
       }
       toast({
-        title: "Could not generate",
-        description: err?.message ?? "Something went wrong. Please try again.",
+        title: "We couldn't generate your pack",
+        description: err?.message ?? "Something went wrong. Please try again in a moment.",
         variant: "destructive",
       });
       setSubmitting(false);
@@ -188,65 +188,104 @@ const PrepWizard = () => {
           ))}
         </div>
 
-        <h1 className="font-display text-3xl font-semibold mb-8">
-          {step === 0 && "Tell us about you."}
-          {step === 1 && "Add your career evidence."}
-          {step === 2 && "Define the role."}
-          {step === 3 && "Tune the generation."}
-          {step === 4 && "Ready to generate."}
-        </h1>
+        <div className="mb-8">
+          <h1 className="font-display text-3xl font-semibold">
+            {step === 0 && "Tell us about you"}
+            {step === 1 && "Add your career evidence"}
+            {step === 2 && "Describe the role"}
+            {step === 3 && "Shape the questions"}
+            {step === 4 && "Ready to generate"}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground max-w-xl">
+            {step === 0 && "A few details so we can tailor the questions to your level and the role you're going for."}
+            {step === 1 && "Upload a CV, paste it, or share a LinkedIn summary. The more we know, the sharper the questions."}
+            {step === 2 && "Paste the job description, share a link, or describe the role in your own words."}
+            {step === 3 && "Optional. Adjust difficulty, balance, and the style of the interview you expect."}
+            {step === 4 && "Have a quick look. You can come back and create more sessions any time."}
+          </p>
+        </div>
 
         {step === 0 && (
           <div className="space-y-5">
-            <Field label="Full name"><Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} /></Field>
-            <Field label="Current role"><Input value={form.candidate_current_role} onChange={(e) => update("candidate_current_role", e.target.value)} /></Field>
+            <Field label="Full name" hint="Used in the candidate summary on your pack.">
+              <Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="e.g. Alex Morgan" />
+            </Field>
+            <Field label="Current role" hint="Your job title today.">
+              <Input value={form.candidate_current_role} onChange={(e) => update("candidate_current_role", e.target.value)} placeholder="e.g. Senior Product Manager" />
+            </Field>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Years of experience"><Input value={form.years_experience} onChange={(e) => update("years_experience", e.target.value)} /></Field>
-              <Field label="Country"><Input value={form.country} onChange={(e) => update("country", e.target.value)} /></Field>
+              <Field label="Years of experience">
+                <Input value={form.years_experience} onChange={(e) => update("years_experience", e.target.value)} placeholder="e.g. 8" />
+              </Field>
+              <Field label="Country">
+                <Input value={form.country} onChange={(e) => update("country", e.target.value)} placeholder="e.g. United Kingdom" />
+              </Field>
             </div>
-            <Field label="Target role"><Input value={form.target_role} onChange={(e) => update("target_role", e.target.value)} placeholder="e.g. Head of Product" /></Field>
-            <Field label="Target industry"><Input value={form.target_industry} onChange={(e) => update("target_industry", e.target.value)} /></Field>
+            <Field label="Target role" hint="The job you're interviewing for. Required.">
+              <Input value={form.target_role} onChange={(e) => update("target_role", e.target.value)} placeholder="e.g. Head of Product" />
+            </Field>
+            <Field label="Target industry" hint="Optional, but helps us pick the right examples.">
+              <Input value={form.target_industry} onChange={(e) => update("target_industry", e.target.value)} placeholder="e.g. Fintech" />
+            </Field>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Interview type">
+              <Field label="Interview type" hint="What kind of conversation are you preparing for?">
                 <Select value={form.interview_type} onValueChange={(v) => update("interview_type", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["HR", "hiring manager", "technical", "panel", "executive", "competency-based", "case study"].map((x) => (
-                      <SelectItem key={x} value={x}>{x}</SelectItem>
+                    {[
+                      ["HR", "HR / first stage"],
+                      ["hiring manager", "Hiring manager"],
+                      ["technical", "Technical"],
+                      ["panel", "Panel"],
+                      ["executive", "Executive"],
+                      ["competency-based", "Competency-based"],
+                      ["case study", "Case study"],
+                    ].map(([v, label]) => (
+                      <SelectItem key={v} value={v}>{label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Seniority">
+              <Field label="Seniority" hint="Used to calibrate question depth.">
                 <Select value={form.seniority_level} onValueChange={(v) => update("seniority_level", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["graduate", "junior", "mid", "senior", "lead", "director", "executive"].map((x) => (
-                      <SelectItem key={x} value={x}>{x}</SelectItem>
+                    {[
+                      ["graduate", "Graduate"],
+                      ["junior", "Junior"],
+                      ["mid", "Mid-level"],
+                      ["senior", "Senior"],
+                      ["lead", "Lead"],
+                      ["director", "Director"],
+                      ["executive", "Executive"],
+                    ].map(([v, label]) => (
+                      <SelectItem key={v} value={v}>{label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </Field>
             </div>
-            <Field label="Notes (optional)"><Textarea value={form.candidate_notes} onChange={(e) => update("candidate_notes", e.target.value)} rows={3} /></Field>
+            <Field label="Anything else we should know?" hint="Optional. e.g. career change, gap to explain, sector pivot.">
+              <Textarea value={form.candidate_notes} onChange={(e) => update("candidate_notes", e.target.value)} rows={3} placeholder="Optional context that will sharpen the questions…" />
+            </Field>
           </div>
         )}
 
         {step === 1 && (
           <div className="space-y-5">
-            <Field label="Upload CV (PDF or DOCX)">
+            <Field label="Upload your CV" hint="PDF or DOCX, up to 10 MB. We'll extract the text on our server.">
               <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
-              {cvFile && <p className="text-xs text-muted-foreground mt-2">{cvFile.name}</p>}
+              {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
             </Field>
-            <Field label="Or paste CV text">
-              <Textarea value={form.cv_text} onChange={(e) => update("cv_text", e.target.value)} rows={8} placeholder="Paste your CV content…" />
+            <div className="text-[11px] uppercase tracking-widest text-muted-foreground text-center">or</div>
+            <Field label="Paste CV text" hint="Use this if you don't have a file handy.">
+              <Textarea value={form.cv_text} onChange={(e) => update("cv_text", e.target.value)} rows={8} placeholder="Paste the contents of your CV here…" />
             </Field>
-            <Field label="LinkedIn summary (optional)">
-              <Textarea value={form.linkedin_text} onChange={(e) => update("linkedin_text", e.target.value)} rows={4} />
+            <Field label="LinkedIn summary" hint="Optional. Paste your About section or recent role summaries.">
+              <Textarea value={form.linkedin_text} onChange={(e) => update("linkedin_text", e.target.value)} rows={4} placeholder="Optional — adds extra context the CV may not capture…" />
             </Field>
-            <Field label="LinkedIn URL (reference only)">
-              <Input value={form.linkedin_url} onChange={(e) => update("linkedin_url", e.target.value)} placeholder="https://linkedin.com/in/…" />
-              <p className="text-[11px] text-muted-foreground mt-2">LinkedIn URLs are stored only as reference unless an approved profile import is later enabled.</p>
+            <Field label="LinkedIn URL" hint="Stored for your reference only — we don't scrape LinkedIn.">
+              <Input value={form.linkedin_url} onChange={(e) => update("linkedin_url", e.target.value)} placeholder="https://linkedin.com/in/your-profile" />
             </Field>
           </div>
         )}
@@ -254,11 +293,15 @@ const PrepWizard = () => {
         {step === 2 && (
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Job title"><Input value={form.job_title} onChange={(e) => update("job_title", e.target.value)} /></Field>
-              <Field label="Company"><Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} /></Field>
+              <Field label="Job title" hint="As written on the posting.">
+                <Input value={form.job_title} onChange={(e) => update("job_title", e.target.value)} placeholder="e.g. Director of Product" />
+              </Field>
+              <Field label="Company" hint="Helps tailor company-specific motivation questions.">
+                <Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} placeholder="e.g. Monzo" />
+              </Field>
             </div>
             <div className="border border-border p-4 space-y-3">
-              <Field label="Job spec URL (optional)">
+              <Field label="Job spec link" hint="Paste a public URL and we'll pull the description for you.">
                 <div className="flex gap-2">
                   <Input
                     value={form.job_spec_url}
@@ -266,20 +309,20 @@ const PrepWizard = () => {
                     placeholder="https://…"
                   />
                   <Button type="button" variant="outline" onClick={handleFetchSpec} disabled={fetchingSpec}>
-                    {fetchingSpec ? <Loader2 className="h-4 w-4 animate-spin" /> : "Fetch"}
+                    {fetchingSpec ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Reading…</> : "Fetch"}
                   </Button>
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-2">
-                  We'll fetch and structure the page. If extraction fails, paste the description below.
+                  Some sites block automated readers. If that happens, paste the text below instead.
                 </p>
               </Field>
             </div>
-            <Field label="Job description (paste full text)">
+            <Field label="Job description" hint="Paste the full text. The more detail, the sharper the questions.">
               <Textarea
                 value={form.job_description}
                 onChange={(e) => update("job_description", e.target.value)}
                 rows={10}
-                placeholder="Or paste the full job description here…"
+                placeholder="Paste the full job description here…"
               />
             </Field>
           </div>
@@ -288,40 +331,57 @@ const PrepWizard = () => {
         {step === 3 && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Difficulty">
+              <Field label="Difficulty" hint="How tough should the panel feel?">
                 <Select value={form.difficulty} onValueChange={(v) => update("difficulty", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["standard", "advanced", "brutal"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}
+                    {[
+                      ["standard", "Standard"],
+                      ["advanced", "Advanced"],
+                      ["brutal", "Brutal"],
+                    ].map(([v, label]) => <SelectItem key={v} value={v}>{label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Number of questions">
+              <Field label="Number of questions" hint="Between 20 and 120.">
                 <Input type="number" min={20} max={120} value={form.num_questions} onChange={(e) => update("num_questions", Number(e.target.value))} />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Output tone">
+              <Field label="Tone of guidance" hint="How the answer notes are written.">
                 <Select value={form.output_tone} onValueChange={(v) => update("output_tone", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{["supportive", "direct", "executive"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {[
+                      ["supportive", "Supportive"],
+                      ["direct", "Direct"],
+                      ["executive", "Executive"],
+                    ].map(([v, label]) => <SelectItem key={v} value={v}>{label}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </Field>
-              <Field label="Interview style">
+              <Field label="Interview style" hint="The atmosphere we should write for.">
                 <Select value={form.interview_style} onValueChange={(v) => update("interview_style", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{["formal", "conversational", "high-pressure"].map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {[
+                      ["formal", "Formal"],
+                      ["conversational", "Conversational"],
+                      ["high-pressure", "High-pressure"],
+                    ].map(([v, label]) => <SelectItem key={v} value={v}>{label}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </Field>
             </div>
 
             <div className="border border-border p-5">
-              <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-4">Focus mix</div>
+              <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">Focus mix</div>
+              <p className="text-xs text-muted-foreground mb-4">Rough weighting across question types. These are guides, not strict quotas.</p>
               {Object.entries(form.focus_mix).map(([k, v]) => (
                 <div key={k} className="mb-4">
                   <div className="flex justify-between text-sm mb-2">
                     <span className="capitalize">{k.replace("_", " ")}</span>
-                    <span className="text-muted-foreground">{v}</span>
+                    <span className="text-muted-foreground">{v}%</span>
                   </div>
                   <Slider value={[v as number]} onValueChange={([n]) => updateMix(k, n)} max={100} step={5} />
                 </div>
@@ -329,9 +389,9 @@ const PrepWizard = () => {
             </div>
 
             <div className="space-y-3">
-              <Toggle label="Include follow-up questions" value={form.include_followups} onChange={(v) => update("include_followups", v)} />
-              <Toggle label="Include suggested answer angles" value={form.include_answer_angles} onChange={(v) => update("include_answer_angles", v)} />
-              <Toggle label="Include mock scoring rubric" value={form.include_rubric} onChange={(v) => update("include_rubric", v)} />
+              <Toggle label="Include likely follow-ups" value={form.include_followups} onChange={(v) => update("include_followups", v)} />
+              <Toggle label="Include answer guidance" value={form.include_answer_angles} onChange={(v) => update("include_answer_angles", v)} />
+              <Toggle label="Include a mock scoring rubric" value={form.include_rubric} onChange={(v) => update("include_rubric", v)} />
             </div>
           </div>
         )}
@@ -339,18 +399,22 @@ const PrepWizard = () => {
         {step === 4 && (
           <div className="space-y-6">
             <div className="border border-border p-6 bg-secondary/30">
-              <h3 className="font-display text-lg font-semibold">You're about to generate</h3>
-              <ul className="mt-3 text-sm space-y-1 text-muted-foreground">
-                <li>· {form.num_questions} interview questions</li>
-                <li>· Difficulty: <span className="text-foreground">{form.difficulty}</span></li>
-                <li>· Tailored to: <span className="text-foreground">{form.target_role || "—"}</span> at <span className="text-foreground">{form.company_name || "—"}</span></li>
-                <li>· Tone: {form.output_tone} · Style: {form.interview_style}</li>
+              <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">You're about to generate</div>
+              <ul className="text-sm space-y-1.5 text-muted-foreground">
+                <li>· <span className="text-foreground font-medium">{form.num_questions}</span> tailored questions</li>
+                <li>· Difficulty: <span className="text-foreground">{form.difficulty}</span> · Tone: <span className="text-foreground">{form.output_tone}</span> · Style: <span className="text-foreground">{form.interview_style}</span></li>
+                <li>· For: <span className="text-foreground">{form.target_role || "—"}</span>{form.company_name ? <> at <span className="text-foreground">{form.company_name}</span></> : null}</li>
+                <li>· CV: <span className="text-foreground">{cvFile ? cvFile.name : (form.cv_text.trim() ? "pasted text" : (form.linkedin_text.trim() ? "LinkedIn summary" : "—"))}</span></li>
               </ul>
             </div>
-            <p className="text-xs text-muted-foreground">By generating, you confirm the data above may be processed by the AI service for the purpose of preparing your interview pack.</p>
+            <p className="text-xs text-muted-foreground">
+              By generating, you agree your details will be processed by our AI provider only to prepare this pack.
+              You can return to it any time from your dashboard.
+            </p>
             <Button onClick={handleGenerate} disabled={submitting} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
-              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generating…</> : <>Generate interview pack <ArrowRight className="h-4 w-4 ml-2" /></>}
+              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Preparing your pack…</> : <>Generate my interview pack <ArrowRight className="h-4 w-4 ml-2" /></>}
             </Button>
+            <p className="text-[11px] text-muted-foreground text-center">This usually takes 30–60 seconds.</p>
           </div>
         )}
 
@@ -369,10 +433,11 @@ const PrepWizard = () => {
   );
 };
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+const Field = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
   <div className="space-y-2">
     <Label className="text-xs uppercase tracking-widest text-muted-foreground">{label}</Label>
     {children}
+    {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
   </div>
 );
 

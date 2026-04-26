@@ -676,7 +676,7 @@ const Results = () => {
                             [q.id]: e.target.value,
                           }))
                         }
-                        placeholder="Capture your structured answer or key points…"
+                        placeholder="Sketch your answer, key examples, or numbers to remember…"
                         rows={3}
                       />
                       <div className="mt-2 flex flex-wrap gap-2">

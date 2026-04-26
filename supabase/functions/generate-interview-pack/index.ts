@@ -83,7 +83,7 @@ const QUESTION_SCHEMA = {
               },
               standout: {
                 type: "string",
-                description: "Standout tier. Concise, high-impact, leadership-level, differentiated. A sharp opening line, a crisp insight or principle, an outcome that signals seniority. Spoken. 60–110 words.",
+                description: "Standout tier. 20–30 seconds spoken — roughly 50–75 words, hard ceiling 80. Sharp, controlled, intentional. One pointed opening line, one crisp judgement or trade-off, one concrete outcome. No throat-clearing, no list of achievements, no over-polished phrasing. Cut anything that isn't load-bearing. Should feel like a senior operator who knows exactly what to say and stops.",
               },
             },
             required: ["foundation", "strong", "standout"],

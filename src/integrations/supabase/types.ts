@@ -223,6 +223,7 @@ export type Database = {
           category: string
           created_at: string
           difficulty: string | null
+          example_answers: Json | null
           follow_up: string | null
           id: string
           note: string | null
@@ -231,6 +232,7 @@ export type Database = {
           question: string
           session_id: string
           starred: boolean
+          user_answer: string | null
           user_id: string
           what_good_covers: string | null
           why_matters: string | null
@@ -241,6 +243,7 @@ export type Database = {
           category: string
           created_at?: string
           difficulty?: string | null
+          example_answers?: Json | null
           follow_up?: string | null
           id?: string
           note?: string | null
@@ -249,6 +252,7 @@ export type Database = {
           question: string
           session_id: string
           starred?: boolean
+          user_answer?: string | null
           user_id: string
           what_good_covers?: string | null
           why_matters?: string | null
@@ -259,6 +263,7 @@ export type Database = {
           category?: string
           created_at?: string
           difficulty?: string | null
+          example_answers?: Json | null
           follow_up?: string | null
           id?: string
           note?: string | null
@@ -267,6 +272,7 @@ export type Database = {
           question?: string
           session_id?: string
           starred?: boolean
+          user_answer?: string | null
           user_id?: string
           what_good_covers?: string | null
           why_matters?: string | null

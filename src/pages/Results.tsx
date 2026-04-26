@@ -572,7 +572,7 @@ const Results = () => {
 
         <div className="text-xs text-muted-foreground mb-3 flex items-center gap-2">
           <SlidersHorizontal className="h-3 w-3" />
-          Showing {filtered.length} of {questions.length}
+          Showing {filtered.length} of {questions.length} {questions.length === 1 ? "question" : "questions"}
         </div>
 
         {/* Questions */}
@@ -592,7 +592,7 @@ const Results = () => {
                 setShowStarred(false);
               }}
             >
-              Clear filters
+              Reset filters
             </Button>
           </div>
         ) : (

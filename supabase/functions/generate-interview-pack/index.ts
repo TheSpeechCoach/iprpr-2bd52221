@@ -161,6 +161,7 @@ Hard rules:
 - "why_this_question_matters" explains the interviewer's intent in one tight sentence.
 - "what_good_answers_should_cover" lists the substance a strong answer should hit (2-4 concrete points).
 - "optional_follow_up" is a sharp probing follow-up the interviewer might use; empty string if none.
+- "answer_direction" is short, sharp, practical coaching for delivery — not content. Keep "structure" to one sentence, "length" to a concrete time/size cue, and "avoid" to 2-4 specific traps phrased as quick warnings ("Don't ramble through context", "Avoid 'we' — own the action", "Skip the jargon, give the proof"). Tailor to the question type — behavioural answers need STAR-style shape; opinion or commercial questions need a clear stance + rationale; technical answers need brevity and a worked example.
 - Position numbers are 1-based and sequential.`;
 
         const userPrompt = `Generate exactly ${numQuestions} interview questions.

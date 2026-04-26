@@ -855,26 +855,29 @@ const SummaryCard = ({
   heading,
   body,
   chips,
+  footnote,
 }: {
   label: string;
   heading?: string;
   body?: string | null;
   chips?: string[];
+  footnote?: string;
 }) => (
   <div className="bg-background p-6">
-    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+    <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
       {label}
     </div>
     {heading && (
-      <div className="font-display text-base font-medium mb-2">{heading}</div>
+      <div className="font-display text-lg font-medium leading-tight mb-1">{heading}</div>
     )}
-    {body !== undefined && (
-      <div className="text-sm leading-relaxed text-muted-foreground">
-        {body || <span>—</span>}
-      </div>
+    {footnote && (
+      <div className="text-xs text-muted-foreground">{footnote}</div>
+    )}
+    {body && (
+      <div className="text-sm leading-relaxed text-muted-foreground mt-2">{body}</div>
     )}
     {chips && chips.length > 0 && (
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 mt-2">
         {chips.map((c) => (
           <Badge key={c} variant="secondary" className="text-[10px]">
             {c}
@@ -882,19 +885,66 @@ const SummaryCard = ({
         ))}
       </div>
     )}
-    {chips && chips.length === 0 && (
-      <div className="text-sm text-muted-foreground">—</div>
-    )}
   </div>
 );
 
-const Block = ({ label, body }: { label: string; body: string }) => (
-  <div>
-    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-      {label}
+const EditorialSection = ({
+  eyebrow,
+  title,
+  icon,
+  accent = false,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  icon?: React.ReactNode;
+  accent?: boolean;
+  children: React.ReactNode;
+}) => (
+  <section
+    className={`relative mb-10 border ${accent ? "border-accent/30" : "border-border"} bg-background`}
+  >
+    <div className={`absolute left-0 top-0 bottom-0 w-px ${accent ? "bg-accent" : "bg-foreground"}`} />
+    <div className="px-6 md:px-8 py-7 md:py-8">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground mb-2">
+        {icon}
+        <span>{eyebrow}</span>
+      </div>
+      <h2 className="font-display text-xl md:text-2xl font-semibold leading-tight mb-5 text-balance">
+        {title}
+      </h2>
+      {children}
     </div>
-    <p className="text-sm leading-relaxed">{body}</p>
+  </section>
+);
+
+const TONE_STYLES: Record<string, string> = {
+  muted: "border-border bg-secondary/40",
+  strong: "border-foreground/20 bg-background",
+  accent: "border-accent/30 bg-accent/5",
+};
+
+const Block = ({
+  label,
+  body,
+  icon,
+  tone = "muted",
+}: {
+  label: string;
+  body: string;
+  icon?: React.ReactNode;
+  tone?: "muted" | "strong" | "accent";
+}) => (
+  <div className={`border-l-2 ${TONE_STYLES[tone]} pl-4 pr-4 py-3 rounded-r-sm`}>
+    <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5 inline-flex items-center gap-1.5">
+      {icon}
+      <span>{label}</span>
+    </div>
+    <p className={`text-sm leading-relaxed ${tone === "strong" ? "text-foreground font-medium" : "text-foreground/85"}`}>
+      {body}
+    </p>
   </div>
 );
+
 
 export default Results;

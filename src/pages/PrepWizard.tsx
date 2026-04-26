@@ -94,6 +94,15 @@ const PrepWizard = () => {
 
   const handleGenerate = async () => {
     if (!user) return;
+    if (!canCreateSession) {
+      toast({
+        title: "Free limit reached",
+        description: "You've used your free session. Upgrade to Pro to generate more.",
+        variant: "destructive",
+      });
+      nav("/upgrade");
+      return;
+    }
     if (!form.target_role.trim()) {
       toast({ title: "Add a target role", description: "We need the role you're interviewing for to tailor the questions.", variant: "destructive" });
       setStep(0);

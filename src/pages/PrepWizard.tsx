@@ -18,6 +18,7 @@ const STEPS = ["Candidate", "Career", "Job", "Parameters", "Generate"] as const;
 
 const PrepWizard = () => {
   const { user } = useAuth();
+  const { plan, canCreateSession, sessionsUsed } = usePlan();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);

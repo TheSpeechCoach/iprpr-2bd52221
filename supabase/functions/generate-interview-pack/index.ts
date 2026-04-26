@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-pro";
-const PROMPT_VERSION = "v3-2026-04-26-answer-direction";
+const PROMPT_VERSION = "v4-2026-04-26-answer-tiers";
 
 const QUESTION_SCHEMA = {
   type: "object",
@@ -69,11 +69,31 @@ const QUESTION_SCHEMA = {
             required: ["structure", "length", "avoid"],
             additionalProperties: false,
           },
+          example_answers: {
+            type: "object",
+            description: "Three tiers of model answers written as if spoken aloud in the interview room. UK English. Natural, controlled, no written prose.",
+            properties: {
+              foundation: {
+                type: "string",
+                description: "Foundation tier. Clear, simple, direct. Sounds like a calm candidate giving a solid baseline answer. Spoken, not written. 40–80 words.",
+              },
+              strong: {
+                type: "string",
+                description: "Strong tier. Structured, confident, commercially aware. Tight delivery, clear ownership ('I'), one concrete example or number. Spoken. 60–110 words.",
+              },
+              standout: {
+                type: "string",
+                description: "Standout tier. Concise, high-impact, leadership-level, differentiated. A sharp opening line, a crisp insight or principle, an outcome that signals seniority. Spoken. 60–110 words.",
+              },
+            },
+            required: ["foundation", "strong", "standout"],
+            additionalProperties: false,
+          },
         },
         required: [
           "position", "category", "difficulty", "question",
           "why_this_question_matters", "what_good_answers_should_cover",
-          "answer_direction",
+          "answer_direction", "example_answers",
         ],
         additionalProperties: false,
       },
@@ -162,6 +182,11 @@ Hard rules:
 - "what_good_answers_should_cover" lists the substance a strong answer should hit (2-4 concrete points).
 - "optional_follow_up" is a sharp probing follow-up the interviewer might use; empty string if none.
 - "answer_direction" is short, sharp, practical coaching for delivery — not content. Keep "structure" to one sentence, "length" to a concrete time/size cue, and "avoid" to 2-4 specific traps phrased as quick warnings ("Don't ramble through context", "Avoid 'we' — own the action", "Skip the jargon, give the proof"). Tailor to the question type — behavioural answers need STAR-style shape; opinion or commercial questions need a clear stance + rationale; technical answers need brevity and a worked example.
+- "example_answers" gives THREE tiers: foundation, strong, standout. These are SPOKEN answers, not written prose. Read them out loud — they should sound like a real candidate talking, with natural rhythm, contractions, the occasional connecting phrase ("So…", "Honestly,", "The way I think about it…"). No bullet points, no headings, no markdown. Use first person ("I"). Reference specifics from the CV/role wherever possible. Tier intent:
+  • foundation = clear, simple, direct. A solid baseline answer a junior or nervous candidate could deliver well.
+  • strong = structured, confident, commercially aware. Tight ownership, a concrete example or number, a clear "so what".
+  • standout = concise, high-impact, leadership-level, differentiated. Opens with a sharp line, signals seniority through judgement and trade-offs, lands an outcome.
+- Avoid jargon unless the role demands it. Never use the words "basic", "intermediate", "advanced".
 - Position numbers are 1-based and sequential.`;
 
         const userPrompt = `Generate exactly ${numQuestions} interview questions.
@@ -291,6 +316,7 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
           follow_up: q.optional_follow_up || null,
           answer_framework: q.answer_framework || null,
           answer_direction: q.answer_direction ?? null,
+          example_answers: q.example_answers ?? null,
           difficulty: q.difficulty ?? null,
         }));
 

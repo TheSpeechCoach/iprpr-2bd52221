@@ -50,7 +50,16 @@ import {
   HelpCircle,
   ListChecks,
   CornerDownRight,
+  Mic,
+  Quote,
+  ChevronDown,
+  Pencil,
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 // Friendlier, plain-English category labels for the interviewer's lens.
 const CATEGORY_LABELS: Record<string, string> = {
@@ -92,6 +101,8 @@ interface Question {
   follow_up: string | null;
   answer_framework: string | null;
   answer_direction: AnswerDirection | null;
+  example_answers: ExampleAnswers | null;
+  user_answer: string | null;
   difficulty: string | null;
   starred: boolean;
   practised: boolean;
@@ -103,6 +114,14 @@ interface AnswerDirection {
   length?: string;
   avoid?: string[];
 }
+
+interface ExampleAnswers {
+  foundation?: string;
+  strong?: string;
+  standout?: string;
+}
+
+const AUTHENTICITY_PROMPT = "Now say this in your own words. Write how you'd actually deliver it in the room.";
 
 interface Session {
   id: string;
@@ -130,8 +149,40 @@ const Results = () => {
   const [showStarred, setShowStarred] = useState(false);
   const [loading, setLoading] = useState(true);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
+  const [savingAnswerId, setSavingAnswerId] = useState<string | null>(null);
+  const [savedAnswerId, setSavedAnswerId] = useState<string | null>(null);
 
   const [retrying, setRetrying] = useState(false);
+
+  // Debounced autosave for user answers.
+  useEffect(() => {
+    const entries = Object.entries(answerDrafts);
+    if (entries.length === 0) return;
+    const timers = entries.map(([qid, val]) => {
+      const original = questions.find((x) => x.id === qid)?.user_answer ?? "";
+      if (val === original) return null;
+      return setTimeout(async () => {
+        setSavingAnswerId(qid);
+        const { error } = await supabase
+          .from("interview_questions")
+          .update({ user_answer: val })
+          .eq("id", qid);
+        setSavingAnswerId(null);
+        if (!error) {
+          setQuestions((prev) =>
+            prev.map((x) => (x.id === qid ? { ...x, user_answer: val } : x))
+          );
+          setSavedAnswerId(qid);
+          setTimeout(() => setSavedAnswerId((s) => (s === qid ? null : s)), 1800);
+        }
+      }, 800);
+    });
+    return () => {
+      timers.forEach((t) => t && clearTimeout(t));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answerDrafts]);
 
   const loadAll = async () => {
     if (!id) return;
@@ -740,152 +791,199 @@ const Results = () => {
           </div>
         ) : (
           <>
-            <Accordion type="multiple" className="border border-border">
-              {filtered
-                .filter((q) => q.position <= questionLimit)
-                .map((q) => (
-                <AccordionItem
-                  key={q.id}
-                  value={q.id}
-                  className="border-b border-border last:border-b-0"
-                >
-                  <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-5 text-left group">
-                    <div className="flex items-start gap-4 md:gap-5 w-full">
-                      <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
-                        {String(q.position).padStart(3, "0")}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
-                          <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">
-                            {prettyCategory(q.category)}
-                          </span>
-                          {q.difficulty && (
-                            <span className={`text-[10px] uppercase tracking-[0.15em] border px-1.5 py-0.5 rounded-sm ${DIFFICULTY_TONE[q.difficulty] ?? "border-border text-muted-foreground"}`}>
-                              {q.difficulty}
-                            </span>
-                          )}
-                          {q.practised && (
-                            <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> Practised
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
-                          {q.question}
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleStar(q);
-                        }}
-                        className="shrink-0 p-1"
-                        aria-label="Star"
+            {(() => {
+              const visible = filtered.filter((q) => q.position <= questionLimit);
+              const GROUP = 7;
+              const groups: Question[][] = [];
+              for (let i = 0; i < visible.length; i += GROUP) {
+                groups.push(visible.slice(i, i + GROUP));
+              }
+              return groups.map((group, gi) => (
+                <div key={gi}>
+                  {gi > 0 && <ReinforcementBanner index={gi} />}
+                  <Accordion type="multiple" className="border border-border">
+                    {group.map((q) => (
+                      <AccordionItem
+                        key={q.id}
+                        value={q.id}
+                        className="border-b border-border last:border-b-0"
                       >
-                        <Star
-                          className={`h-4 w-4 ${
-                            q.starred
-                              ? "fill-accent text-accent"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 md:px-6 pb-6">
-                    <div className="md:ml-14 space-y-3 text-sm">
-                      {q.why_matters && (
-                        <Block
-                          label="Why this matters"
-                          body={q.why_matters}
-                          icon={<HelpCircle className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                          tone="muted"
-                        />
-                      )}
-                      {q.what_good_covers && (
-                        <Block
-                          label="What good answers cover"
-                          body={q.what_good_covers}
-                          icon={<ListChecks className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                          tone="strong"
-                        />
-                      )}
-                      {q.answer_framework && (
-                        <Block
-                          label="Answer framework"
-                          body={q.answer_framework}
-                          icon={<Lightbulb className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                          tone="muted"
-                        />
-                      )}
-                      {q.answer_direction && (q.answer_direction.structure || q.answer_direction.length || (q.answer_direction.avoid && q.answer_direction.avoid.length > 0)) && (
-                        <AnswerDirectionBlock direction={q.answer_direction} />
-                      )}
-                      {q.follow_up && (
-                        <Block
-                          label="Likely follow-up"
-                          body={q.follow_up}
-                          icon={<CornerDownRight className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                          tone="accent"
-                        />
-                      )}
+                        <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-5 text-left group">
+                          <div className="flex items-start gap-4 md:gap-5 w-full">
+                            <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
+                              {String(q.position).padStart(3, "0")}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
+                                <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">
+                                  {prettyCategory(q.category)}
+                                </span>
+                                {q.difficulty && (
+                                  <span className={`text-[10px] uppercase tracking-[0.15em] border px-1.5 py-0.5 rounded-sm ${DIFFICULTY_TONE[q.difficulty] ?? "border-border text-muted-foreground"}`}>
+                                    {q.difficulty}
+                                  </span>
+                                )}
+                                {q.practised && (
+                                  <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
+                                    <CheckCircle2 className="h-3 w-3" /> Practised
+                                  </span>
+                                )}
+                                {q.user_answer && q.user_answer.trim().length > 0 && (
+                                  <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
+                                    <Pencil className="h-3 w-3" /> Your answer
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
+                                {q.question}
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleStar(q);
+                              }}
+                              className="shrink-0 p-1"
+                              aria-label="Star"
+                            >
+                              <Star
+                                className={`h-4 w-4 ${
+                                  q.starred
+                                    ? "fill-accent text-accent"
+                                    : "text-muted-foreground"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 md:px-6 pb-6">
+                          <div className="md:ml-14 space-y-3 text-sm">
+                            {q.why_matters && (
+                              <Block
+                                label="Why this matters"
+                                body={q.why_matters}
+                                icon={<HelpCircle className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                                tone="muted"
+                              />
+                            )}
+                            {q.what_good_covers && (
+                              <Block
+                                label="What good answers cover"
+                                body={q.what_good_covers}
+                                icon={<ListChecks className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                                tone="strong"
+                              />
+                            )}
+                            {q.answer_framework && (
+                              <Block
+                                label="Answer framework"
+                                body={q.answer_framework}
+                                icon={<Lightbulb className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                                tone="muted"
+                              />
+                            )}
+                            {q.answer_direction && (q.answer_direction.structure || q.answer_direction.length || (q.answer_direction.avoid && q.answer_direction.avoid.length > 0)) && (
+                              <AnswerDirectionBlock direction={q.answer_direction} />
+                            )}
 
-                      <div className="pt-2">
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-                          <StickyNote className="h-3 w-3" /> Your note
-                        </div>
-                        <Textarea
-                          value={noteDrafts[q.id] ?? q.note ?? ""}
-                          onChange={(e) =>
-                            setNoteDrafts((d) => ({
-                              ...d,
-                              [q.id]: e.target.value,
-                            }))
-                          }
-                          placeholder="Sketch your answer, key examples, or numbers to remember…"
-                          rows={3}
-                        />
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <Button size="sm" onClick={() => saveNote(q)}>
-                            Save note
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={q.practised ? "default" : "outline"}
-                            onClick={() => togglePractised(q)}
-                            className="gap-1.5"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            {q.practised ? "Practised" : "Mark as practised"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => toggleStar(q)}
-                            className="gap-1.5"
-                          >
-                            <Star
-                              className={`h-3.5 w-3.5 ${
-                                q.starred ? "fill-accent text-accent" : ""
-                              }`}
+                            {q.example_answers && (q.example_answers.foundation || q.example_answers.strong || q.example_answers.standout) && (
+                              <ExampleAnswersBlock examples={q.example_answers} />
+                            )}
+
+                            <UserAnswerBlock
+                              q={q}
+                              draft={answerDrafts[q.id] ?? q.user_answer ?? ""}
+                              onChange={(val) =>
+                                setAnswerDrafts((d) => ({ ...d, [q.id]: val }))
+                              }
+                              saving={savingAnswerId === q.id}
+                              saved={savedAnswerId === q.id}
+                              onPractise={() => {
+                                const payload = {
+                                  question_id: q.id,
+                                  session_id: id,
+                                  question: q.question,
+                                  user_answer: answerDrafts[q.id] ?? q.user_answer ?? "",
+                                };
+                                try {
+                                  sessionStorage.setItem(
+                                    "tsc.pendingPracticePayload",
+                                    JSON.stringify(payload)
+                                  );
+                                } catch {}
+                                nav("/practise-delivery", { state: payload });
+                              }}
                             />
-                            {q.starred ? "Starred" : "Star"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyQuestion(q)}
-                            className="gap-1.5"
-                          >
-                            <Copy className="h-3.5 w-3.5" /> Copy
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+
+                            {q.follow_up && (
+                              <Block
+                                label="Likely follow-up"
+                                body={q.follow_up}
+                                icon={<CornerDownRight className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                                tone="accent"
+                              />
+                            )}
+
+                            <div className="pt-2">
+                              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
+                                <StickyNote className="h-3 w-3" /> Your note
+                              </div>
+                              <Textarea
+                                value={noteDrafts[q.id] ?? q.note ?? ""}
+                                onChange={(e) =>
+                                  setNoteDrafts((d) => ({
+                                    ...d,
+                                    [q.id]: e.target.value,
+                                  }))
+                                }
+                                placeholder="Sketch your answer, key examples, or numbers to remember…"
+                                rows={3}
+                              />
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <Button size="sm" onClick={() => saveNote(q)}>
+                                  Save note
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={q.practised ? "default" : "outline"}
+                                  onClick={() => togglePractised(q)}
+                                  className="gap-1.5"
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  {q.practised ? "Practised" : "Mark as practised"}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => toggleStar(q)}
+                                  className="gap-1.5"
+                                >
+                                  <Star
+                                    className={`h-3.5 w-3.5 ${
+                                      q.starred ? "fill-accent text-accent" : ""
+                                    }`}
+                                  />
+                                  {q.starred ? "Starred" : "Star"}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => copyQuestion(q)}
+                                  className="gap-1.5"
+                                >
+                                  <Copy className="h-3.5 w-3.5" /> Copy
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                  {gi < groups.length - 1 && <div className="h-4" />}
+                </div>
+              ));
+            })()}
 
             {plan === "free" && (() => {
               const locked = filtered.filter((q) => q.position > questionLimit);
@@ -1084,5 +1182,128 @@ const AnswerDirectionBlock = ({ direction }: { direction: AnswerDirection }) => 
     </div>
   </div>
 );
+
+const TIER_META: { key: keyof ExampleAnswers; label: string; blurb: string }[] = [
+  { key: "foundation", label: "Foundation", blurb: "Clear, simple, direct." },
+  { key: "strong", label: "Strong", blurb: "Structured, confident, commercially aware." },
+  { key: "standout", label: "Standout", blurb: "Concise, high-impact, leadership-level." },
+];
+
+const ExampleAnswersBlock = ({ examples }: { examples: ExampleAnswers }) => {
+  const [open, setOpen] = useState<string | null>("strong");
+  return (
+    <div className="border border-foreground/15 bg-background rounded-sm overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-foreground/10 bg-foreground/[0.03] flex items-center gap-2">
+        <Quote className="h-3.5 w-3.5 text-accent" strokeWidth={1.5} />
+        <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Answer examples</span>
+        <span className="text-[10px] text-muted-foreground ml-auto">Spoken, not written</span>
+      </div>
+      <div className="divide-y divide-foreground/10">
+        {TIER_META.map((tier) => {
+          const body = examples[tier.key];
+          if (!body) return null;
+          const isOpen = open === tier.key;
+          return (
+            <Collapsible
+              key={tier.key}
+              open={isOpen}
+              onOpenChange={(v) => setOpen(v ? tier.key : null)}
+            >
+              <CollapsibleTrigger className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-foreground/[0.02] transition-colors">
+                <span className="font-display text-sm font-medium">{tier.label}</span>
+                <span className="text-xs text-muted-foreground hidden sm:inline">{tier.blurb}</span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 ml-auto text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
+                  strokeWidth={1.5}
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-4 pb-4 -mt-1">
+                  <div className="border-l-2 border-accent/40 pl-4 py-1">
+                    <p className="text-sm leading-relaxed text-foreground/90 italic">
+                      “{body}”
+                    </p>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const UserAnswerBlock = ({
+  q,
+  draft,
+  onChange,
+  saving,
+  saved,
+  onPractise,
+}: {
+  q: Question;
+  draft: string;
+  onChange: (val: string) => void;
+  saving: boolean;
+  saved: boolean;
+  onPractise: () => void;
+}) => (
+  <div className="border border-accent/30 bg-accent/[0.04] rounded-sm overflow-hidden">
+    <div className="px-4 py-2.5 border-b border-accent/20 bg-accent/[0.06] flex items-center gap-2">
+      <Pencil className="h-3.5 w-3.5 text-accent" strokeWidth={1.5} />
+      <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Your answer</span>
+      <span className="text-[10px] text-muted-foreground ml-auto">
+        {saving ? "Saving…" : saved ? "Saved" : "Autosaves as you type"}
+      </span>
+    </div>
+    <div className="p-4 space-y-3">
+      <p className="text-xs text-foreground/75 italic">
+        {AUTHENTICITY_PROMPT}
+      </p>
+      <Textarea
+        value={draft}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Strip it back. Make it sound like you'd actually say it…"
+        rows={4}
+        className="bg-background"
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          onClick={onPractise}
+          className="gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
+        >
+          <Mic className="h-3.5 w-3.5" /> Practise delivery
+        </Button>
+        <span className="text-[11px] text-muted-foreground self-center">
+          Take it into the Speech Coach app and rehearse out loud.
+        </span>
+      </div>
+    </div>
+  </div>
+);
+
+const REINFORCEMENT_LINES = [
+  "You don't get hired for memorising answers. You get hired for how you deliver them. Write the next ones in your own language.",
+  "Read the examples, then close them. Say it the way you'd say it in the room.",
+  "Models are scaffolding, not scripts. Strip them back until they sound like you.",
+  "Delivery beats wording. Keep it spoken, keep it short, keep it yours.",
+];
+
+const ReinforcementBanner = ({ index }: { index: number }) => {
+  const line = REINFORCEMENT_LINES[(index - 1) % REINFORCEMENT_LINES.length];
+  return (
+    <div className="my-6 border-l-2 border-accent bg-accent/[0.04] px-5 py-4 flex gap-3 items-start">
+      <Mic className="h-4 w-4 text-accent mt-0.5 shrink-0" strokeWidth={1.5} />
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.22em] text-accent font-medium mb-1">
+          A quick reminder
+        </div>
+        <p className="text-sm leading-relaxed text-foreground/90">{line}</p>
+      </div>
+    </div>
+  );
+};
 
 export default Results;

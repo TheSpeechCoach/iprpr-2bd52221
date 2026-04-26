@@ -101,6 +101,8 @@ interface Question {
   follow_up: string | null;
   answer_framework: string | null;
   answer_direction: AnswerDirection | null;
+  example_answers: ExampleAnswers | null;
+  user_answer: string | null;
   difficulty: string | null;
   starred: boolean;
   practised: boolean;
@@ -112,6 +114,14 @@ interface AnswerDirection {
   length?: string;
   avoid?: string[];
 }
+
+interface ExampleAnswers {
+  foundation?: string;
+  strong?: string;
+  standout?: string;
+}
+
+const AUTHENTICITY_PROMPT = "Now say this in your own words. Write how you'd actually deliver it in the room.";
 
 interface Session {
   id: string;

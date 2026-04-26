@@ -818,6 +818,9 @@ const Results = () => {
                           tone="muted"
                         />
                       )}
+                      {q.answer_direction && (q.answer_direction.structure || q.answer_direction.length || (q.answer_direction.avoid && q.answer_direction.avoid.length > 0)) && (
+                        <AnswerDirectionBlock direction={q.answer_direction} />
+                      )}
                       {q.follow_up && (
                         <Block
                           label="Likely follow-up"

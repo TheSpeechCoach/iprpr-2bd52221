@@ -494,13 +494,29 @@ const Results = () => {
             <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight">
               {session?.title}
             </h1>
-            <div className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span>{questions.length} {questions.length === 1 ? "question" : "questions"}</span>
-              <span>·</span>
-              <span>{starredCount} starred</span>
-              <span>·</span>
-              <span>{practisedCount} practised</span>
+            <div className="mt-4 max-w-md">
+              <div className="flex items-baseline justify-between mb-1.5">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Progress</div>
+                <div className="text-xs tabular-nums">
+                  <span className="font-display text-foreground font-medium">{practisedCount}</span>
+                  <span className="text-muted-foreground"> / {questions.length} practised</span>
+                </div>
+              </div>
+              <div className="h-1 w-full bg-secondary overflow-hidden rounded-sm">
+                <div
+                  className="h-full bg-accent transition-all duration-500"
+                  style={{ width: `${questions.length ? (practisedCount / questions.length) * 100 : 0}%` }}
+                />
+              </div>
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <span>{questions.length} {questions.length === 1 ? "question" : "questions"}</span>
+                <span>·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Star className={`h-3 w-3 ${starredCount > 0 ? "fill-accent text-accent" : ""}`} /> {starredCount} starred
+                </span>
+              </div>
             </div>
+
           </div>
           <div className="flex gap-2">
           <Link to={`/prep/${id}/practice`}>
@@ -539,10 +555,10 @@ const Results = () => {
             footnote={session?.company_name ?? undefined}
           />
           <SummaryCard
-            label="Pack"
-            heading={`${questions.length} questions`}
+            label="Pack progress"
+            heading={`${practisedCount} / ${questions.length}`}
             body={null}
-            footnote={`${starredCount} starred · ${practisedCount} practised`}
+            footnote={`${questions.length ? Math.round((practisedCount / questions.length) * 100) : 0}% practised · ${starredCount} starred`}
           />
         </div>
 

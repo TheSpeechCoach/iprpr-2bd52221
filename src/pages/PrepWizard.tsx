@@ -60,13 +60,28 @@ const PrepWizard = () => {
     }
     setSubmitting(true);
     try {
-      // Upload CV if present
+      // Upload CV if present, then extract text server-side
       let cv_file_path: string | null = null;
+      let extracted_cv_text = form.cv_text;
       if (cvFile) {
+        if (cvFile.size > 10 * 1024 * 1024) throw new Error("CV exceeds 10MB limit");
+        const ext = cvFile.name.split(".").pop()?.toLowerCase();
+        if (!["pdf", "docx"].includes(ext ?? "")) throw new Error("CV must be a PDF or DOCX file");
+
         const path = `${user.id}/${Date.now()}_${cvFile.name}`;
-        const { error: upErr } = await supabase.storage.from("cvs").upload(path, cvFile);
+        const { error: upErr } = await supabase.storage.from("cvs").upload(path, cvFile, {
+          contentType: cvFile.type,
+          upsert: false,
+        });
         if (upErr) throw upErr;
         cv_file_path = path;
+
+        toast({ title: "Extracting CV", description: "Reading your CV…" });
+        const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
+          body: { file_path: path, bucket: "cvs" },
+        });
+        if (exErr) throw new Error(exErr.message);
+        if (ex?.text) extracted_cv_text = ex.text;
       }
 
       // Create session
@@ -75,6 +90,7 @@ const PrepWizard = () => {
         title: `${form.target_role}${form.company_name ? ` · ${form.company_name}` : ""}`,
         status: "generating",
         ...form,
+        cv_text: extracted_cv_text,
         cv_file_path,
       }).select().single();
       if (sErr) throw sErr;

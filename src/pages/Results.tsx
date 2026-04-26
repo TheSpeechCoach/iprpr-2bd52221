@@ -38,7 +38,40 @@ import {
   FileText,
   FileType,
   SlidersHorizontal,
+  AlertTriangle,
+  Target,
+  Sparkles,
+  Lightbulb,
+  HelpCircle,
+  ListChecks,
+  CornerDownRight,
 } from "lucide-react";
+
+// Friendlier, plain-English category labels for the interviewer's lens.
+const CATEGORY_LABELS: Record<string, string> = {
+  "Opening": "Opening & rapport",
+  "CV/Background": "Career & background",
+  "Role-Fit": "Role fit",
+  "Behavioural": "Behavioural evidence",
+  "Strengths": "Strengths",
+  "Weaknesses": "Weaknesses & gaps",
+  "Leadership": "Leadership",
+  "Stakeholder": "Stakeholder management",
+  "Problem-Solving": "Problem solving",
+  "Company Motivation": "Motivation for the company",
+  "Commercial Awareness": "Commercial awareness",
+  "Technical": "Technical depth",
+  "Pressure": "Pressure & resilience",
+  "Closing": "Closing & questions back",
+};
+
+const prettyCategory = (c: string) => CATEGORY_LABELS[c] ?? c;
+
+const DIFFICULTY_TONE: Record<string, string> = {
+  easy: "border-border text-muted-foreground",
+  medium: "border-foreground/30 text-foreground",
+  hard: "border-accent/60 text-accent",
+};
 import { toast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";
@@ -70,6 +103,7 @@ interface Session {
   target_role: string | null;
   company_name: string | null;
   full_name: string | null;
+  candidate_current_role: string | null;
 }
 
 const Results = () => {
@@ -490,33 +524,106 @@ const Results = () => {
           </div>
         </div>
 
-        {/* Summary cards */}
-        <div className="grid md:grid-cols-3 gap-px bg-border mb-10 border border-border">
+        {/* At-a-glance strip */}
+        <div className="grid md:grid-cols-3 gap-px bg-border mb-12 border border-border">
           <SummaryCard
             label="Candidate"
             heading={session?.full_name || "Profile"}
-            body={session?.candidate_summary}
+            body={null}
+            footnote={session?.candidate_current_role ?? undefined}
           />
           <SummaryCard
-            label="Role"
-            heading={
-              [session?.target_role, session?.company_name]
-                .filter(Boolean)
-                .join(" · ") || "Target role"
-            }
-            body={session?.role_summary}
+            label="Target role"
+            heading={session?.target_role || "Role"}
+            body={null}
+            footnote={session?.company_name ?? undefined}
           />
           <SummaryCard
-            label="Top themes"
-            heading={`${
-              Array.isArray(session?.top_themes) ? session!.top_themes.length : 0
-            } themes`}
-            chips={
-              Array.isArray(session?.top_themes)
-                ? (session!.top_themes as string[])
-                : []
-            }
+            label="Pack"
+            heading={`${questions.length} questions`}
+            body={null}
+            footnote={`${starredCount} starred · ${practisedCount} practised`}
           />
+        </div>
+
+        {/* Candidate Insight Summary */}
+        {session?.candidate_summary && (
+          <EditorialSection
+            eyebrow="Candidate insight summary"
+            icon={<Sparkles className="h-4 w-4" strokeWidth={1.5} />}
+            title="How an interviewer will read your profile"
+          >
+            <p className="text-[15px] leading-relaxed text-foreground/90">
+              {session.candidate_summary}
+            </p>
+          </EditorialSection>
+        )}
+
+        {/* What this interview will likely test */}
+        {(session?.role_summary || (Array.isArray(session?.top_themes) && session!.top_themes.length > 0)) && (
+          <EditorialSection
+            eyebrow="What this interview will likely test"
+            icon={<Target className="h-4 w-4" strokeWidth={1.5} />}
+            title="The lens the panel will bring into the room"
+          >
+            {session?.role_summary && (
+              <p className="text-[15px] leading-relaxed text-foreground/90 mb-6">
+                {session.role_summary}
+              </p>
+            )}
+            {Array.isArray(session?.top_themes) && session!.top_themes.length > 0 && (
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                  Themes they will probe
+                </div>
+                <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-2.5">
+                  {(session!.top_themes as string[]).map((t, i) => (
+                    <li key={i} className="flex gap-3 text-sm leading-relaxed">
+                      <span className="font-display text-xs text-muted-foreground tabular-nums mt-0.5">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </EditorialSection>
+        )}
+
+        {/* Top Risks / Weak Spots */}
+        {Array.isArray(session?.red_flags) && session!.red_flags.length > 0 && (
+          <EditorialSection
+            eyebrow="Top 5 risks & weak spots"
+            icon={<AlertTriangle className="h-4 w-4 text-accent" strokeWidth={1.5} />}
+            title="Where they will push hardest"
+            accent
+          >
+            <ol className="space-y-4">
+              {(session!.red_flags as string[]).slice(0, 5).map((r, i) => (
+                <li key={i} className="flex gap-4 pb-4 border-b border-border last:border-b-0 last:pb-0">
+                  <span className="font-display text-2xl font-semibold text-accent tabular-nums leading-none">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="text-[15px] leading-relaxed text-foreground/90 pt-1">
+                    {r}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </EditorialSection>
+        )}
+
+        {/* Section divider into the question bank */}
+        <div className="flex items-end justify-between mt-14 mb-6 pb-3 border-b border-border">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
+              The question bank
+            </div>
+            <h2 className="font-display text-2xl font-semibold">
+              {questions.length} tailored questions
+            </h2>
+          </div>
         </div>
 
         {/* Filters */}
@@ -539,7 +646,7 @@ const Results = () => {
                 <SelectItem value="all">All categories</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c} value={c}>
-                    {c}
+                    {prettyCategory(c)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -603,29 +710,29 @@ const Results = () => {
                 value={q.id}
                 className="border-b border-border last:border-b-0"
               >
-                <AccordionTrigger className="hover:no-underline px-4 md:px-5 py-4 text-left">
-                  <div className="flex items-start gap-3 md:gap-4 w-full">
-                    <span className="font-display text-xs text-muted-foreground mt-0.5 w-8 shrink-0">
+                <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-5 text-left group">
+                  <div className="flex items-start gap-4 md:gap-5 w-full">
+                    <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
                       {String(q.position).padStart(3, "0")}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium pr-2">
-                        {q.question}
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        <Badge variant="secondary" className="text-[10px]">
-                          {q.category}
-                        </Badge>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
+                        <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">
+                          {prettyCategory(q.category)}
+                        </span>
                         {q.difficulty && (
-                          <Badge variant="outline" className="text-[10px]">
+                          <span className={`text-[10px] uppercase tracking-[0.15em] border px-1.5 py-0.5 rounded-sm ${DIFFICULTY_TONE[q.difficulty] ?? "border-border text-muted-foreground"}`}>
                             {q.difficulty}
-                          </Badge>
+                          </span>
                         )}
                         {q.practised && (
-                          <Badge className="text-[10px] gap-1">
+                          <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" /> Practised
-                          </Badge>
+                          </span>
                         )}
+                      </div>
+                      <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
+                        {q.question}
                       </div>
                     </div>
                     <button
@@ -646,22 +753,39 @@ const Results = () => {
                     </button>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 md:px-5 pb-5">
-                  <div className="md:ml-12 space-y-4 text-sm">
+                <AccordionContent className="px-4 md:px-6 pb-6">
+                  <div className="md:ml-14 space-y-3 text-sm">
                     {q.why_matters && (
-                      <Block label="Why this matters" body={q.why_matters} />
+                      <Block
+                        label="Why this matters"
+                        body={q.why_matters}
+                        icon={<HelpCircle className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                        tone="muted"
+                      />
                     )}
                     {q.what_good_covers && (
                       <Block
                         label="What good answers cover"
                         body={q.what_good_covers}
+                        icon={<ListChecks className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                        tone="strong"
                       />
                     )}
                     {q.answer_framework && (
-                      <Block label="Answer framework" body={q.answer_framework} />
+                      <Block
+                        label="Answer framework"
+                        body={q.answer_framework}
+                        icon={<Lightbulb className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                        tone="muted"
+                      />
                     )}
                     {q.follow_up && (
-                      <Block label="Likely follow-up" body={q.follow_up} />
+                      <Block
+                        label="Likely follow-up"
+                        body={q.follow_up}
+                        icon={<CornerDownRight className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                        tone="accent"
+                      />
                     )}
 
                     <div className="pt-2">
@@ -731,26 +855,29 @@ const SummaryCard = ({
   heading,
   body,
   chips,
+  footnote,
 }: {
   label: string;
   heading?: string;
   body?: string | null;
   chips?: string[];
+  footnote?: string;
 }) => (
   <div className="bg-background p-6">
-    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+    <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
       {label}
     </div>
     {heading && (
-      <div className="font-display text-base font-medium mb-2">{heading}</div>
+      <div className="font-display text-lg font-medium leading-tight mb-1">{heading}</div>
     )}
-    {body !== undefined && (
-      <div className="text-sm leading-relaxed text-muted-foreground">
-        {body || <span>—</span>}
-      </div>
+    {footnote && (
+      <div className="text-xs text-muted-foreground">{footnote}</div>
+    )}
+    {body && (
+      <div className="text-sm leading-relaxed text-muted-foreground mt-2">{body}</div>
     )}
     {chips && chips.length > 0 && (
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 mt-2">
         {chips.map((c) => (
           <Badge key={c} variant="secondary" className="text-[10px]">
             {c}
@@ -758,19 +885,66 @@ const SummaryCard = ({
         ))}
       </div>
     )}
-    {chips && chips.length === 0 && (
-      <div className="text-sm text-muted-foreground">—</div>
-    )}
   </div>
 );
 
-const Block = ({ label, body }: { label: string; body: string }) => (
-  <div>
-    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-      {label}
+const EditorialSection = ({
+  eyebrow,
+  title,
+  icon,
+  accent = false,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  icon?: React.ReactNode;
+  accent?: boolean;
+  children: React.ReactNode;
+}) => (
+  <section
+    className={`relative mb-10 border ${accent ? "border-accent/30" : "border-border"} bg-background`}
+  >
+    <div className={`absolute left-0 top-0 bottom-0 w-px ${accent ? "bg-accent" : "bg-foreground"}`} />
+    <div className="px-6 md:px-8 py-7 md:py-8">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground mb-2">
+        {icon}
+        <span>{eyebrow}</span>
+      </div>
+      <h2 className="font-display text-xl md:text-2xl font-semibold leading-tight mb-5 text-balance">
+        {title}
+      </h2>
+      {children}
     </div>
-    <p className="text-sm leading-relaxed">{body}</p>
+  </section>
+);
+
+const TONE_STYLES: Record<string, string> = {
+  muted: "border-border bg-secondary/40",
+  strong: "border-foreground/20 bg-background",
+  accent: "border-accent/30 bg-accent/5",
+};
+
+const Block = ({
+  label,
+  body,
+  icon,
+  tone = "muted",
+}: {
+  label: string;
+  body: string;
+  icon?: React.ReactNode;
+  tone?: "muted" | "strong" | "accent";
+}) => (
+  <div className={`border-l-2 ${TONE_STYLES[tone]} pl-4 pr-4 py-3 rounded-r-sm`}>
+    <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5 inline-flex items-center gap-1.5">
+      {icon}
+      <span>{label}</span>
+    </div>
+    <p className={`text-sm leading-relaxed ${tone === "strong" ? "text-foreground font-medium" : "text-foreground/85"}`}>
+      {body}
+    </p>
   </div>
 );
+
 
 export default Results;

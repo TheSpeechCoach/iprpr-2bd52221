@@ -103,6 +103,7 @@ interface Session {
   target_role: string | null;
   company_name: string | null;
   full_name: string | null;
+  candidate_current_role: string | null;
 }
 
 const Results = () => {

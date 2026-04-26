@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import PrepWizard from "./pages/PrepWizard";
 import Results from "./pages/Results";
 import Practice from "./pages/Practice";
+import Upgrade from "./pages/Upgrade";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/prep/new" element={<ProtectedRoute><PrepWizard /></ProtectedRoute>} />
             <Route path="/prep/:id/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
             <Route path="/prep/:id/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
+            <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlan, FREE_QUESTION_LIMIT } from "@/hooks/usePlan";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Lock } from "lucide-react";
 
 const STEPS = ["Candidate", "Career", "Job", "Parameters", "Generate"] as const;
 
 const PrepWizard = () => {
   const { user } = useAuth();
+  const { plan, canCreateSession, sessionsUsed } = usePlan();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -92,6 +94,15 @@ const PrepWizard = () => {
 
   const handleGenerate = async () => {
     if (!user) return;
+    if (!canCreateSession) {
+      toast({
+        title: "Free limit reached",
+        description: "You've used your free session. Upgrade to Pro to generate more.",
+        variant: "destructive",
+      });
+      nav("/upgrade");
+      return;
+    }
     if (!form.target_role.trim()) {
       toast({ title: "Add a target role", description: "We need the role you're interviewing for to tailor the questions.", variant: "destructive" });
       setStep(0);
@@ -176,6 +187,34 @@ const PrepWizard = () => {
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
       <main className="container-tight flex-1 py-12 max-w-3xl">
+        {plan === "free" && (
+          <div className={`mb-8 border ${canCreateSession ? "border-border bg-secondary/40" : "border-accent/40 bg-accent/5"} p-4 flex items-start md:items-center gap-3 flex-col md:flex-row`}>
+            {canCreateSession ? (
+              <Sparkles className="h-4 w-4 text-accent shrink-0" />
+            ) : (
+              <Lock className="h-4 w-4 text-accent shrink-0" />
+            )}
+            <div className="flex-1 text-sm">
+              {canCreateSession ? (
+                <>
+                  <span className="font-medium">Free plan</span>
+                  <span className="text-muted-foreground"> · This is your one free session. You'll see the first {FREE_QUESTION_LIMIT} of your generated questions.</span>
+                </>
+              ) : (
+                <>
+                  <span className="font-medium">You've used your free session.</span>
+                  <span className="text-muted-foreground"> Upgrade to Pro to generate unlimited packs and unlock the full {">"}100 questions.</span>
+                </>
+              )}
+            </div>
+            <Link to="/upgrade">
+              <Button size="sm" variant={canCreateSession ? "outline" : "default"} className={!canCreateSession ? "bg-accent hover:bg-accent/90 text-accent-foreground" : ""}>
+                Upgrade
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* Progress */}
         <div className="flex gap-2 mb-10">
           {STEPS.map((label, i) => (

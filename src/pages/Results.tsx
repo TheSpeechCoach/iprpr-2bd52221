@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { usePlan, FREE_QUESTION_LIMIT } from "@/hooks/usePlan";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ import {
   AlertTriangle,
   Target,
   Sparkles,
+  Lock,
   Lightbulb,
   HelpCircle,
   ListChecks,
@@ -108,6 +110,8 @@ interface Session {
 
 const Results = () => {
   const { id } = useParams();
+  const nav = useNavigate();
+  const { plan, questionLimit } = usePlan();
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [search, setSearch] = useState("");
@@ -529,11 +533,17 @@ const Results = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={exportPDF}>
+              <DropdownMenuItem
+                onClick={() => (plan === "pro" ? exportPDF() : nav("/upgrade"))}
+              >
                 <FileText className="h-4 w-4 mr-2" /> Download PDF
+                {plan === "free" && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={exportDOCX}>
+              <DropdownMenuItem
+                onClick={() => (plan === "pro" ? exportDOCX() : nav("/upgrade"))}
+              >
                 <FileType className="h-4 w-4 mr-2" /> Download DOCX
+                {plan === "free" && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -719,147 +729,198 @@ const Results = () => {
             </Button>
           </div>
         ) : (
-          <Accordion type="multiple" className="border border-border">
-            {filtered.map((q) => (
-              <AccordionItem
-                key={q.id}
-                value={q.id}
-                className="border-b border-border last:border-b-0"
-              >
-                <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-5 text-left group">
-                  <div className="flex items-start gap-4 md:gap-5 w-full">
-                    <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
-                      {String(q.position).padStart(3, "0")}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
-                        <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">
-                          {prettyCategory(q.category)}
-                        </span>
-                        {q.difficulty && (
-                          <span className={`text-[10px] uppercase tracking-[0.15em] border px-1.5 py-0.5 rounded-sm ${DIFFICULTY_TONE[q.difficulty] ?? "border-border text-muted-foreground"}`}>
-                            {q.difficulty}
+          <>
+            <Accordion type="multiple" className="border border-border">
+              {filtered
+                .filter((q) => q.position <= questionLimit)
+                .map((q) => (
+                <AccordionItem
+                  key={q.id}
+                  value={q.id}
+                  className="border-b border-border last:border-b-0"
+                >
+                  <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-5 text-left group">
+                    <div className="flex items-start gap-4 md:gap-5 w-full">
+                      <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
+                        {String(q.position).padStart(3, "0")}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
+                          <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">
+                            {prettyCategory(q.category)}
                           </span>
-                        )}
-                        {q.practised && (
-                          <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3" /> Practised
-                          </span>
-                        )}
+                          {q.difficulty && (
+                            <span className={`text-[10px] uppercase tracking-[0.15em] border px-1.5 py-0.5 rounded-sm ${DIFFICULTY_TONE[q.difficulty] ?? "border-border text-muted-foreground"}`}>
+                              {q.difficulty}
+                            </span>
+                          )}
+                          {q.practised && (
+                            <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" /> Practised
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
+                          {q.question}
+                        </div>
                       </div>
-                      <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
-                        {q.question}
-                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStar(q);
+                        }}
+                        className="shrink-0 p-1"
+                        aria-label="Star"
+                      >
+                        <Star
+                          className={`h-4 w-4 ${
+                            q.starred
+                              ? "fill-accent text-accent"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      </button>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleStar(q);
-                      }}
-                      className="shrink-0 p-1"
-                      aria-label="Star"
-                    >
-                      <Star
-                        className={`h-4 w-4 ${
-                          q.starred
-                            ? "fill-accent text-accent"
-                            : "text-muted-foreground"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 md:px-6 pb-6">
-                  <div className="md:ml-14 space-y-3 text-sm">
-                    {q.why_matters && (
-                      <Block
-                        label="Why this matters"
-                        body={q.why_matters}
-                        icon={<HelpCircle className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                        tone="muted"
-                      />
-                    )}
-                    {q.what_good_covers && (
-                      <Block
-                        label="What good answers cover"
-                        body={q.what_good_covers}
-                        icon={<ListChecks className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                        tone="strong"
-                      />
-                    )}
-                    {q.answer_framework && (
-                      <Block
-                        label="Answer framework"
-                        body={q.answer_framework}
-                        icon={<Lightbulb className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                        tone="muted"
-                      />
-                    )}
-                    {q.follow_up && (
-                      <Block
-                        label="Likely follow-up"
-                        body={q.follow_up}
-                        icon={<CornerDownRight className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                        tone="accent"
-                      />
-                    )}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 md:px-6 pb-6">
+                    <div className="md:ml-14 space-y-3 text-sm">
+                      {q.why_matters && (
+                        <Block
+                          label="Why this matters"
+                          body={q.why_matters}
+                          icon={<HelpCircle className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                          tone="muted"
+                        />
+                      )}
+                      {q.what_good_covers && (
+                        <Block
+                          label="What good answers cover"
+                          body={q.what_good_covers}
+                          icon={<ListChecks className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                          tone="strong"
+                        />
+                      )}
+                      {q.answer_framework && (
+                        <Block
+                          label="Answer framework"
+                          body={q.answer_framework}
+                          icon={<Lightbulb className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                          tone="muted"
+                        />
+                      )}
+                      {q.follow_up && (
+                        <Block
+                          label="Likely follow-up"
+                          body={q.follow_up}
+                          icon={<CornerDownRight className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                          tone="accent"
+                        />
+                      )}
 
-                    <div className="pt-2">
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-                        <StickyNote className="h-3 w-3" /> Your note
-                      </div>
-                      <Textarea
-                        value={noteDrafts[q.id] ?? q.note ?? ""}
-                        onChange={(e) =>
-                          setNoteDrafts((d) => ({
-                            ...d,
-                            [q.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Sketch your answer, key examples, or numbers to remember…"
-                        rows={3}
-                      />
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <Button size="sm" onClick={() => saveNote(q)}>
-                          Save note
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={q.practised ? "default" : "outline"}
-                          onClick={() => togglePractised(q)}
-                          className="gap-1.5"
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          {q.practised ? "Practised" : "Mark as practised"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => toggleStar(q)}
-                          className="gap-1.5"
-                        >
-                          <Star
-                            className={`h-3.5 w-3.5 ${
-                              q.starred ? "fill-accent text-accent" : ""
-                            }`}
-                          />
-                          {q.starred ? "Starred" : "Star"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyQuestion(q)}
-                          className="gap-1.5"
-                        >
-                          <Copy className="h-3.5 w-3.5" /> Copy
-                        </Button>
+                      <div className="pt-2">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <StickyNote className="h-3 w-3" /> Your note
+                        </div>
+                        <Textarea
+                          value={noteDrafts[q.id] ?? q.note ?? ""}
+                          onChange={(e) =>
+                            setNoteDrafts((d) => ({
+                              ...d,
+                              [q.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="Sketch your answer, key examples, or numbers to remember…"
+                          rows={3}
+                        />
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <Button size="sm" onClick={() => saveNote(q)}>
+                            Save note
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={q.practised ? "default" : "outline"}
+                            onClick={() => togglePractised(q)}
+                            className="gap-1.5"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            {q.practised ? "Practised" : "Mark as practised"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => toggleStar(q)}
+                            className="gap-1.5"
+                          >
+                            <Star
+                              className={`h-3.5 w-3.5 ${
+                                q.starred ? "fill-accent text-accent" : ""
+                              }`}
+                            />
+                            {q.starred ? "Starred" : "Star"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyQuestion(q)}
+                            className="gap-1.5"
+                          >
+                            <Copy className="h-3.5 w-3.5" /> Copy
+                          </Button>
+                        </div>
                       </div>
                     </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+
+            {plan === "free" && (() => {
+              const locked = filtered.filter((q) => q.position > questionLimit);
+              if (locked.length === 0) return null;
+              const preview = locked.slice(0, 6);
+              return (
+                <div className="relative mt-6">
+                  <div className="border border-border bg-background pointer-events-none select-none" aria-hidden="true">
+                    {preview.map((q) => (
+                      <div key={q.id} className="px-4 md:px-6 py-5 border-b border-border last:border-b-0">
+                        <div className="flex items-start gap-4 md:gap-5">
+                          <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
+                            {String(q.position).padStart(3, "0")}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium mb-2">
+                              {prettyCategory(q.category)}
+                            </div>
+                            <div className="text-[15px] md:text-base font-medium leading-snug text-foreground/80 blur-sm">
+                              {q.question}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+                  <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/85 to-background flex items-end justify-center p-6">
+                    <div className="text-center max-w-md w-full bg-background border border-accent/30 p-6 md:p-8 shadow-sm">
+                      <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-accent mb-2">
+                        <Lock className="h-3.5 w-3.5" /> Locked on Free
+                      </div>
+                      <h3 className="font-display text-xl md:text-2xl font-semibold leading-tight">
+                        {locked.length} more {locked.length === 1 ? "question is" : "questions are"} waiting
+                      </h3>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        You're seeing the first {questionLimit} of your tailored pack. Upgrade to Pro to unlock the full set, plus PDF and DOCX export.
+                      </p>
+                      <Link to="/upgrade" className="inline-block mt-5 w-full">
+                        <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
+                          <Sparkles className="h-4 w-4" /> Upgrade to unlock all {questions.length} questions
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </>
         )}
       </main>
     </div>

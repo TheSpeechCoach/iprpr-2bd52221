@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlan, FREE_SESSION_LIMIT } from "@/hooks/usePlan";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, ArrowRight } from "lucide-react";
+import { Plus, FileText, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Session {
@@ -18,6 +19,7 @@ interface Session {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { plan, sessionsUsed, canCreateSession, loading: planLoading } = usePlan();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,12 +45,38 @@ const Dashboard = () => {
             <h1 className="font-display text-4xl font-semibold">Interview sessions</h1>
             <p className="mt-2 text-sm text-muted-foreground">All your generated packs in one place. Pick up where you left off, or start a new one.</p>
           </div>
-          <Link to="/prep/new">
-            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
-              <Plus className="h-4 w-4 mr-2" /> New session
-            </Button>
-          </Link>
+          {canCreateSession ? (
+            <Link to="/prep/new">
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                <Plus className="h-4 w-4 mr-2" /> New session
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/upgrade">
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                <Sparkles className="h-4 w-4 mr-2" /> Upgrade for more sessions
+              </Button>
+            </Link>
+          )}
         </div>
+
+        {/* Plan banner */}
+        {!planLoading && plan === "free" && (
+          <div className="mt-8 border border-border bg-secondary/40 p-5 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+            <div className="flex-1">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Free plan</div>
+              <div className="text-sm">
+                <span className="font-medium">{Math.min(sessionsUsed, FREE_SESSION_LIMIT)} of {FREE_SESSION_LIMIT}</span>
+                <span className="text-muted-foreground"> session used · 25 questions visible per pack</span>
+              </div>
+            </div>
+            <Link to="/upgrade">
+              <Button variant="outline" className="gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-accent" /> Upgrade to Pro
+              </Button>
+            </Link>
+          </div>
+        )}
 
         <div className="mt-10">
           {loading ? (

@@ -460,8 +460,8 @@ const Results = () => {
             <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight">
               {session?.title}
             </h1>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-              <span>{questions.length} questions</span>
+            <div className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span>{questions.length} {questions.length === 1 ? "question" : "questions"}</span>
               <span>·</span>
               <span>{starredCount} starred</span>
               <span>·</span>

@@ -526,7 +526,7 @@ const Results = () => {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search questions"
+              placeholder="Search questions or themes…"
               className="pl-10"
             />
           </div>

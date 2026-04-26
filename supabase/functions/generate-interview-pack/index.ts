@@ -1,185 +1,316 @@
-// Generate interview pack via Lovable AI Gateway
+// Generate a tailored interview pack via Lovable AI Gateway.
+// Auth required. Strict JSON via tool-calling. Persists pack + questions.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const MODEL = "google/gemini-2.5-pro";
+const PROMPT_VERSION = "v2-2026-04-26";
+
+const QUESTION_SCHEMA = {
+  type: "object",
+  properties: {
+    candidate_summary: { type: "string", description: "2-3 sentence British-English summary of the candidate." },
+    role_summary: { type: "string", description: "2-3 sentence British-English summary of the role and what the interviewer cares about." },
+    top_themes: {
+      type: "array",
+      items: { type: "string" },
+      description: "5-8 themes the interview will probe (specific, not generic).",
+    },
+    red_flag_areas: {
+      type: "array",
+      items: { type: "string" },
+      description: "Concrete CV/role gaps or risks the interviewer will likely test.",
+    },
+    questions: {
+      type: "array",
+      description: "Tailored interview questions in interview order.",
+      items: {
+        type: "object",
+        properties: {
+          position: { type: "integer" },
+          category: {
+            type: "string",
+            enum: [
+              "Opening", "CV/Background", "Role-Fit", "Behavioural", "Strengths",
+              "Weaknesses", "Leadership", "Stakeholder", "Problem-Solving",
+              "Company Motivation", "Commercial Awareness", "Technical", "Pressure", "Closing",
+            ],
+          },
+          difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
+          question: { type: "string" },
+          why_this_question_matters: { type: "string" },
+          what_good_answers_should_cover: { type: "string" },
+          optional_follow_up: { type: "string" },
+          answer_framework: { type: "string" },
+        },
+        required: [
+          "position", "category", "difficulty", "question",
+          "why_this_question_matters", "what_good_answers_should_cover",
+        ],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["candidate_summary", "role_summary", "top_themes", "red_flag_areas", "questions"],
+  additionalProperties: false,
+} as const;
+
+function clip(s: string | null | undefined, n: number): string {
+  if (!s) return "";
+  return s.length > n ? s.slice(0, n) : s;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+  const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+
+  let userId: string | null = null;
+  let sessionId: string | null = null;
+
   try {
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
-
-    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user } } = await userClient.auth.getUser();
-    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user?.id) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    userId = userData.user.id;
 
-    const { session_id } = await req.json();
-    if (!session_id) throw new Error("Missing session_id");
+    const body = await req.json().catch(() => ({}));
+    sessionId = body.session_id ?? null;
+    if (!sessionId) throw new Error("session_id is required");
 
-    const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-
-    // Load session
+    // Load the session row (server-trusted source of truth) and authorise it.
     const { data: session, error: sErr } = await admin
       .from("prep_sessions")
       .select("*")
-      .eq("id", session_id)
-      .eq("user_id", user.id)
-      .single();
-    if (sErr || !session) throw new Error("Session not found");
+      .eq("id", sessionId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (sErr) throw sErr;
+    if (!session) {
+      return new Response(JSON.stringify({ error: "Session not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // Kick off generation in the background so the client can return quickly
+    const numQuestions = Math.max(20, Math.min(120, session.num_questions ?? 100));
+
+    await admin.from("prep_sessions").update({ status: "generating" }).eq("id", sessionId);
+
     const generate = async () => {
       try {
-        const systemPrompt = `You are a senior interview coach for The Speech Coach, helping candidates prepare for real-world job interviews. Use British English. Be specific, realistic and avoid hype. Generate questions a smart interviewer would actually ask.
+        const systemPrompt = `You are a senior UK-based interview coach for The Speech Coach. You write in British English.
+Your job: generate sharp, realistic, interview-grade questions tailored to a specific candidate and role.
 
-Return ONLY valid JSON (no markdown) with this exact shape:
-{
-  "candidate_summary": "string, 2-3 sentences",
-  "role_summary": "string, 2-3 sentences",
-  "top_themes": ["string", ...],
-  "red_flags": ["string", ...],
-  "questions": [
-    {
-      "position": 1,
-      "category": "Opening",
-      "question": "string",
-      "why_matters": "string",
-      "what_good_covers": "string",
-      "follow_up": "string or empty",
-      "answer_framework": "string or empty",
-      "difficulty": "easy|medium|hard"
-    }
-  ]
-}
+Hard rules:
+- No generic filler. Every question must reference something specific from the CV, the role, or the company context.
+- Questions must read as if a real, experienced interviewer wrote them.
+- Calibrate difficulty mix to the seniority and chosen difficulty level.
+- Distribute categories across the interview arc (Opening → Closing).
+- Use British English spelling and idiom.
+- "why_this_question_matters" explains the interviewer's intent in one tight sentence.
+- "what_good_answers_should_cover" lists the substance a strong answer should hit (2-4 concrete points).
+- "optional_follow_up" is a sharp probing follow-up the interviewer might use; empty string if none.
+- Position numbers are 1-based and sequential.`;
 
-Use these categories (distribute roughly): Opening, CV/Background, Role-Fit, Behavioural, Strengths, Weaknesses, Leadership, Stakeholder, Problem-Solving, Company Motivation, Commercial Awareness, Pressure, Closing.`;
+        const userPrompt = `Generate exactly ${numQuestions} interview questions.
 
-        const userPrompt = `Generate ${session.num_questions} tailored interview questions.
-
-CANDIDATE:
+CANDIDATE PROFILE
 - Name: ${session.full_name || "—"}
 - Current role: ${session.candidate_current_role || "—"}
 - Years experience: ${session.years_experience || "—"}
-- Target role: ${session.target_role}
-- Industry: ${session.target_industry || "—"}
-- Seniority: ${session.seniority_level}
-- Country: ${session.country}
+- Target role: ${session.target_role || "—"}
+- Target industry: ${session.target_industry || "—"}
+- Seniority: ${session.seniority_level || "—"}
+- Country: ${session.country || "—"}
 - Notes: ${session.candidate_notes || "—"}
-- CV: ${(session.cv_text || "").slice(0, 6000) || "Not provided"}
-- LinkedIn summary: ${(session.linkedin_text || "").slice(0, 2000) || "Not provided"}
 
-ROLE:
-- Job title: ${session.job_title || session.target_role}
+CV TEXT
+${clip(session.cv_text, 8000) || "Not provided"}
+
+LINKEDIN SUMMARY (reference)
+${clip(session.linkedin_text, 2000) || "Not provided"}
+
+ROLE
+- Job title: ${session.job_title || session.target_role || "—"}
 - Company: ${session.company_name || "—"}
-- Description: ${(session.job_description || "").slice(0, 6000) || "Not provided"}
+- Description / spec:
+${clip(session.job_description, 8000) || "Not provided"}
 
-PARAMETERS:
+INTERVIEW PARAMETERS
 - Interview type: ${session.interview_type}
 - Difficulty: ${session.difficulty}
 - Tone: ${session.output_tone}
 - Style: ${session.interview_style}
-- Focus mix: ${JSON.stringify(session.focus_mix)}
+- Focus mix (rough %): ${JSON.stringify(session.focus_mix)}
 - Include follow-ups: ${session.include_followups}
-- Include answer angles: ${session.include_answer_angles}
+- Include answer framework: ${session.include_answer_angles}
 
-Be specific to this candidate's CV and the job description. No generic questions.`;
+Return the result by calling the produce_interview_pack tool. Do not write any prose outside the tool call.`;
 
-        const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const aiResp = await fetch(AI_URL, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${LOVABLE_API_KEY}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-pro",
+            model: MODEL,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt },
             ],
-            response_format: { type: "json_object" },
+            tools: [{
+              type: "function",
+              function: {
+                name: "produce_interview_pack",
+                description: "Return the structured interview pack.",
+                parameters: QUESTION_SCHEMA,
+              },
+            }],
+            tool_choice: { type: "function", function: { name: "produce_interview_pack" } },
           }),
         });
 
         if (!aiResp.ok) {
           const t = await aiResp.text();
-          console.error("AI error", aiResp.status, t);
-          await admin.from("prep_sessions").update({ status: "failed" }).eq("id", session_id);
+          let label = "AI gateway error";
+          if (aiResp.status === 429) label = "Rate limit hit. Try again shortly.";
+          if (aiResp.status === 402) label = "Lovable AI credits exhausted.";
+          await admin.from("prep_sessions").update({ status: "failed" }).eq("id", sessionId);
+          await admin.from("admin_logs").insert({
+            event: "pack_generation_failed",
+            metadata: { user_id: userId, session_id: sessionId, status: aiResp.status, error: t.slice(0, 500), label },
+          });
           return;
         }
 
         const aiJson = await aiResp.json();
-        const content = aiJson.choices?.[0]?.message?.content;
+        const toolCall = aiJson?.choices?.[0]?.message?.tool_calls?.[0];
+        const argsRaw = toolCall?.function?.arguments;
+        if (!argsRaw) throw new Error("AI returned no tool call");
+
         let parsed: any;
         try {
-          parsed = JSON.parse(content);
-        } catch (_) {
-          // Attempt to recover JSON between braces
-          const match = content?.match(/\{[\s\S]*\}/);
-          parsed = match ? JSON.parse(match[0]) : null;
-        }
-        if (!parsed?.questions?.length) {
-          console.error("No questions in AI output");
-          await admin.from("prep_sessions").update({ status: "failed" }).eq("id", session_id);
-          return;
+          parsed = typeof argsRaw === "string" ? JSON.parse(argsRaw) : argsRaw;
+        } catch {
+          throw new Error("AI tool arguments were not valid JSON");
         }
 
+        const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
+        if (!questions.length) throw new Error("AI returned no questions");
+
+        // Persist pack
+        const { data: pack, error: pErr } = await admin
+          .from("generated_interview_packs")
+          .insert({
+            user_id: userId,
+            session_id: sessionId,
+            status: "ready",
+            candidate_summary: parsed.candidate_summary ?? null,
+            role_summary: parsed.role_summary ?? null,
+            top_themes: parsed.top_themes ?? [],
+            red_flags: parsed.red_flag_areas ?? [],
+            total_questions: questions.length,
+            model: MODEL,
+            prompt_version: PROMPT_VERSION,
+          })
+          .select()
+          .single();
+        if (pErr) throw pErr;
+
+        // Mirror summary onto the session for the Results page
         await admin.from("prep_sessions").update({
           status: "ready",
           candidate_summary: parsed.candidate_summary ?? null,
           role_summary: parsed.role_summary ?? null,
-          top_themes: parsed.top_themes ?? null,
-          red_flags: parsed.red_flags ?? null,
-        }).eq("id", session_id);
+          top_themes: parsed.top_themes ?? [],
+          red_flags: parsed.red_flag_areas ?? [],
+        }).eq("id", sessionId);
 
-        const rows = parsed.questions.map((q: any, i: number) => ({
-          session_id,
-          user_id: user.id,
-          position: q.position ?? i + 1,
+        // Insert questions in chunks
+        const rows = questions.map((q: any, i: number) => ({
+          session_id: sessionId,
+          user_id: userId,
+          position: Number.isInteger(q.position) ? q.position : i + 1,
           category: q.category ?? "General",
           question: q.question ?? "",
-          why_matters: q.why_matters ?? null,
-          what_good_covers: q.what_good_covers ?? null,
-          follow_up: q.follow_up || null,
+          why_matters: q.why_this_question_matters ?? null,
+          what_good_covers: q.what_good_answers_should_cover ?? null,
+          follow_up: q.optional_follow_up || null,
           answer_framework: q.answer_framework || null,
           difficulty: q.difficulty ?? null,
         }));
 
-        // Insert in chunks of 50
         for (let i = 0; i < rows.length; i += 50) {
           const chunk = rows.slice(i, i + 50);
           const { error } = await admin.from("interview_questions").insert(chunk);
-          if (error) console.error("Insert error", error);
+          if (error) console.error("question insert error", error);
         }
 
-        await admin.from("admin_logs").insert({ event: "pack_generated", metadata: { session_id, count: rows.length } });
-      } catch (e) {
-        console.error("Generation failed", e);
-        await admin.from("prep_sessions").update({ status: "failed" }).eq("id", session_id);
+        await admin.from("admin_logs").insert({
+          event: "pack_generated",
+          metadata: { user_id: userId, session_id: sessionId, pack_id: pack.id, count: rows.length, model: MODEL },
+        });
+      } catch (e: any) {
+        const message = e?.message ?? String(e);
+        console.error("generation failed", message);
+        await admin.from("prep_sessions").update({ status: "failed" }).eq("id", sessionId);
+        await admin.from("admin_logs").insert({
+          event: "pack_generation_failed",
+          metadata: { user_id: userId, session_id: sessionId, error: message },
+        });
       }
     };
 
+    // Run in background so the client returns quickly
     // @ts-ignore EdgeRuntime
     EdgeRuntime.waitUntil(generate());
 
-    return new Response(JSON.stringify({ ok: true, status: "generating" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ ok: true, status: "generating", session_id: sessionId }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e: any) {
-    console.error(e);
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const message = e?.message ?? String(e);
+    console.error("generate-interview-pack error", message);
+    try {
+      await admin.from("admin_logs").insert({
+        event: "pack_generation_failed",
+        metadata: { user_id: userId, session_id: sessionId, error: message },
+      });
+    } catch (_) {}
+    return new Response(
+      JSON.stringify({ error: message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 });

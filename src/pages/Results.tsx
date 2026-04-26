@@ -555,10 +555,10 @@ const Results = () => {
             footnote={session?.company_name ?? undefined}
           />
           <SummaryCard
-            label="Pack"
-            heading={`${questions.length} questions`}
+            label="Pack progress"
+            heading={`${practisedCount} / ${questions.length}`}
             body={null}
-            footnote={`${starredCount} starred · ${practisedCount} practised`}
+            footnote={`${questions.length ? Math.round((practisedCount / questions.length) * 100) : 0}% practised · ${starredCount} starred`}
           />
         </div>
 

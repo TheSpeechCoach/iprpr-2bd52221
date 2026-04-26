@@ -523,33 +523,106 @@ const Results = () => {
           </div>
         </div>
 
-        {/* Summary cards */}
-        <div className="grid md:grid-cols-3 gap-px bg-border mb-10 border border-border">
+        {/* At-a-glance strip */}
+        <div className="grid md:grid-cols-3 gap-px bg-border mb-12 border border-border">
           <SummaryCard
             label="Candidate"
             heading={session?.full_name || "Profile"}
-            body={session?.candidate_summary}
+            body={null}
+            footnote={session?.candidate_current_role ?? undefined}
           />
           <SummaryCard
-            label="Role"
-            heading={
-              [session?.target_role, session?.company_name]
-                .filter(Boolean)
-                .join(" · ") || "Target role"
-            }
-            body={session?.role_summary}
+            label="Target role"
+            heading={session?.target_role || "Role"}
+            body={null}
+            footnote={session?.company_name ?? undefined}
           />
           <SummaryCard
-            label="Top themes"
-            heading={`${
-              Array.isArray(session?.top_themes) ? session!.top_themes.length : 0
-            } themes`}
-            chips={
-              Array.isArray(session?.top_themes)
-                ? (session!.top_themes as string[])
-                : []
-            }
+            label="Pack"
+            heading={`${questions.length} questions`}
+            body={null}
+            footnote={`${starredCount} starred · ${practisedCount} practised`}
           />
+        </div>
+
+        {/* Candidate Insight Summary */}
+        {session?.candidate_summary && (
+          <EditorialSection
+            eyebrow="Candidate insight summary"
+            icon={<Sparkles className="h-4 w-4" strokeWidth={1.5} />}
+            title="How an interviewer will read your profile"
+          >
+            <p className="text-[15px] leading-relaxed text-foreground/90">
+              {session.candidate_summary}
+            </p>
+          </EditorialSection>
+        )}
+
+        {/* What this interview will likely test */}
+        {(session?.role_summary || (Array.isArray(session?.top_themes) && session!.top_themes.length > 0)) && (
+          <EditorialSection
+            eyebrow="What this interview will likely test"
+            icon={<Target className="h-4 w-4" strokeWidth={1.5} />}
+            title="The lens the panel will bring into the room"
+          >
+            {session?.role_summary && (
+              <p className="text-[15px] leading-relaxed text-foreground/90 mb-6">
+                {session.role_summary}
+              </p>
+            )}
+            {Array.isArray(session?.top_themes) && session!.top_themes.length > 0 && (
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                  Themes they will probe
+                </div>
+                <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-2.5">
+                  {(session!.top_themes as string[]).map((t, i) => (
+                    <li key={i} className="flex gap-3 text-sm leading-relaxed">
+                      <span className="font-display text-xs text-muted-foreground tabular-nums mt-0.5">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </EditorialSection>
+        )}
+
+        {/* Top Risks / Weak Spots */}
+        {Array.isArray(session?.red_flags) && session!.red_flags.length > 0 && (
+          <EditorialSection
+            eyebrow="Top 5 risks & weak spots"
+            icon={<AlertTriangle className="h-4 w-4 text-accent" strokeWidth={1.5} />}
+            title="Where they will push hardest"
+            accent
+          >
+            <ol className="space-y-4">
+              {(session!.red_flags as string[]).slice(0, 5).map((r, i) => (
+                <li key={i} className="flex gap-4 pb-4 border-b border-border last:border-b-0 last:pb-0">
+                  <span className="font-display text-2xl font-semibold text-accent tabular-nums leading-none">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="text-[15px] leading-relaxed text-foreground/90 pt-1">
+                    {r}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </EditorialSection>
+        )}
+
+        {/* Section divider into the question bank */}
+        <div className="flex items-end justify-between mt-14 mb-6 pb-3 border-b border-border">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
+              The question bank
+            </div>
+            <h2 className="font-display text-2xl font-semibold">
+              {questions.length} tailored questions
+            </h2>
+          </div>
         </div>
 
         {/* Filters */}

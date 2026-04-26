@@ -54,20 +54,20 @@ const PrepWizard = () => {
   const updateMix = (k: string, v: number) => setForm((f) => ({ ...f, focus_mix: { ...f.focus_mix, [k]: v } }));
 
   const handleFetchSpec = async () => {
-    if (!form.job_spec_url) {
-      toast({ title: "Add a URL", description: "Paste a job-spec URL first.", variant: "destructive" });
+    if (!form.job_spec_url.trim()) {
+      toast({ title: "Add a link first", description: "Paste the URL of a public job posting.", variant: "destructive" });
       return;
     }
     setFetchingSpec(true);
     try {
       const { data, error } = await supabase.functions.invoke("fetch-job-spec", {
-        body: { url: form.job_spec_url },
+        body: { url: form.job_spec_url.trim() },
       });
       if (error) throw error;
       if (!data?.ok) {
         toast({
-          title: "Couldn't extract automatically",
-          description: data?.error ?? "Please paste the description manually.",
+          title: "Couldn't read that page",
+          description: data?.error ?? "Some sites block automated readers. Paste the description below instead.",
           variant: "destructive",
         });
         return;
@@ -78,11 +78,11 @@ const PrepWizard = () => {
         company_name: f.company_name || data.company_name || "",
         job_description: data.raw_text || f.job_description,
       }));
-      toast({ title: "Job spec extracted", description: "Review and edit before continuing." });
+      toast({ title: "Job spec loaded", description: "Have a quick read and edit anything that's off." });
     } catch (err: any) {
       toast({
-        title: "Fetch failed",
-        description: err.message ?? "Paste the description manually.",
+        title: "Couldn't fetch the page",
+        description: err?.message ?? "Paste the description below instead.",
         variant: "destructive",
       });
     } finally {

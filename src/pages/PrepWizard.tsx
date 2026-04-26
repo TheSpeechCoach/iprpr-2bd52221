@@ -154,19 +154,18 @@ const PrepWizard = () => {
       const { data: genData, error: fnErr } = await supabase.functions.invoke("generate-interview-pack", {
         body: { session_id: session.id },
       });
-      if (fnErr) throw new Error(fnErr.message || "Generation could not be started.");
+      if (fnErr) throw new Error(fnErr.message || "We couldn't start the generator. Please try again.");
       if (genData?.error) throw new Error(genData.error);
 
-      toast({ title: "Generating your pack", description: "Tailored questions are being prepared." });
+      toast({ title: "We're on it", description: "Your pack is being written. This usually takes 30–60 seconds." });
       nav(`/prep/${session.id}/results`);
     } catch (err: any) {
-      // Mark session failed so the Results page reflects it accurately
       if (createdSessionId) {
         await supabase.from("prep_sessions").update({ status: "failed" }).eq("id", createdSessionId);
       }
       toast({
-        title: "Could not generate",
-        description: err?.message ?? "Something went wrong. Please try again.",
+        title: "We couldn't generate your pack",
+        description: err?.message ?? "Something went wrong. Please try again in a moment.",
         variant: "destructive",
       });
       setSubmitting(false);

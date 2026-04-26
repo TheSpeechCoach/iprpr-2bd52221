@@ -69,11 +69,31 @@ const QUESTION_SCHEMA = {
             required: ["structure", "length", "avoid"],
             additionalProperties: false,
           },
+          example_answers: {
+            type: "object",
+            description: "Three tiers of model answers written as if spoken aloud in the interview room. UK English. Natural, controlled, no written prose.",
+            properties: {
+              foundation: {
+                type: "string",
+                description: "Foundation tier. Clear, simple, direct. Sounds like a calm candidate giving a solid baseline answer. Spoken, not written. 40–80 words.",
+              },
+              strong: {
+                type: "string",
+                description: "Strong tier. Structured, confident, commercially aware. Tight delivery, clear ownership ('I'), one concrete example or number. Spoken. 60–110 words.",
+              },
+              standout: {
+                type: "string",
+                description: "Standout tier. Concise, high-impact, leadership-level, differentiated. A sharp opening line, a crisp insight or principle, an outcome that signals seniority. Spoken. 60–110 words.",
+              },
+            },
+            required: ["foundation", "strong", "standout"],
+            additionalProperties: false,
+          },
         },
         required: [
           "position", "category", "difficulty", "question",
           "why_this_question_matters", "what_good_answers_should_cover",
-          "answer_direction",
+          "answer_direction", "example_answers",
         ],
         additionalProperties: false,
       },

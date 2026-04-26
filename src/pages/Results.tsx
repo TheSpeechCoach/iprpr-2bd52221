@@ -149,8 +149,40 @@ const Results = () => {
   const [showStarred, setShowStarred] = useState(false);
   const [loading, setLoading] = useState(true);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
+  const [savingAnswerId, setSavingAnswerId] = useState<string | null>(null);
+  const [savedAnswerId, setSavedAnswerId] = useState<string | null>(null);
 
   const [retrying, setRetrying] = useState(false);
+
+  // Debounced autosave for user answers.
+  useEffect(() => {
+    const entries = Object.entries(answerDrafts);
+    if (entries.length === 0) return;
+    const timers = entries.map(([qid, val]) => {
+      const original = questions.find((x) => x.id === qid)?.user_answer ?? "";
+      if (val === original) return null;
+      return setTimeout(async () => {
+        setSavingAnswerId(qid);
+        const { error } = await supabase
+          .from("interview_questions")
+          .update({ user_answer: val })
+          .eq("id", qid);
+        setSavingAnswerId(null);
+        if (!error) {
+          setQuestions((prev) =>
+            prev.map((x) => (x.id === qid ? { ...x, user_answer: val } : x))
+          );
+          setSavedAnswerId(qid);
+          setTimeout(() => setSavedAnswerId((s) => (s === qid ? null : s)), 1800);
+        }
+      }, 800);
+    });
+    return () => {
+      timers.forEach((t) => t && clearTimeout(t));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answerDrafts]);
 
   const loadAll = async () => {
     if (!id) return;

@@ -646,7 +646,7 @@ const Results = () => {
                 <SelectItem value="all">All categories</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c} value={c}>
-                    {c}
+                    {prettyCategory(c)}
                   </SelectItem>
                 ))}
               </SelectContent>

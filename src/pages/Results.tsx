@@ -50,7 +50,16 @@ import {
   HelpCircle,
   ListChecks,
   CornerDownRight,
+  Mic,
+  Quote,
+  ChevronDown,
+  Pencil,
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 // Friendlier, plain-English category labels for the interviewer's lens.
 const CATEGORY_LABELS: Record<string, string> = {

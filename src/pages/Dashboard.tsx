@@ -66,7 +66,7 @@ const Dashboard = () => {
               {sessions.map((s) => (
                 <Link
                   key={s.id}
-                  to={s.status === "ready" ? `/prep/${s.id}/results` : `/prep/${s.id}`}
+                  to={`/prep/${s.id}/results`}
                   className="flex items-center justify-between p-5 hover:bg-secondary/40 transition-colors"
                 >
                   <div>

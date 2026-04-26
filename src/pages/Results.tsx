@@ -83,47 +83,71 @@ const Results = () => {
   const [loading, setLoading] = useState(true);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
 
+  const [retrying, setRetrying] = useState(false);
+
+  const loadAll = async () => {
+    if (!id) return;
+    const { data: s } = await supabase
+      .from("prep_sessions")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    setSession(s as Session);
+    const { data: qs } = await supabase
+      .from("interview_questions")
+      .select("*")
+      .eq("session_id", id)
+      .order("position");
+    setQuestions((qs ?? []) as Question[]);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    const load = async () => {
-      const { data: s } = await supabase
-        .from("prep_sessions")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-      if (cancelled) return;
-      setSession(s as Session);
-      const { data: qs } = await supabase
-        .from("interview_questions")
-        .select("*")
-        .eq("session_id", id)
-        .order("position");
-      if (cancelled) return;
-      setQuestions((qs ?? []) as Question[]);
-      setLoading(false);
-    };
-    load();
-    const interval = setInterval(async () => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const tick = async () => {
       const { data: s } = await supabase
         .from("prep_sessions")
         .select("status")
         .eq("id", id)
         .maybeSingle();
+      if (cancelled) return;
       if (s?.status === "ready") {
-        load();
-        clearInterval(interval);
+        await loadAll();
+        if (interval) clearInterval(interval);
+      } else if (s?.status === "failed") {
+        await loadAll();
+        if (interval) clearInterval(interval);
       }
-      if (s?.status === "failed") {
-        clearInterval(interval);
-        toast({ title: "Generation failed", variant: "destructive" });
-      }
-    }, 3000);
+    };
+    loadAll().then(() => {
+      interval = setInterval(tick, 3000);
+    });
     return () => {
       cancelled = true;
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const retryGeneration = async () => {
+    if (!id) return;
+    setRetrying(true);
+    try {
+      await supabase.from("prep_sessions").update({ status: "generating" }).eq("id", id);
+      const { error } = await supabase.functions.invoke("generate-interview-pack", {
+        body: { session_id: id },
+      });
+      if (error) throw error;
+      toast({ title: "Retrying generation", description: "This usually takes 30–60 seconds." });
+      await loadAll();
+    } catch (e: any) {
+      toast({ title: "Retry failed", description: e?.message ?? "Please try again.", variant: "destructive" });
+    } finally {
+      setRetrying(false);
+    }
+  };
 
   const categories = useMemo(
     () => Array.from(new Set(questions.map((q) => q.category))).sort(),
@@ -373,13 +397,18 @@ const Results = () => {
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
-          <h1 className="font-display text-3xl font-semibold">Generation failed</h1>
+          <h1 className="font-display text-3xl font-semibold">Generation didn't complete</h1>
           <p className="mt-2 text-muted-foreground max-w-md">
-            Something went wrong. Please try again or check your inputs.
+            We couldn't finish generating your pack. This is usually a temporary issue with the AI service. You can retry now or come back later.
           </p>
-          <Link to="/dashboard" className="mt-6">
-            <Button variant="outline">Back to dashboard</Button>
-          </Link>
+          <div className="mt-8 flex gap-3">
+            <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Retrying…</> : "Retry generation"}
+            </Button>
+            <Link to="/dashboard">
+              <Button variant="outline">Back to dashboard</Button>
+            </Link>
+          </div>
         </main>
       </div>
     );

@@ -290,6 +290,7 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
           what_good_covers: q.what_good_answers_should_cover ?? null,
           follow_up: q.optional_follow_up || null,
           answer_framework: q.answer_framework || null,
+          answer_direction: q.answer_direction ?? null,
           difficulty: q.difficulty ?? null,
         }));
 

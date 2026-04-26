@@ -432,6 +432,10 @@ const Results = () => {
               <span>{practisedCount} practised</span>
             </div>
           </div>
+          <div className="flex gap-2">
+          <Link to={`/prep/${id}/practice`}>
+            <Button className="gap-2">Practice mode</Button>
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -447,6 +451,7 @@ const Results = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
 
         {/* Summary cards */}

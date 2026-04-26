@@ -397,13 +397,18 @@ const Results = () => {
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
-          <h1 className="font-display text-3xl font-semibold">Generation failed</h1>
+          <h1 className="font-display text-3xl font-semibold">Generation didn't complete</h1>
           <p className="mt-2 text-muted-foreground max-w-md">
-            Something went wrong. Please try again or check your inputs.
+            We couldn't finish generating your pack. This is usually a temporary issue with the AI service. You can retry now or come back later.
           </p>
-          <Link to="/dashboard" className="mt-6">
-            <Button variant="outline">Back to dashboard</Button>
-          </Link>
+          <div className="mt-8 flex gap-3">
+            <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Retrying…</> : "Retry generation"}
+            </Button>
+            <Link to="/dashboard">
+              <Button variant="outline">Back to dashboard</Button>
+            </Link>
+          </div>
         </main>
       </div>
     );

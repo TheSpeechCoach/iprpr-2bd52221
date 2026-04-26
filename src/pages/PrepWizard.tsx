@@ -187,6 +187,34 @@ const PrepWizard = () => {
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
       <main className="container-tight flex-1 py-12 max-w-3xl">
+        {plan === "free" && (
+          <div className={`mb-8 border ${canCreateSession ? "border-border bg-secondary/40" : "border-accent/40 bg-accent/5"} p-4 flex items-start md:items-center gap-3 flex-col md:flex-row`}>
+            {canCreateSession ? (
+              <Sparkles className="h-4 w-4 text-accent shrink-0" />
+            ) : (
+              <Lock className="h-4 w-4 text-accent shrink-0" />
+            )}
+            <div className="flex-1 text-sm">
+              {canCreateSession ? (
+                <>
+                  <span className="font-medium">Free plan</span>
+                  <span className="text-muted-foreground"> · This is your one free session. You'll see the first {FREE_QUESTION_LIMIT} of your generated questions.</span>
+                </>
+              ) : (
+                <>
+                  <span className="font-medium">You've used your free session.</span>
+                  <span className="text-muted-foreground"> Upgrade to Pro to generate unlimited packs and unlock the full {">"}100 questions.</span>
+                </>
+              )}
+            </div>
+            <Link to="/upgrade">
+              <Button size="sm" variant={canCreateSession ? "outline" : "default"} className={!canCreateSession ? "bg-accent hover:bg-accent/90 text-accent-foreground" : ""}>
+                Upgrade
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* Progress */}
         <div className="flex gap-2 mb-10">
           {STEPS.map((label, i) => (

@@ -710,29 +710,29 @@ const Results = () => {
                 value={q.id}
                 className="border-b border-border last:border-b-0"
               >
-                <AccordionTrigger className="hover:no-underline px-4 md:px-5 py-4 text-left">
-                  <div className="flex items-start gap-3 md:gap-4 w-full">
-                    <span className="font-display text-xs text-muted-foreground mt-0.5 w-8 shrink-0">
+                <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-5 text-left group">
+                  <div className="flex items-start gap-4 md:gap-5 w-full">
+                    <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
                       {String(q.position).padStart(3, "0")}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium pr-2">
-                        {q.question}
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        <Badge variant="secondary" className="text-[10px]">
-                          {q.category}
-                        </Badge>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
+                        <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">
+                          {prettyCategory(q.category)}
+                        </span>
                         {q.difficulty && (
-                          <Badge variant="outline" className="text-[10px]">
+                          <span className={`text-[10px] uppercase tracking-[0.15em] border px-1.5 py-0.5 rounded-sm ${DIFFICULTY_TONE[q.difficulty] ?? "border-border text-muted-foreground"}`}>
                             {q.difficulty}
-                          </Badge>
+                          </span>
                         )}
                         {q.practised && (
-                          <Badge className="text-[10px] gap-1">
+                          <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" /> Practised
-                          </Badge>
+                          </span>
                         )}
+                      </div>
+                      <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
+                        {q.question}
                       </div>
                     </div>
                     <button
@@ -753,22 +753,39 @@ const Results = () => {
                     </button>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 md:px-5 pb-5">
-                  <div className="md:ml-12 space-y-4 text-sm">
+                <AccordionContent className="px-4 md:px-6 pb-6">
+                  <div className="md:ml-14 space-y-3 text-sm">
                     {q.why_matters && (
-                      <Block label="Why this matters" body={q.why_matters} />
+                      <Block
+                        label="Why this matters"
+                        body={q.why_matters}
+                        icon={<HelpCircle className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                        tone="muted"
+                      />
                     )}
                     {q.what_good_covers && (
                       <Block
                         label="What good answers cover"
                         body={q.what_good_covers}
+                        icon={<ListChecks className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                        tone="strong"
                       />
                     )}
                     {q.answer_framework && (
-                      <Block label="Answer framework" body={q.answer_framework} />
+                      <Block
+                        label="Answer framework"
+                        body={q.answer_framework}
+                        icon={<Lightbulb className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                        tone="muted"
+                      />
                     )}
                     {q.follow_up && (
-                      <Block label="Likely follow-up" body={q.follow_up} />
+                      <Block
+                        label="Likely follow-up"
+                        body={q.follow_up}
+                        icon={<CornerDownRight className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                        tone="accent"
+                      />
                     )}
 
                     <div className="pt-2">

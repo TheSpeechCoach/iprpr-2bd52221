@@ -218,6 +218,7 @@ export type Database = {
       }
       interview_questions: {
         Row: {
+          answer_direction: Json | null
           answer_framework: string | null
           category: string
           created_at: string
@@ -235,6 +236,7 @@ export type Database = {
           why_matters: string | null
         }
         Insert: {
+          answer_direction?: Json | null
           answer_framework?: string | null
           category: string
           created_at?: string
@@ -252,6 +254,7 @@ export type Database = {
           why_matters?: string | null
         }
         Update: {
+          answer_direction?: Json | null
           answer_framework?: string | null
           category?: string
           created_at?: string

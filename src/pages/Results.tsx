@@ -791,152 +791,199 @@ const Results = () => {
           </div>
         ) : (
           <>
-            <Accordion type="multiple" className="border border-border">
-              {filtered
-                .filter((q) => q.position <= questionLimit)
-                .map((q) => (
-                <AccordionItem
-                  key={q.id}
-                  value={q.id}
-                  className="border-b border-border last:border-b-0"
-                >
-                  <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-5 text-left group">
-                    <div className="flex items-start gap-4 md:gap-5 w-full">
-                      <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
-                        {String(q.position).padStart(3, "0")}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
-                          <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">
-                            {prettyCategory(q.category)}
-                          </span>
-                          {q.difficulty && (
-                            <span className={`text-[10px] uppercase tracking-[0.15em] border px-1.5 py-0.5 rounded-sm ${DIFFICULTY_TONE[q.difficulty] ?? "border-border text-muted-foreground"}`}>
-                              {q.difficulty}
-                            </span>
-                          )}
-                          {q.practised && (
-                            <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> Practised
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
-                          {q.question}
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleStar(q);
-                        }}
-                        className="shrink-0 p-1"
-                        aria-label="Star"
+            {(() => {
+              const visible = filtered.filter((q) => q.position <= questionLimit);
+              const GROUP = 7;
+              const groups: Question[][] = [];
+              for (let i = 0; i < visible.length; i += GROUP) {
+                groups.push(visible.slice(i, i + GROUP));
+              }
+              return groups.map((group, gi) => (
+                <div key={gi}>
+                  {gi > 0 && <ReinforcementBanner index={gi} />}
+                  <Accordion type="multiple" className="border border-border">
+                    {group.map((q) => (
+                      <AccordionItem
+                        key={q.id}
+                        value={q.id}
+                        className="border-b border-border last:border-b-0"
                       >
-                        <Star
-                          className={`h-4 w-4 ${
-                            q.starred
-                              ? "fill-accent text-accent"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 md:px-6 pb-6">
-                    <div className="md:ml-14 space-y-3 text-sm">
-                      {q.why_matters && (
-                        <Block
-                          label="Why this matters"
-                          body={q.why_matters}
-                          icon={<HelpCircle className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                          tone="muted"
-                        />
-                      )}
-                      {q.what_good_covers && (
-                        <Block
-                          label="What good answers cover"
-                          body={q.what_good_covers}
-                          icon={<ListChecks className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                          tone="strong"
-                        />
-                      )}
-                      {q.answer_framework && (
-                        <Block
-                          label="Answer framework"
-                          body={q.answer_framework}
-                          icon={<Lightbulb className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                          tone="muted"
-                        />
-                      )}
-                      {q.answer_direction && (q.answer_direction.structure || q.answer_direction.length || (q.answer_direction.avoid && q.answer_direction.avoid.length > 0)) && (
-                        <AnswerDirectionBlock direction={q.answer_direction} />
-                      )}
-                      {q.follow_up && (
-                        <Block
-                          label="Likely follow-up"
-                          body={q.follow_up}
-                          icon={<CornerDownRight className="h-3.5 w-3.5" strokeWidth={1.5} />}
-                          tone="accent"
-                        />
-                      )}
+                        <AccordionTrigger className="hover:no-underline px-4 md:px-6 py-5 text-left group">
+                          <div className="flex items-start gap-4 md:gap-5 w-full">
+                            <span className="font-display text-sm text-muted-foreground tabular-nums mt-0.5 w-10 shrink-0">
+                              {String(q.position).padStart(3, "0")}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
+                                <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">
+                                  {prettyCategory(q.category)}
+                                </span>
+                                {q.difficulty && (
+                                  <span className={`text-[10px] uppercase tracking-[0.15em] border px-1.5 py-0.5 rounded-sm ${DIFFICULTY_TONE[q.difficulty] ?? "border-border text-muted-foreground"}`}>
+                                    {q.difficulty}
+                                  </span>
+                                )}
+                                {q.practised && (
+                                  <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
+                                    <CheckCircle2 className="h-3 w-3" /> Practised
+                                  </span>
+                                )}
+                                {q.user_answer && q.user_answer.trim().length > 0 && (
+                                  <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground inline-flex items-center gap-1">
+                                    <Pencil className="h-3 w-3" /> Your answer
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
+                                {q.question}
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleStar(q);
+                              }}
+                              className="shrink-0 p-1"
+                              aria-label="Star"
+                            >
+                              <Star
+                                className={`h-4 w-4 ${
+                                  q.starred
+                                    ? "fill-accent text-accent"
+                                    : "text-muted-foreground"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 md:px-6 pb-6">
+                          <div className="md:ml-14 space-y-3 text-sm">
+                            {q.why_matters && (
+                              <Block
+                                label="Why this matters"
+                                body={q.why_matters}
+                                icon={<HelpCircle className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                                tone="muted"
+                              />
+                            )}
+                            {q.what_good_covers && (
+                              <Block
+                                label="What good answers cover"
+                                body={q.what_good_covers}
+                                icon={<ListChecks className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                                tone="strong"
+                              />
+                            )}
+                            {q.answer_framework && (
+                              <Block
+                                label="Answer framework"
+                                body={q.answer_framework}
+                                icon={<Lightbulb className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                                tone="muted"
+                              />
+                            )}
+                            {q.answer_direction && (q.answer_direction.structure || q.answer_direction.length || (q.answer_direction.avoid && q.answer_direction.avoid.length > 0)) && (
+                              <AnswerDirectionBlock direction={q.answer_direction} />
+                            )}
 
-                      <div className="pt-2">
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-                          <StickyNote className="h-3 w-3" /> Your note
-                        </div>
-                        <Textarea
-                          value={noteDrafts[q.id] ?? q.note ?? ""}
-                          onChange={(e) =>
-                            setNoteDrafts((d) => ({
-                              ...d,
-                              [q.id]: e.target.value,
-                            }))
-                          }
-                          placeholder="Sketch your answer, key examples, or numbers to remember…"
-                          rows={3}
-                        />
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <Button size="sm" onClick={() => saveNote(q)}>
-                            Save note
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={q.practised ? "default" : "outline"}
-                            onClick={() => togglePractised(q)}
-                            className="gap-1.5"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            {q.practised ? "Practised" : "Mark as practised"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => toggleStar(q)}
-                            className="gap-1.5"
-                          >
-                            <Star
-                              className={`h-3.5 w-3.5 ${
-                                q.starred ? "fill-accent text-accent" : ""
-                              }`}
+                            {q.example_answers && (q.example_answers.foundation || q.example_answers.strong || q.example_answers.standout) && (
+                              <ExampleAnswersBlock examples={q.example_answers} />
+                            )}
+
+                            <UserAnswerBlock
+                              q={q}
+                              draft={answerDrafts[q.id] ?? q.user_answer ?? ""}
+                              onChange={(val) =>
+                                setAnswerDrafts((d) => ({ ...d, [q.id]: val }))
+                              }
+                              saving={savingAnswerId === q.id}
+                              saved={savedAnswerId === q.id}
+                              onPractise={() => {
+                                const payload = {
+                                  question_id: q.id,
+                                  session_id: id,
+                                  question: q.question,
+                                  user_answer: answerDrafts[q.id] ?? q.user_answer ?? "",
+                                };
+                                try {
+                                  sessionStorage.setItem(
+                                    "tsc.pendingPracticePayload",
+                                    JSON.stringify(payload)
+                                  );
+                                } catch {}
+                                nav("/practise-delivery", { state: payload });
+                              }}
                             />
-                            {q.starred ? "Starred" : "Star"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyQuestion(q)}
-                            className="gap-1.5"
-                          >
-                            <Copy className="h-3.5 w-3.5" /> Copy
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+
+                            {q.follow_up && (
+                              <Block
+                                label="Likely follow-up"
+                                body={q.follow_up}
+                                icon={<CornerDownRight className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                                tone="accent"
+                              />
+                            )}
+
+                            <div className="pt-2">
+                              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
+                                <StickyNote className="h-3 w-3" /> Your note
+                              </div>
+                              <Textarea
+                                value={noteDrafts[q.id] ?? q.note ?? ""}
+                                onChange={(e) =>
+                                  setNoteDrafts((d) => ({
+                                    ...d,
+                                    [q.id]: e.target.value,
+                                  }))
+                                }
+                                placeholder="Sketch your answer, key examples, or numbers to remember…"
+                                rows={3}
+                              />
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <Button size="sm" onClick={() => saveNote(q)}>
+                                  Save note
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={q.practised ? "default" : "outline"}
+                                  onClick={() => togglePractised(q)}
+                                  className="gap-1.5"
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  {q.practised ? "Practised" : "Mark as practised"}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => toggleStar(q)}
+                                  className="gap-1.5"
+                                >
+                                  <Star
+                                    className={`h-3.5 w-3.5 ${
+                                      q.starred ? "fill-accent text-accent" : ""
+                                    }`}
+                                  />
+                                  {q.starred ? "Starred" : "Star"}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => copyQuestion(q)}
+                                  className="gap-1.5"
+                                >
+                                  <Copy className="h-3.5 w-3.5" /> Copy
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                  {gi < groups.length - 1 && <div className="h-4" />}
+                </div>
+              ));
+            })()}
 
             {plan === "free" && (() => {
               const locked = filtered.filter((q) => q.position > questionLimit);

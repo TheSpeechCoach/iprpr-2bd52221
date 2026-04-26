@@ -532,11 +532,17 @@ const Results = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={exportPDF}>
+              <DropdownMenuItem
+                onClick={() => (plan === "pro" ? exportPDF() : nav("/upgrade"))}
+              >
                 <FileText className="h-4 w-4 mr-2" /> Download PDF
+                {plan === "free" && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={exportDOCX}>
+              <DropdownMenuItem
+                onClick={() => (plan === "pro" ? exportDOCX() : nav("/upgrade"))}
+              >
                 <FileType className="h-4 w-4 mr-2" /> Download DOCX
+                {plan === "free" && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

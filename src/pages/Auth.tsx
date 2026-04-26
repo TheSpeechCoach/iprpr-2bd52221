@@ -20,10 +20,14 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 6) {
+      toast({ title: "Password too short", description: "Use at least 6 characters.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -32,14 +36,30 @@ const Auth = () => {
           },
         });
         if (error) throw error;
+        if (!data.session) {
+          toast({
+            title: "Check your inbox",
+            description: "We've sent a confirmation link. Verify your email, then sign in.",
+          });
+          setMode("signin");
+          setPassword("");
+          return;
+        }
         toast({ title: "Account created", description: "You're signed in." });
+        nav("/dashboard");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        nav("/dashboard");
       }
-      nav("/dashboard");
     } catch (err: any) {
-      toast({ title: "Authentication failed", description: err.message, variant: "destructive" });
+      const msg = err?.message ?? "Something went wrong. Please try again.";
+      const friendly = /invalid login credentials/i.test(msg)
+        ? "Email or password is incorrect."
+        : /already registered/i.test(msg)
+        ? "An account with this email already exists. Try signing in."
+        : msg;
+      toast({ title: "Authentication failed", description: friendly, variant: "destructive" });
     } finally {
       setLoading(false);
     }

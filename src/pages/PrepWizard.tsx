@@ -53,6 +53,43 @@ const PrepWizard = () => {
   const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
   const updateMix = (k: string, v: number) => setForm((f) => ({ ...f, focus_mix: { ...f.focus_mix, [k]: v } }));
 
+  const handleFetchSpec = async () => {
+    if (!form.job_spec_url) {
+      toast({ title: "Add a URL", description: "Paste a job-spec URL first.", variant: "destructive" });
+      return;
+    }
+    setFetchingSpec(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-job-spec", {
+        body: { url: form.job_spec_url },
+      });
+      if (error) throw error;
+      if (!data?.ok) {
+        toast({
+          title: "Couldn't extract automatically",
+          description: data?.error ?? "Please paste the description manually.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setForm((f) => ({
+        ...f,
+        job_title: f.job_title || data.job_title || "",
+        company_name: f.company_name || data.company_name || "",
+        job_description: data.raw_text || f.job_description,
+      }));
+      toast({ title: "Job spec extracted", description: "Review and edit before continuing." });
+    } catch (err: any) {
+      toast({
+        title: "Fetch failed",
+        description: err.message ?? "Paste the description manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setFetchingSpec(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!user) return;
     if (!form.target_role || (!form.job_description && !form.job_spec_url && !form.job_title)) {

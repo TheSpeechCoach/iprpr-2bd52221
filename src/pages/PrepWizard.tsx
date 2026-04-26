@@ -93,17 +93,17 @@ const PrepWizard = () => {
   const handleGenerate = async () => {
     if (!user) return;
     if (!form.target_role.trim()) {
-      toast({ title: "Add a target role", description: "We need a target role to tailor questions.", variant: "destructive" });
+      toast({ title: "Add a target role", description: "We need the role you're interviewing for to tailor the questions.", variant: "destructive" });
       setStep(0);
       return;
     }
     if (!form.job_description.trim() && !form.job_spec_url.trim() && !form.job_title.trim()) {
-      toast({ title: "Add the role", description: "Paste a job description, a URL, or at least a job title.", variant: "destructive" });
+      toast({ title: "Tell us about the role", description: "Paste the job description, share a link, or at least add a job title.", variant: "destructive" });
       setStep(2);
       return;
     }
     if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim()) {
-      toast({ title: "Add your CV", description: "Upload a CV, paste CV text, or add a LinkedIn summary.", variant: "destructive" });
+      toast({ title: "Add some career evidence", description: "Upload your CV, paste it as text, or add a LinkedIn summary.", variant: "destructive" });
       setStep(1);
       return;
     }
@@ -114,24 +114,25 @@ const PrepWizard = () => {
       let cv_file_path: string | null = null;
       let extracted_cv_text = form.cv_text;
       if (cvFile) {
-        if (cvFile.size > 10 * 1024 * 1024) throw new Error("CV exceeds 10MB limit");
+        if (cvFile.size > 10 * 1024 * 1024) throw new Error("Your CV is over 10 MB. Please upload a smaller file.");
         const ext = cvFile.name.split(".").pop()?.toLowerCase();
-        if (!["pdf", "docx"].includes(ext ?? "")) throw new Error("CV must be a PDF or DOCX file");
+        if (!["pdf", "docx"].includes(ext ?? "")) throw new Error("CVs must be PDF or DOCX. Please convert and try again.");
 
         const safeName = cvFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const path = `${user.id}/${Date.now()}_${safeName}`;
+        toast({ title: "Uploading your CV", description: "This usually takes a few seconds." });
         const { error: upErr } = await supabase.storage.from("cvs").upload(path, cvFile, {
           contentType: cvFile.type || undefined,
           upsert: false,
         });
-        if (upErr) throw new Error(`CV upload failed: ${upErr.message}`);
+        if (upErr) throw new Error(`We couldn't upload your CV: ${upErr.message}`);
         cv_file_path = path;
 
-        toast({ title: "Reading your CV", description: "Extracting text…" });
+        toast({ title: "Reading your CV", description: "Pulling out the text we'll use to tailor your pack." });
         const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
           body: { file_path: path, bucket: "cvs" },
         });
-        if (exErr) throw new Error(`CV extraction failed: ${exErr.message}`);
+        if (exErr) throw new Error(`We couldn't read your CV: ${exErr.message}`);
         if (ex?.error) throw new Error(ex.error);
         if (ex?.text) extracted_cv_text = ex.text;
       }

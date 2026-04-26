@@ -1186,7 +1186,7 @@ const AnswerDirectionBlock = ({ direction }: { direction: AnswerDirection }) => 
 const TIER_META: { key: keyof ExampleAnswers; label: string; blurb: string }[] = [
   { key: "foundation", label: "Foundation", blurb: "Clear, simple, direct." },
   { key: "strong", label: "Strong", blurb: "Structured, confident, commercially aware." },
-  { key: "standout", label: "Standout", blurb: "Concise, high-impact, leadership-level." },
+  { key: "standout", label: "Standout", blurb: "20–30 seconds. Sharp, controlled, intentional." },
 ];
 
 const ExampleAnswersBlock = ({ examples }: { examples: ExampleAnswers }) => {

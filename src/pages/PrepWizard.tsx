@@ -90,6 +90,7 @@ const PrepWizard = () => {
         title: `${form.target_role}${form.company_name ? ` · ${form.company_name}` : ""}`,
         status: "generating",
         ...form,
+        cv_text: extracted_cv_text,
         cv_file_path,
       }).select().single();
       if (sErr) throw sErr;

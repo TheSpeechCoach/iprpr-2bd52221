@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-pro";
-const PROMPT_VERSION = "v2-2026-04-26";
+const PROMPT_VERSION = "v3-2026-04-26-answer-direction";
 
 const QUESTION_SCHEMA = {
   type: "object",
@@ -48,10 +48,32 @@ const QUESTION_SCHEMA = {
           what_good_answers_should_cover: { type: "string" },
           optional_follow_up: { type: "string" },
           answer_framework: { type: "string" },
+          answer_direction: {
+            type: "object",
+            description: "Sharp, practical coaching for how to deliver the answer.",
+            properties: {
+              structure: {
+                type: "string",
+                description: "How a strong answer should be shaped (e.g. 'Situation → tension → action you owned → measurable result'). One tight sentence.",
+              },
+              length: {
+                type: "string",
+                description: "How concise. Use a target like '60–90 seconds' or '2–3 short paragraphs'. One short phrase.",
+              },
+              avoid: {
+                type: "array",
+                items: { type: "string" },
+                description: "2-4 specific traps to avoid (e.g. 'Rambling preamble', 'Hiding behind \"we\"', 'Jargon without proof'). Each item ≤ 8 words.",
+              },
+            },
+            required: ["structure", "length", "avoid"],
+            additionalProperties: false,
+          },
         },
         required: [
           "position", "category", "difficulty", "question",
           "why_this_question_matters", "what_good_answers_should_cover",
+          "answer_direction",
         ],
         additionalProperties: false,
       },
@@ -139,6 +161,7 @@ Hard rules:
 - "why_this_question_matters" explains the interviewer's intent in one tight sentence.
 - "what_good_answers_should_cover" lists the substance a strong answer should hit (2-4 concrete points).
 - "optional_follow_up" is a sharp probing follow-up the interviewer might use; empty string if none.
+- "answer_direction" is short, sharp, practical coaching for delivery — not content. Keep "structure" to one sentence, "length" to a concrete time/size cue, and "avoid" to 2-4 specific traps phrased as quick warnings ("Don't ramble through context", "Avoid 'we' — own the action", "Skip the jargon, give the proof"). Tailor to the question type — behavioural answers need STAR-style shape; opinion or commercial questions need a clear stance + rationale; technical answers need brevity and a worked example.
 - Position numbers are 1-based and sequential.`;
 
         const userPrompt = `Generate exactly ${numQuestions} interview questions.
@@ -267,6 +290,7 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
           what_good_covers: q.what_good_answers_should_cover ?? null,
           follow_up: q.optional_follow_up || null,
           answer_framework: q.answer_framework || null,
+          answer_direction: q.answer_direction ?? null,
           difficulty: q.difficulty ?? null,
         }));
 

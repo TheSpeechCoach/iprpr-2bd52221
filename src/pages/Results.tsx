@@ -43,6 +43,9 @@ import {
   Target,
   Sparkles,
   Lock,
+  Compass,
+  Timer,
+  XCircle,
   Lightbulb,
   HelpCircle,
   ListChecks,
@@ -88,10 +91,17 @@ interface Question {
   what_good_covers: string | null;
   follow_up: string | null;
   answer_framework: string | null;
+  answer_direction: AnswerDirection | null;
   difficulty: string | null;
   starred: boolean;
   practised: boolean;
   note: string | null;
+}
+
+interface AnswerDirection {
+  structure?: string;
+  length?: string;
+  avoid?: string[];
 }
 
 interface Session {
@@ -808,6 +818,9 @@ const Results = () => {
                           tone="muted"
                         />
                       )}
+                      {q.answer_direction && (q.answer_direction.structure || q.answer_direction.length || (q.answer_direction.avoid && q.answer_direction.avoid.length > 0)) && (
+                        <AnswerDirectionBlock direction={q.answer_direction} />
+                      )}
                       {q.follow_up && (
                         <Block
                           label="Likely follow-up"
@@ -1023,5 +1036,53 @@ const Block = ({
   </div>
 );
 
+
+const AnswerDirectionBlock = ({ direction }: { direction: AnswerDirection }) => (
+  <div className="border border-foreground/15 bg-foreground/[0.02] rounded-sm overflow-hidden">
+    <div className="px-4 py-2.5 border-b border-foreground/10 bg-foreground/[0.03] flex items-center gap-2">
+      <Compass className="h-3.5 w-3.5 text-accent" strokeWidth={1.5} />
+      <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Answer direction</span>
+    </div>
+    <div className="px-4 py-3 space-y-3">
+      {direction.structure && (
+        <div className="flex gap-3">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground w-20 shrink-0 pt-0.5">
+            Shape
+          </div>
+          <p className="text-sm leading-relaxed text-foreground/90 flex-1">
+            {direction.structure}
+          </p>
+        </div>
+      )}
+      {direction.length && (
+        <div className="flex gap-3">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground w-20 shrink-0 pt-0.5 inline-flex items-center gap-1">
+            <Timer className="h-3 w-3" strokeWidth={1.5} /> Length
+          </div>
+          <p className="text-sm leading-relaxed text-foreground/90 flex-1">
+            {direction.length}
+          </p>
+        </div>
+      )}
+      {direction.avoid && direction.avoid.length > 0 && (
+        <div className="flex gap-3">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground w-20 shrink-0 pt-0.5 inline-flex items-center gap-1">
+            <XCircle className="h-3 w-3 text-accent" strokeWidth={1.5} /> Avoid
+          </div>
+          <ul className="flex-1 flex flex-wrap gap-1.5">
+            {direction.avoid.map((a, i) => (
+              <li
+                key={i}
+                className="text-xs leading-snug border border-accent/30 text-foreground/85 bg-accent/5 px-2 py-1 rounded-sm"
+              >
+                {a}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </div>
+);
 
 export default Results;

@@ -316,6 +316,7 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
           follow_up: q.optional_follow_up || null,
           answer_framework: q.answer_framework || null,
           answer_direction: q.answer_direction ?? null,
+          example_answers: q.example_answers ?? null,
           difficulty: q.difficulty ?? null,
         }));
 

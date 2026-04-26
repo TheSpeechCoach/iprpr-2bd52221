@@ -232,12 +232,30 @@ const PrepWizard = () => {
               <Field label="Job title"><Input value={form.job_title} onChange={(e) => update("job_title", e.target.value)} /></Field>
               <Field label="Company"><Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} /></Field>
             </div>
+            <div className="border border-border p-4 space-y-3">
+              <Field label="Job spec URL (optional)">
+                <div className="flex gap-2">
+                  <Input
+                    value={form.job_spec_url}
+                    onChange={(e) => update("job_spec_url", e.target.value)}
+                    placeholder="https://…"
+                  />
+                  <Button type="button" variant="outline" onClick={handleFetchSpec} disabled={fetchingSpec}>
+                    {fetchingSpec ? <Loader2 className="h-4 w-4 animate-spin" /> : "Fetch"}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  We'll fetch and structure the page. If extraction fails, paste the description below.
+                </p>
+              </Field>
+            </div>
             <Field label="Job description (paste full text)">
-              <Textarea value={form.job_description} onChange={(e) => update("job_description", e.target.value)} rows={10} />
-            </Field>
-            <Field label="Or job spec URL">
-              <Input value={form.job_spec_url} onChange={(e) => update("job_spec_url", e.target.value)} placeholder="https://…" />
-              <p className="text-[11px] text-muted-foreground mt-2">URL extraction requires the Firecrawl integration. Paste the description above for now.</p>
+              <Textarea
+                value={form.job_description}
+                onChange={(e) => update("job_description", e.target.value)}
+                rows={10}
+                placeholder="Or paste the full job description here…"
+              />
             </Field>
           </div>
         )}

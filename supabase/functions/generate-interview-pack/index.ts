@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-pro";
-const PROMPT_VERSION = "v4-2026-04-26-answer-tiers";
+const PROMPT_VERSION = "v5-2026-04-26-standout-tight";
 
 const QUESTION_SCHEMA = {
   type: "object",
@@ -83,7 +83,7 @@ const QUESTION_SCHEMA = {
               },
               standout: {
                 type: "string",
-                description: "Standout tier. Concise, high-impact, leadership-level, differentiated. A sharp opening line, a crisp insight or principle, an outcome that signals seniority. Spoken. 60–110 words.",
+                description: "Standout tier. 20–30 seconds spoken — roughly 50–75 words, hard ceiling 80. Sharp, controlled, intentional. One pointed opening line, one crisp judgement or trade-off, one concrete outcome. No throat-clearing, no list of achievements, no over-polished phrasing. Cut anything that isn't load-bearing. Should feel like a senior operator who knows exactly what to say and stops.",
               },
             },
             required: ["foundation", "strong", "standout"],
@@ -185,7 +185,7 @@ Hard rules:
 - "example_answers" gives THREE tiers: foundation, strong, standout. These are SPOKEN answers, not written prose. Read them out loud — they should sound like a real candidate talking, with natural rhythm, contractions, the occasional connecting phrase ("So…", "Honestly,", "The way I think about it…"). No bullet points, no headings, no markdown. Use first person ("I"). Reference specifics from the CV/role wherever possible. Tier intent:
   • foundation = clear, simple, direct. A solid baseline answer a junior or nervous candidate could deliver well.
   • strong = structured, confident, commercially aware. Tight ownership, a concrete example or number, a clear "so what".
-  • standout = concise, high-impact, leadership-level, differentiated. Opens with a sharp line, signals seniority through judgement and trade-offs, lands an outcome.
+  • standout = 20–30 seconds spoken (50–75 words, never more than 80). Sharp, controlled, intentional. One pointed opening line, one crisp judgement or trade-off, one concrete outcome — then stop. Not verbose. Not over-polished. Cut every word that isn't load-bearing. It should feel like restraint, not performance.
 - Avoid jargon unless the role demands it. Never use the words "basic", "intermediate", "advanced".
 - Position numbers are 1-based and sequential.`;
 

@@ -163,6 +163,36 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ===== Server-side plan enforcement =====
+    // Resolve the user's effective plan via the security-definer helper.
+    // Free users: max 1 non-draft session ever.
+    const env = (req.headers.get("x-stripe-env") === "live") ? "live" : "sandbox";
+    const { data: planData } = await admin.rpc("get_user_plan", {
+      _user_id: userId,
+      _env: env,
+    });
+    const userPlan: "free" | "pro" | "coach_plus" = (planData as any) ?? "free";
+    const isPaid = userPlan === "pro" || userPlan === "coach_plus";
+
+    if (!isPaid) {
+      // Count non-draft sessions excluding this one. If >=1, block.
+      const { count: usedSessions } = await admin
+        .from("prep_sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .neq("status", "draft")
+        .neq("id", sessionId);
+      if ((usedSessions ?? 0) >= 1) {
+        return new Response(
+          JSON.stringify({
+            error: "FREE_SESSION_LIMIT",
+            message: "You've used your free session. Upgrade to Pro for unlimited prep.",
+          }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     const numQuestions = Math.max(20, Math.min(120, session.num_questions ?? 100));
 
     await admin.from("prep_sessions").update({ status: "generating" }).eq("id", sessionId);

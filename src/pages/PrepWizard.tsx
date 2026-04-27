@@ -157,8 +157,18 @@ const PrepWizard = () => {
         const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
           body: { file_path: path, bucket: "cvs" },
         });
-        if (exErr) throw new Error(`We couldn't read your CV: ${exErr.message}`);
-        if (ex?.error) throw new Error(ex.error);
+        if (exErr) {
+          let friendly = `We couldn't read your CV: ${exErr.message}`;
+          try {
+            const ctx: any = (exErr as any).context;
+            if (ctx?.json) {
+              const j = await ctx.json();
+              if (j?.message) friendly = j.message;
+            }
+          } catch (_) {}
+          throw new Error(friendly);
+        }
+        if (ex?.error) throw new Error(ex.message || ex.error);
         if (ex?.text) extracted_cv_text = ex.text;
         void track("cv_uploaded", {
           userId: user.id,

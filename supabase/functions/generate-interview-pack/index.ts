@@ -3,6 +3,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { ukifyJson } from "../_shared/ukEnglish.ts";
 import { namesLooselyMatch, cvMentionsName, normaliseName } from "../_shared/candidateLock.ts";
+import { PRO_LIMITS, getProUsage, buildLimitBlock } from "../_shared/proLimits.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -260,6 +261,44 @@ Deno.serve(async (req) => {
           }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
+      }
+    }
+
+    // ===== Pro distinct-role cap (target_role + company_name) =====
+    if (userPlan === "pro") {
+      const usage = await getProUsage(admin, userId);
+      if (usage) {
+        const sessRole = (session.target_role ?? "").trim().toLowerCase();
+        const sessCompany = (session.company_name ?? "").trim().toLowerCase();
+        // Does this (role, company) tuple already exist among this user's
+        // non-draft sessions in the current period?
+        const { data: matching } = await admin
+          .from("prep_sessions")
+          .select("id, target_role, company_name")
+          .eq("user_id", userId)
+          .neq("status", "draft")
+          .neq("id", sessionId)
+          .gte("created_at", usage.period_start)
+          .lt("created_at", usage.period_end);
+
+        const tupleAlreadyCounted = (matching ?? []).some(
+          (r) =>
+            (r.target_role ?? "").trim().toLowerCase() === sessRole &&
+            (r.company_name ?? "").trim().toLowerCase() === sessCompany,
+        );
+
+        const isNewTuple = !tupleAlreadyCounted && sessRole.length > 0;
+        if (isNewTuple && usage.distinct_roles >= PRO_LIMITS.distinctRolesPerPeriod) {
+          const block = buildLimitBlock(
+            "distinctRolesPerPeriod",
+            usage.distinct_roles,
+            usage.period_end,
+          );
+          await admin.from("prep_sessions").update({ status: "blocked" }).eq("id", sessionId);
+          return new Response(JSON.stringify(block), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
     }
 

@@ -13,6 +13,7 @@ import { track } from "@/lib/analytics";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { IntroOfferCallout } from "@/components/IntroOfferCallout";
 import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
+import { ProUsageBanner } from "@/components/ProUsageBanner";
 
 interface Session {
   id: string;
@@ -136,6 +137,8 @@ const Dashboard = () => {
             <span className="text-muted-foreground">. You'll keep full access until then.</span>
           </div>
         )}
+
+        {!planLoading && plan === "pro" && <ProUsageBanner className="mt-8" />}
 
         {/* Free plan banner */}
         {!planLoading && plan === "free" && (

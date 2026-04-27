@@ -1,6 +1,7 @@
 // Fetch and structure a public job spec URL using Firecrawl + Lovable AI.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { ukifyJson } from "../_shared/ukEnglish.ts";
+import { PRO_LIMITS, getProUsage, getUserPlan, buildLimitBlock } from "../_shared/proLimits.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -84,6 +85,23 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Provide a valid http(s) URL" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // ===== Pro plan job-spec cap =====
+    const env = (req.headers.get("x-stripe-env") === "live") ? "live" : "sandbox";
+    const userPlan = await getUserPlan(admin, userId, env);
+    if (userPlan === "pro") {
+      const usage = await getProUsage(admin, userId);
+      if (usage && usage.job_specs >= PRO_LIMITS.jobSpecsPerPeriod) {
+        const block = buildLimitBlock(
+          "jobSpecsPerPeriod",
+          usage.job_specs,
+          usage.period_end,
+        );
+        return new Response(JSON.stringify(block), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // 1) Firecrawl scrape

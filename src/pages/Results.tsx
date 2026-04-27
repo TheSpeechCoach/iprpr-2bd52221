@@ -87,6 +87,7 @@ const DIFFICULTY_TONE: Record<string, string> = {
   hard: "border-accent/60 text-accent",
 };
 import { toast } from "@/hooks/use-toast";
+import { track, trackOnce } from "@/lib/analytics";
 import jsPDF from "jspdf";
 import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";
 import { saveAs } from "file-saver";

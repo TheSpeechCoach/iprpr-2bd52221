@@ -386,6 +386,7 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
           answer_framework: q.answer_framework || null,
           answer_direction: q.answer_direction ?? null,
           example_answers: q.example_answers ?? null,
+          coach_insight: q.coach_insight ?? null,
           difficulty: q.difficulty ?? null,
         }));
 

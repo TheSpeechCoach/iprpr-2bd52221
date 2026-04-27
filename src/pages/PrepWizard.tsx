@@ -89,6 +89,11 @@ const PrepWizard = () => {
         company_name: f.company_name || data.company_name || "",
         job_description: data.raw_text || f.job_description,
       }));
+      void track("job_input_added", {
+        userId: user?.id ?? null,
+        plan,
+        metadata: { source: "url" },
+      });
       toast({ title: "Job spec loaded", description: "Have a quick read and edit anything that's off." });
     } catch (err: any) {
       toast({
@@ -155,6 +160,17 @@ const PrepWizard = () => {
         if (exErr) throw new Error(`We couldn't read your CV: ${exErr.message}`);
         if (ex?.error) throw new Error(ex.error);
         if (ex?.text) extracted_cv_text = ex.text;
+        void track("cv_uploaded", {
+          userId: user.id,
+          plan,
+          metadata: { size_bytes: cvFile.size, ext },
+        });
+      } else if (form.cv_text.trim() || form.linkedin_text.trim()) {
+        void track("cv_uploaded", {
+          userId: user.id,
+          plan,
+          metadata: { source: form.cv_text.trim() ? "pasted" : "linkedin" },
+        });
       }
 
       // 2) Create session
@@ -170,13 +186,35 @@ const PrepWizard = () => {
       if (sErr) throw new Error(`Could not create session: ${sErr.message}`);
       createdSessionId = session.id;
 
+      // Track that the user provided job input (if not already via URL fetch).
+      if (form.job_description.trim() || form.job_title.trim()) {
+        void track("job_input_added", {
+          userId: user.id,
+          plan,
+          sessionId: session.id,
+          metadata: {
+            source: form.job_description.trim() ? "pasted" : "title_only",
+          },
+        });
+      }
+
       // 3) Kick off generation
+      void track("generation_started", {
+        userId: user.id,
+        plan,
+        sessionId: session.id,
+      });
       const { data: genData, error: fnErr } = await supabase.functions.invoke("generate-interview-pack", {
         body: { session_id: session.id },
       });
       if (fnErr) throw new Error(fnErr.message || "We couldn't start the generator. Please try again.");
       if (genData?.error) throw new Error(genData.error);
 
+      void track("generation_completed", {
+        userId: user.id,
+        plan,
+        sessionId: session.id,
+      });
       toast({ title: "We're on it", description: "Your pack is being written. This usually takes 30–60 seconds." });
       nav(`/prep/${session.id}/results`);
     } catch (err: any) {

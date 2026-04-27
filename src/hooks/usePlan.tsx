@@ -102,8 +102,9 @@ export const usePlan = (): PlanState => {
   }, [user?.id]);
 
   const isPaid = plan === "pro" || plan === "coach_plus";
-  const sessionLimit = isPaid ? Infinity : FREE_SESSION_LIMIT;
-  const questionLimit = isPaid ? Infinity : FREE_QUESTION_LIMIT;
+  const limits = PLAN_LIMITS[plan];
+  const sessionLimit = limits.maxPrepSessions;
+  const questionLimit = limits.visibleQuestions;
 
   return {
     plan,

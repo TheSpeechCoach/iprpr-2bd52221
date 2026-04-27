@@ -3,7 +3,7 @@ export type Plan = "free" | "pro" | "coach_plus";
 export const PLAN_LIMITS = {
   free: {
     maxPrepSessions: 1,
-    visibleQuestions: 25,
+    visibleQuestions: 10,
     answerTiers: false,
     savedAnswers: false,
     exports: false,

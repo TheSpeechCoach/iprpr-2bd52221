@@ -79,7 +79,7 @@ const QUESTION_SCHEMA = {
               },
               strong: {
                 type: "string",
-                description: "Strong tier. Structured, confident, commercially aware. Tight delivery, clear ownership ('I'), one concrete example or number. Spoken. 60–110 words.",
+                description: "Strong tier. Structured, confident, commercially aware. Tight ownership ('I'), one concrete example or number. Spoken. 60–110 words.",
               },
               standout: {
                 type: "string",
@@ -87,6 +87,26 @@ const QUESTION_SCHEMA = {
               },
             },
             required: ["foundation", "strong", "standout"],
+            additionalProperties: false,
+          },
+          coach_insight: {
+            type: "object",
+            description: "OPTIONAL expert annotation. Only populate on 3–5 of the most pivotal questions in the whole pack (typically inside positions 1–10). Leave null on every other question. Each field is ONE short sentence — together the three lines must be readable in under 15 seconds.",
+            properties: {
+              really_testing: {
+                type: "string",
+                description: "What the interviewer is really testing beneath the surface of the question. One sentence, ≤ 22 words.",
+              },
+              common_mistake: {
+                type: "string",
+                description: "The single most common mistake candidates make on this question. One sentence, ≤ 22 words.",
+              },
+              how_to_approach: {
+                type: "string",
+                description: "How a strong candidate should approach the answer. One sentence, ≤ 22 words.",
+              },
+            },
+            required: ["really_testing", "common_mistake", "how_to_approach"],
             additionalProperties: false,
           },
         },

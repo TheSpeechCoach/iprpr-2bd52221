@@ -142,8 +142,12 @@ const Dashboard = () => {
                 <span className="font-medium">{Math.min(sessionsUsed, FREE_SESSION_LIMIT)} of {FREE_SESSION_LIMIT}</span>
                 <span className="text-muted-foreground"> session used · 10 questions visible per pack</span>
               </div>
+              <SoftUrgencyNote className="mt-3" showSocialProof={false} />
             </div>
-            <Link to="/upgrade">
+            <Link
+              to="/upgrade"
+              onClick={() => track("upgrade_clicked", { plan, metadata: { surface: "dashboard_free_banner" } })}
+            >
               <Button variant="outline" className="gap-2">
                 <Sparkles className="h-3.5 w-3.5 text-accent" /> Upgrade to Pro
               </Button>

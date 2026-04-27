@@ -35,7 +35,7 @@ const TIERS: Tier[] = [
     tagline: "Start preparing",
     features: [
       "1 prep session",
-      "First 25 questions visible",
+      "First 10 questions visible",
       "No answer tiers",
       "No saved answers",
       "No exports",

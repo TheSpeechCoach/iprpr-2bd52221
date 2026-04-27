@@ -1,5 +1,6 @@
 // Fetch and structure a public job spec URL using Firecrawl + Lovable AI.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { ukifyJson } from "../_shared/ukEnglish.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -163,7 +164,7 @@ Rules: arrays must be string lists of concise points. leadership_scope is a 1-2 
       throw new Error("AI did not return JSON.");
     }
 
-    const result = {
+    const result = ukifyJson({
       job_title: String(parsed.job_title ?? "").trim(),
       company_name: String(parsed.company_name ?? "").trim(),
       responsibilities: Array.isArray(parsed.responsibilities) ? parsed.responsibilities.map(String) : [],
@@ -172,7 +173,7 @@ Rules: arrays must be string lists of concise points. leadership_scope is a 1-2 
       behavioural_competencies: Array.isArray(parsed.behavioural_competencies) ? parsed.behavioural_competencies.map(String) : [],
       leadership_scope: String(parsed.leadership_scope ?? "").trim(),
       raw_text: rawText,
-    };
+    });
 
     // 3) Persist (best-effort)
     try {

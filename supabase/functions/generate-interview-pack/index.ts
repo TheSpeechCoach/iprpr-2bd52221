@@ -1,6 +1,7 @@
 // Generate a tailored interview pack via Lovable AI Gateway.
 // Auth required. Strict JSON via tool-calling. Persists pack + questions.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { ukifyJson } from "../_shared/ukEnglish.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -347,6 +348,9 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
         } catch {
           throw new Error("AI tool arguments were not valid JSON");
         }
+
+        // UK-English safety net: rewrite all string leaves before persistence.
+        parsed = ukifyJson(parsed);
 
         const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
         if (!questions.length) throw new Error("AI returned no questions");

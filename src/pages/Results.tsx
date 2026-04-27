@@ -62,6 +62,9 @@ import {
 } from "@/components/ui/collapsible";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { ResultsOnboardingOverlay } from "@/components/ResultsOnboardingOverlay";
+import { IntroOfferCallout } from "@/components/IntroOfferCallout";
+import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
+import { copy } from "@/lib/copy";
 
 // Friendlier, plain-English category labels for the interviewer's lens.
 const CATEGORY_LABELS: Record<string, string> = {

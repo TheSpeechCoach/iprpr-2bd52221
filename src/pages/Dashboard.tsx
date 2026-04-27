@@ -11,6 +11,8 @@ import { Plus, FileText, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { track } from "@/lib/analytics";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
+import { IntroOfferCallout } from "@/components/IntroOfferCallout";
+import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
 
 interface Session {
   id: string;

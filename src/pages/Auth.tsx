@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { track } from "@/lib/analytics";
 
 const Auth = () => {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -36,6 +37,12 @@ const Auth = () => {
           },
         });
         if (error) throw error;
+        // Track signup (works for both auto-confirm + email-confirm flows).
+        void track("user_signed_up", {
+          userId: data.user?.id ?? null,
+          plan: "free",
+          metadata: { confirmation_required: !data.session },
+        });
         if (!data.session) {
           toast({
             title: "Check your inbox",

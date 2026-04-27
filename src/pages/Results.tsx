@@ -87,6 +87,7 @@ const DIFFICULTY_TONE: Record<string, string> = {
   hard: "border-accent/60 text-accent",
 };
 import { toast } from "@/hooks/use-toast";
+import { track, trackOnce } from "@/lib/analytics";
 import jsPDF from "jspdf";
 import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";
 import { saveAs } from "file-saver";
@@ -241,6 +242,21 @@ const Results = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Track results_viewed once the pack is ready, plus question_10_reached when the
+  // user actually has access to a 10th question.
+  useEffect(() => {
+    if (!id) return;
+    if (session?.status === "ready" && questions.length > 0) {
+      trackOnce("results_viewed", id, { plan, sessionId: id });
+      const tenthVisible = questions.some(
+        (q) => q.position >= 10 && q.position <= questionLimit,
+      );
+      if (tenthVisible) {
+        trackOnce("question_10_reached", id, { plan, sessionId: id });
+      }
+    }
+  }, [id, plan, questions, session?.status, questionLimit]);
 
   const retryGeneration = async () => {
     if (!id) return;
@@ -1000,6 +1016,7 @@ const Results = () => {
             {plan === "free" && (() => {
               const locked = filtered.filter((q) => q.position > questionLimit);
               if (locked.length === 0) return null;
+              if (id) trackOnce("upgrade_prompt_seen", `results:${id}`, { plan, sessionId: id, metadata: { surface: "results_locked_questions" } });
               const preview = locked.slice(0, 6);
               return (
                 <div className="relative mt-6">
@@ -1033,7 +1050,11 @@ const Results = () => {
                       <p className="mt-2 text-sm text-muted-foreground">
                         You're seeing the first {questionLimit} of your tailored pack. Upgrade to Pro to unlock the full set, plus PDF and DOCX export.
                       </p>
-                      <Link to="/upgrade" className="inline-block mt-5 w-full">
+                      <Link
+                        to="/upgrade"
+                        className="inline-block mt-5 w-full"
+                        onClick={() => track("upgrade_clicked", { plan, sessionId: id ?? null, metadata: { surface: "results_locked_questions" } })}
+                      >
                         <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
                           <Sparkles className="h-4 w-4" /> Upgrade to unlock all {questions.length} questions
                         </Button>

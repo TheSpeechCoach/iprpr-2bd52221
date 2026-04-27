@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Plus, FileText, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { track } from "@/lib/analytics";
 
 interface Session {
   id: string;
@@ -50,6 +51,10 @@ const Dashboard = () => {
   // Handle return from Stripe checkout
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
+      void track("subscription_started", {
+        plan,
+        metadata: { stripe_checkout_session_id: searchParams.get("session_id") },
+      });
       toast({
         title: "Payment received",
         description: "Welcome to the paid plan. Your access is unlocking now.",
@@ -95,7 +100,10 @@ const Dashboard = () => {
               </Button>
             </Link>
           ) : (
-            <Link to="/upgrade">
+            <Link
+              to="/upgrade"
+              onClick={() => track("upgrade_clicked", { plan, metadata: { surface: "dashboard_session_limit" } })}
+            >
               <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
                 <Sparkles className="h-4 w-4 mr-2" /> Upgrade for more sessions
               </Button>

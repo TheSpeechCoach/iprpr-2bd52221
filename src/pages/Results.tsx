@@ -869,6 +869,11 @@ const Results = () => {
                                     <Pencil className="h-3 w-3" /> Your answer
                                   </span>
                                 )}
+                                {q.coach_insight && (q.coach_insight.really_testing || q.coach_insight.common_mistake || q.coach_insight.how_to_approach) && (
+                                  <span className="text-[10px] uppercase tracking-[0.15em] text-accent inline-flex items-center gap-1 border border-accent/40 px-1.5 py-0.5 rounded-sm">
+                                    <Compass className="h-3 w-3" /> Coach Insight
+                                  </span>
+                                )}
                               </div>
                               <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
                                 {q.question}

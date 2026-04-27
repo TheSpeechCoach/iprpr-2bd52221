@@ -61,6 +61,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
+import { ResultsOnboardingOverlay } from "@/components/ResultsOnboardingOverlay";
 
 // Friendlier, plain-English category labels for the interviewer's lens.
 const CATEGORY_LABELS: Record<string, string> = {
@@ -578,6 +579,7 @@ const Results = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
+      <ResultsOnboardingOverlay ready={session?.status === "ready" && questions.length > 0} />
       <main className="container-tight flex-1 py-8 md:py-10">
         <Link
           to="/dashboard"

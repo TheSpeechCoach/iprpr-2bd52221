@@ -61,6 +61,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
+import { ResultsOnboardingOverlay } from "@/components/ResultsOnboardingOverlay";
 
 // Friendlier, plain-English category labels for the interviewer's lens.
 const CATEGORY_LABELS: Record<string, string> = {

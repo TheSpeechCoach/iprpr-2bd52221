@@ -149,6 +149,12 @@ const Upgrade = () => {
           </div>
         )}
 
+        {showIntroOffer && (
+          <div className="mt-8 max-w-2xl">
+            <IntroOfferCallout variant="wall" ctaHref="#pricing" />
+          </div>
+        )}
+
         {isPaid && (
           <div className="mt-8 border border-border bg-secondary/40 p-5 flex items-center justify-between gap-4 flex-wrap">
             <div className="text-sm">

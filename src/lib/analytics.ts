@@ -36,13 +36,15 @@ export async function track(event: AnalyticsEvent, opts: TrackOptions = {}): Pro
       userId = data.user?.id ?? null;
     }
 
-    await supabase.from("analytics_events").insert({
-      event_name: event,
-      user_id: userId,
-      plan: opts.plan ?? null,
-      session_id: opts.sessionId ?? null,
-      metadata: opts.metadata ?? {},
-    });
+    await supabase.from("analytics_events").insert([
+      {
+        event_name: event,
+        user_id: userId,
+        plan: opts.plan ?? null,
+        session_id: opts.sessionId ?? null,
+        metadata: (opts.metadata ?? {}) as never,
+      },
+    ]);
   } catch (err) {
     // Don't break the user flow on analytics errors.
     // eslint-disable-next-line no-console

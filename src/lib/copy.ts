@@ -95,6 +95,7 @@ export const copy = {
     proName: "Pro",
     coachPlusName: "Coach+",
     proPrice: "$29",
+    proIntroPrice: "$19",
     coachPlusPrice: "$79",
     perMonth: "/month",
     sessionSavedNote:
@@ -104,6 +105,17 @@ export const copy = {
     softReminder:
       "Take your time — your progress is safe. Upgrade whenever you're ready.",
     upgradeCta: "Upgrade now",
+    intro: {
+      wallTitle: "You've seen the first 10 questions.",
+      wallBody:
+        "The next 90 are where the real preparation happens.\nUnlock Pro today for $19 for your first month.\nThen $29/month.",
+      buttonCta: "Unlock Pro for $19",
+      smallPrint: "First month only. Renews at $29/month. Cancel anytime.",
+      dashboardPrompt:
+        "Continue preparing with Pro. First month $19, then $29/month.",
+      resultsLine:
+        "Unlock Pro today for $19 for your first month. Then $29/month.",
+    },
   },
 
   onboarding: {

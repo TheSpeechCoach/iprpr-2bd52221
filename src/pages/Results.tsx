@@ -62,6 +62,9 @@ import {
 } from "@/components/ui/collapsible";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { ResultsOnboardingOverlay } from "@/components/ResultsOnboardingOverlay";
+import { IntroOfferCallout } from "@/components/IntroOfferCallout";
+import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
+import { copy } from "@/lib/copy";
 
 // Friendlier, plain-English category labels for the interviewer's lens.
 const CATEGORY_LABELS: Record<string, string> = {
@@ -151,6 +154,7 @@ const Results = () => {
   const { id } = useParams();
   const nav = useNavigate();
   const { plan, questionLimit } = usePlan();
+  const { eligible: introEligible } = useProIntroOfferEligibility();
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [search, setSearch] = useState("");
@@ -1062,26 +1066,60 @@ const Results = () => {
                       <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-accent mb-2">
                         <Lock className="h-3.5 w-3.5" /> Locked on Free
                       </div>
-                      <h3 className="font-display text-xl md:text-2xl font-semibold leading-tight">
-                        {locked.length} more {locked.length === 1 ? "question is" : "questions are"} waiting
-                      </h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        You're seeing the first {questionLimit} of your tailored pack. Upgrade to Pro to unlock the full set, plus PDF and DOCX export.
-                      </p>
-                      <Link
-                        to="/upgrade"
-                        className="inline-block mt-5 w-full"
-                        onClick={() => track("upgrade_clicked", { plan, sessionId: id ?? null, metadata: { surface: "results_locked_questions" } })}
-                      >
-                        <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
-                          <Sparkles className="h-4 w-4" /> Upgrade to unlock all {questions.length} questions
-                        </Button>
-                      </Link>
-                      <SoftUrgencyNote
-                        className="mt-5"
-                        align="center"
-                        reminder="No rush — pick this back up whenever you're ready."
-                      />
+                      {introEligible ? (
+                        <>
+                          <h3 className="font-display text-xl md:text-2xl font-semibold leading-tight">
+                            {copy.upgrade.intro.wallTitle}
+                          </h3>
+                          <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
+                            {copy.upgrade.intro.wallBody}
+                          </p>
+                          <Link
+                            to="/upgrade?offer=intro"
+                            className="inline-block mt-5 w-full"
+                            onClick={() =>
+                              track("upgrade_clicked", {
+                                plan,
+                                sessionId: id ?? null,
+                                metadata: {
+                                  surface: "results_locked_questions",
+                                  intro_offer: true,
+                                },
+                              })
+                            }
+                          >
+                            <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
+                              <Sparkles className="h-4 w-4" /> {copy.upgrade.intro.buttonCta}
+                            </Button>
+                          </Link>
+                          <p className="mt-3 text-xs text-muted-foreground">
+                            {copy.upgrade.intro.smallPrint}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <h3 className="font-display text-xl md:text-2xl font-semibold leading-tight">
+                            {locked.length} more {locked.length === 1 ? "question is" : "questions are"} waiting
+                          </h3>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            You're seeing the first {questionLimit} of your tailored pack. Upgrade to Pro to unlock the full set, plus PDF and DOCX export.
+                          </p>
+                          <Link
+                            to="/upgrade"
+                            className="inline-block mt-5 w-full"
+                            onClick={() => track("upgrade_clicked", { plan, sessionId: id ?? null, metadata: { surface: "results_locked_questions" } })}
+                          >
+                            <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
+                              <Sparkles className="h-4 w-4" /> Upgrade to unlock all {questions.length} questions
+                            </Button>
+                          </Link>
+                          <SoftUrgencyNote
+                            className="mt-5"
+                            align="center"
+                            reminder="No rush — pick this back up whenever you're ready."
+                          />
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

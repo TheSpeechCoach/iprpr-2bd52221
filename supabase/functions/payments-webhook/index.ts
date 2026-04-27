@@ -41,6 +41,10 @@ async function handleSubscriptionUpsert(subscription: any, env: StripeEnv) {
   const periodEnd = item?.current_period_end ?? subscription.current_period_end;
   const plan = planFromPriceId(priceId);
 
+  // Did the user redeem the Pro intro offer on this subscription?
+  // Set on `created`; we never unset it on later updates.
+  const isIntroRedemption = subscription.metadata?.intro_offer === "pro_first_month";
+
   await getSupabase().from("subscriptions").upsert(
     {
       user_id: userId,
@@ -57,6 +61,10 @@ async function handleSubscriptionUpsert(subscription: any, env: StripeEnv) {
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       cancel_at_period_end: subscription.cancel_at_period_end || false,
       environment: env,
+      ...(isIntroRedemption && {
+        pro_intro_offer_redeemed: true,
+        pro_intro_offer_redeemed_at: new Date().toISOString(),
+      }),
       updated_at: new Date().toISOString(),
     },
     { onConflict: "stripe_subscription_id" },

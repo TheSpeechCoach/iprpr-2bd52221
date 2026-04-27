@@ -594,6 +594,8 @@ export type Database = {
           id: string
           plan: string
           price_id: string | null
+          pro_intro_offer_redeemed: boolean
+          pro_intro_offer_redeemed_at: string | null
           product_id: string | null
           provider: string | null
           provider_customer_id: string | null
@@ -613,6 +615,8 @@ export type Database = {
           id?: string
           plan?: string
           price_id?: string | null
+          pro_intro_offer_redeemed?: boolean
+          pro_intro_offer_redeemed_at?: string | null
           product_id?: string | null
           provider?: string | null
           provider_customer_id?: string | null
@@ -632,6 +636,8 @@ export type Database = {
           id?: string
           plan?: string
           price_id?: string | null
+          pro_intro_offer_redeemed?: boolean
+          pro_intro_offer_redeemed_at?: string | null
           product_id?: string | null
           provider?: string | null
           provider_customer_id?: string | null
@@ -784,6 +790,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_eligible_for_pro_intro_offer: {
+        Args: { _user_id: string }
         Returns: boolean
       }
       plan_from_price_id: { Args: { _price_id: string }; Returns: string }

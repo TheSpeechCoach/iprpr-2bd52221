@@ -1,10 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan, type Plan } from "@/hooks/usePlan";
+import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { IntroOfferCallout } from "@/components/IntroOfferCallout";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +19,7 @@ import { toast } from "@/hooks/use-toast";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { track } from "@/lib/analytics";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
+import { copy } from "@/lib/copy";
 import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
 interface Tier {
@@ -78,9 +81,16 @@ const TIERS: Tier[] = [
 const Upgrade = () => {
   const { user } = useAuth();
   const { plan, isPaid, refresh } = usePlan();
+  const { eligible: introEligible } = useProIntroOfferEligibility();
   const nav = useNavigate();
+  const [params] = useSearchParams();
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
+  const [checkoutWithIntro, setCheckoutWithIntro] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
+
+  // Did the user arrive via the question-10 wall? Surface the intro offer
+  // prominently and pre-arm Pro checkout with the discount.
+  const showIntroOffer = introEligible && (params.get("offer") === "intro" || plan === "free");
 
   // Track when the upgrade page is viewed.
   useEffect(() => {
@@ -139,6 +149,12 @@ const Upgrade = () => {
           </div>
         )}
 
+        {showIntroOffer && (
+          <div className="mt-8 max-w-2xl">
+            <IntroOfferCallout variant="wall" ctaHref="#pricing" />
+          </div>
+        )}
+
         {isPaid && (
           <div className="mt-8 border border-border bg-secondary/40 p-5 flex items-center justify-between gap-4 flex-wrap">
             <div className="text-sm">
@@ -177,12 +193,29 @@ const Upgrade = () => {
                   {tier.name}
                 </div>
                 <div className="font-display text-3xl font-semibold">
-                  {tier.price}
-                  {tier.key !== "free" && (
-                    <span className="text-base text-muted-foreground font-normal"> / month</span>
+                  {showIntroOffer && tier.key === "pro" ? (
+                    <>
+                      {copy.upgrade.proIntroPrice}
+                      <span className="text-base text-muted-foreground font-normal">
+                        {" "}first month
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {tier.price}
+                      {tier.key !== "free" && (
+                        <span className="text-base text-muted-foreground font-normal">
+                          {" "}/ month
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">{tier.tagline}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {showIntroOffer && tier.key === "pro"
+                    ? `Then ${copy.upgrade.proPrice}/month. Cancel anytime.`
+                    : tier.tagline}
+                </div>
 
                 <ul className="mt-6 space-y-2.5 text-sm">
                   {tier.features.map((f) => (
@@ -214,10 +247,17 @@ const Upgrade = () => {
                           nav("/auth?next=/upgrade");
                           return;
                         }
+                        const useIntro = showIntroOffer && tier.key === "pro";
                         void track("upgrade_clicked", {
                           plan,
-                          metadata: { surface: "upgrade_page", target_plan: tier.key, price_id: tier.priceId },
+                          metadata: {
+                            surface: "upgrade_page",
+                            target_plan: tier.key,
+                            price_id: tier.priceId,
+                            intro_offer: useIntro,
+                          },
                         });
+                        setCheckoutWithIntro(useIntro);
                         setCheckoutPriceId(tier.priceId!);
                       }}
                       className={`w-full ${
@@ -227,9 +267,11 @@ const Upgrade = () => {
                       }`}
                       variant={tier.highlight ? "default" : "secondary"}
                     >
-                      {plan === "pro" && tier.key === "coach_plus"
-                        ? "Upgrade to Coach+"
-                        : `Get ${tier.name}`}
+                      {showIntroOffer && tier.key === "pro"
+                        ? copy.upgrade.intro.buttonCta
+                        : plan === "pro" && tier.key === "coach_plus"
+                          ? "Upgrade to Coach+"
+                          : `Get ${tier.name}`}
                     </Button>
                   )}
                 </div>
@@ -237,6 +279,12 @@ const Upgrade = () => {
             );
           })}
         </div>
+
+        {showIntroOffer && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            {copy.upgrade.intro.smallPrint}
+          </p>
+        )}
 
         <p className="mt-6 text-xs text-muted-foreground">
           Plan changes take effect immediately and are prorated. Cancellations take effect at the
@@ -249,6 +297,7 @@ const Upgrade = () => {
         onOpenChange={(o) => {
           if (!o) {
             setCheckoutPriceId(null);
+            setCheckoutWithIntro(false);
             // Refresh plan when modal closes — webhook may have already updated.
             void refresh();
           }
@@ -262,6 +311,7 @@ const Upgrade = () => {
             {checkoutPriceId && (
               <StripeEmbeddedCheckout
                 priceId={checkoutPriceId}
+                introOffer={checkoutWithIntro}
                 returnUrl={`${window.location.origin}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`}
               />
             )}

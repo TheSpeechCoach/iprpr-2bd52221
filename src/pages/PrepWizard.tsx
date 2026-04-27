@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
+import { track } from "@/lib/analytics";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, Lock } from "lucide-react";
 
 const STEPS = ["Candidate", "Career", "Job", "Parameters", "Generate"] as const;

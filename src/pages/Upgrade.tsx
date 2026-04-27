@@ -193,12 +193,29 @@ const Upgrade = () => {
                   {tier.name}
                 </div>
                 <div className="font-display text-3xl font-semibold">
-                  {tier.price}
-                  {tier.key !== "free" && (
-                    <span className="text-base text-muted-foreground font-normal"> / month</span>
+                  {showIntroOffer && tier.key === "pro" ? (
+                    <>
+                      {copy.upgrade.proIntroPrice}
+                      <span className="text-base text-muted-foreground font-normal">
+                        {" "}first month
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {tier.price}
+                      {tier.key !== "free" && (
+                        <span className="text-base text-muted-foreground font-normal">
+                          {" "}/ month
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">{tier.tagline}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {showIntroOffer && tier.key === "pro"
+                    ? `Then ${copy.upgrade.proPrice}/month. Cancel anytime.`
+                    : tier.tagline}
+                </div>
 
                 <ul className="mt-6 space-y-2.5 text-sm">
                   {tier.features.map((f) => (
@@ -230,10 +247,17 @@ const Upgrade = () => {
                           nav("/auth?next=/upgrade");
                           return;
                         }
+                        const useIntro = showIntroOffer && tier.key === "pro";
                         void track("upgrade_clicked", {
                           plan,
-                          metadata: { surface: "upgrade_page", target_plan: tier.key, price_id: tier.priceId },
+                          metadata: {
+                            surface: "upgrade_page",
+                            target_plan: tier.key,
+                            price_id: tier.priceId,
+                            intro_offer: useIntro,
+                          },
                         });
+                        setCheckoutWithIntro(useIntro);
                         setCheckoutPriceId(tier.priceId!);
                       }}
                       className={`w-full ${
@@ -243,9 +267,11 @@ const Upgrade = () => {
                       }`}
                       variant={tier.highlight ? "default" : "secondary"}
                     >
-                      {plan === "pro" && tier.key === "coach_plus"
-                        ? "Upgrade to Coach+"
-                        : `Get ${tier.name}`}
+                      {showIntroOffer && tier.key === "pro"
+                        ? copy.upgrade.intro.buttonCta
+                        : plan === "pro" && tier.key === "coach_plus"
+                          ? "Upgrade to Coach+"
+                          : `Get ${tier.name}`}
                     </Button>
                   )}
                 </div>
@@ -253,6 +279,12 @@ const Upgrade = () => {
             );
           })}
         </div>
+
+        {showIntroOffer && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            {copy.upgrade.intro.smallPrint}
+          </p>
+        )}
 
         <p className="mt-6 text-xs text-muted-foreground">
           Plan changes take effect immediately and are prorated. Cancellations take effect at the
@@ -265,6 +297,7 @@ const Upgrade = () => {
         onOpenChange={(o) => {
           if (!o) {
             setCheckoutPriceId(null);
+            setCheckoutWithIntro(false);
             // Refresh plan when modal closes — webhook may have already updated.
             void refresh();
           }
@@ -278,6 +311,7 @@ const Upgrade = () => {
             {checkoutPriceId && (
               <StripeEmbeddedCheckout
                 priceId={checkoutPriceId}
+                introOffer={checkoutWithIntro}
                 returnUrl={`${window.location.origin}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`}
               />
             )}

@@ -120,9 +120,9 @@ const Landing = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
-              { name: "Free", price: "£0", desc: "Try it once.", features: ["1 prep session", "10 questions", "Read in-app"] },
-              { name: "Pro", price: "£19", desc: "For serious candidates.", features: ["Unlimited sessions", "100 questions per role", "Practice mode", "PDF & DOCX export", "Saved history"], featured: true },
-              { name: "Coach+", price: "£49", desc: "For executives & coaches.", features: ["Everything in Pro", "AI answer guidance", "Practice analytics", "Premium templates", "Priority support"] },
+              { name: "Free", price: "$0", desc: "Try it once.", features: ["1 prep session", "10 questions", "Read in-app"] },
+              { name: "Pro", price: "$29", desc: "For serious candidates.", features: ["Unlimited sessions", "100 questions per role", "Practice mode", "PDF & DOCX export", "Saved history"], featured: true },
+              { name: "Coach+", price: "$79", desc: "For executives & coaches.", features: ["Everything in Pro", "AI answer guidance", "Practice analytics", "Premium templates", "Priority support"] },
             ].map((p) => (
               <div key={p.name} className={`bg-background p-8 ${p.featured ? "ring-1 ring-foreground" : ""}`}>
                 {p.featured && <div className="text-[10px] uppercase tracking-widest text-accent mb-3">Most popular</div>}

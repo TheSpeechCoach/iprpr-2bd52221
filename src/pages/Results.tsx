@@ -1189,6 +1189,36 @@ const Block = ({
 );
 
 
+const CoachInsightBlock = ({ insight }: { insight: CoachInsight }) => (
+  <div className="border border-accent/40 bg-accent/[0.04] rounded-sm overflow-hidden">
+    <div className="px-4 py-2.5 border-b border-accent/30 bg-accent/[0.06] flex items-center gap-2">
+      <Compass className="h-3.5 w-3.5 text-accent" strokeWidth={1.75} />
+      <span className="text-[10px] uppercase tracking-[0.22em] font-medium text-accent">Coach Insight</span>
+    </div>
+    <div className="px-4 py-3 space-y-2 text-sm leading-relaxed">
+      {insight.really_testing && (
+        <div>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">Really testing</span>
+          <span className="text-foreground/90">{insight.really_testing}</span>
+        </div>
+      )}
+      {insight.common_mistake && (
+        <div>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">Common mistake</span>
+          <span className="text-foreground/90">{insight.common_mistake}</span>
+        </div>
+      )}
+      {insight.how_to_approach && (
+        <div>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">How to approach</span>
+          <span className="text-foreground/90">{insight.how_to_approach}</span>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+
 const AnswerDirectionBlock = ({ direction }: { direction: AnswerDirection }) => (
   <div className="border border-foreground/15 bg-foreground/[0.02] rounded-sm overflow-hidden">
     <div className="px-4 py-2.5 border-b border-foreground/10 bg-foreground/[0.03] flex items-center gap-2">

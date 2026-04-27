@@ -1,10 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan, type Plan } from "@/hooks/usePlan";
+import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { IntroOfferCallout } from "@/components/IntroOfferCallout";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +19,7 @@ import { toast } from "@/hooks/use-toast";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { track } from "@/lib/analytics";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
+import { copy } from "@/lib/copy";
 import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
 interface Tier {
@@ -78,9 +81,16 @@ const TIERS: Tier[] = [
 const Upgrade = () => {
   const { user } = useAuth();
   const { plan, isPaid, refresh } = usePlan();
+  const { eligible: introEligible } = useProIntroOfferEligibility();
   const nav = useNavigate();
+  const [params] = useSearchParams();
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
+  const [checkoutWithIntro, setCheckoutWithIntro] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
+
+  // Did the user arrive via the question-10 wall? Surface the intro offer
+  // prominently and pre-arm Pro checkout with the discount.
+  const showIntroOffer = introEligible && (params.get("offer") === "intro" || plan === "free");
 
   // Track when the upgrade page is viewed.
   useEffect(() => {

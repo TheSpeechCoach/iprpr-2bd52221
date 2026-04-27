@@ -20,6 +20,7 @@ import { getStripeEnvironment } from "@/lib/stripe";
 import { track } from "@/lib/analytics";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { copy } from "@/lib/copy";
+import { PRICING } from "@/lib/pricing";
 import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
 interface Tier {
@@ -35,8 +36,8 @@ interface Tier {
 const TIERS: Tier[] = [
   {
     key: "free",
-    name: "Free",
-    price: "$0",
+    name: PRICING.free.name,
+    price: `$${PRICING.free.price}`,
     tagline: "Start preparing",
     features: [
       "1 prep session",
@@ -48,8 +49,8 @@ const TIERS: Tier[] = [
   },
   {
     key: "pro",
-    name: "Pro",
-    price: "$29",
+    name: PRICING.pro.name,
+    price: `$${PRICING.pro.price}`,
     tagline: "Prepare properly",
     priceId: "pro_monthly",
     highlight: true,
@@ -64,8 +65,8 @@ const TIERS: Tier[] = [
   },
   {
     key: "coach_plus",
-    name: "Coach+",
-    price: "$79",
+    name: PRICING.coach_plus.name,
+    price: `$${PRICING.coach_plus.price}`,
     tagline: "Prepare like it matters",
     priceId: "coach_plus_monthly",
     features: [

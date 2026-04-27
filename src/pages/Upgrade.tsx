@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan, type Plan } from "@/hooks/usePlan";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { track } from "@/lib/analytics";
 import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
 interface Tier {
@@ -79,6 +80,12 @@ const Upgrade = () => {
   const nav = useNavigate();
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const [portalBusy, setPortalBusy] = useState(false);
+
+  // Track when the upgrade page is viewed.
+  useEffect(() => {
+    void track("upgrade_prompt_seen", { plan, metadata: { surface: "upgrade_page" } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openPortal = async () => {
     setPortalBusy(true);
@@ -200,6 +207,10 @@ const Upgrade = () => {
                           nav("/auth?next=/upgrade");
                           return;
                         }
+                        void track("upgrade_clicked", {
+                          plan,
+                          metadata: { surface: "upgrade_page", target_plan: tier.key, price_id: tier.priceId },
+                        });
                         setCheckoutPriceId(tier.priceId!);
                       }}
                       className={`w-full ${

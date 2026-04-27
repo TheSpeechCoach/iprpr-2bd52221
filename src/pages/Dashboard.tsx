@@ -100,7 +100,10 @@ const Dashboard = () => {
               </Button>
             </Link>
           ) : (
-            <Link to="/upgrade">
+            <Link
+              to="/upgrade"
+              onClick={() => track("upgrade_clicked", { plan, metadata: { surface: "dashboard_session_limit" } })}
+            >
               <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
                 <Sparkles className="h-4 w-4 mr-2" /> Upgrade for more sessions
               </Button>

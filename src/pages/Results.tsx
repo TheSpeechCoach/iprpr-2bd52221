@@ -243,6 +243,21 @@ const Results = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Track results_viewed once the pack is ready, plus question_10_reached when the
+  // user actually has access to a 10th question.
+  useEffect(() => {
+    if (!id) return;
+    if (session?.status === "ready" && questions.length > 0) {
+      trackOnce("results_viewed", id, { plan, sessionId: id });
+      const tenthVisible = questions.some(
+        (q) => q.position >= 10 && q.position <= questionLimit,
+      );
+      if (tenthVisible) {
+        trackOnce("question_10_reached", id, { plan, sessionId: id });
+      }
+    }
+  }, [id, plan, questions, session?.status, questionLimit]);
+
   const retryGeneration = async () => {
     if (!id) return;
     setRetrying(true);

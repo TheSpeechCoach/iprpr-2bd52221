@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { track } from "@/lib/analytics";
+import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
 interface Tier {
@@ -131,6 +132,12 @@ const Upgrade = () => {
           Plain pricing. Cancel anytime. Your access continues until the end of the period you've
           paid for.
         </p>
+
+        {plan === "free" && (
+          <div className="mt-6 border-l-2 border-accent/40 pl-4 max-w-xl">
+            <SoftUrgencyNote />
+          </div>
+        )}
 
         {isPaid && (
           <div className="mt-8 border border-border bg-secondary/40 p-5 flex items-center justify-between gap-4 flex-wrap">

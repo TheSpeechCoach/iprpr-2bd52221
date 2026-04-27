@@ -60,6 +60,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 
 // Friendlier, plain-English category labels for the interviewer's lens.
 const CATEGORY_LABELS: Record<string, string> = {
@@ -1059,6 +1060,11 @@ const Results = () => {
                           <Sparkles className="h-4 w-4" /> Upgrade to unlock all {questions.length} questions
                         </Button>
                       </Link>
+                      <SoftUrgencyNote
+                        className="mt-5"
+                        align="center"
+                        reminder="No rush — pick this back up whenever you're ready."
+                      />
                     </div>
                   </div>
                 </div>

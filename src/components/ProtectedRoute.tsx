@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { ReactNode } from "react";
+import { CandidateLockGate } from "@/components/CandidateLockGate";
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
@@ -12,5 +13,6 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
-  return <>{children}</>;
+  return <CandidateLockGate>{children}</CandidateLockGate>;
 };
+

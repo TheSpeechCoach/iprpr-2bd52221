@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-pro";
-const PROMPT_VERSION = "v5-2026-04-26-standout-tight";
+const PROMPT_VERSION = "v6-2026-04-27-first10-uncomfortable";
 
 const QUESTION_SCHEMA = {
   type: "object",
@@ -217,7 +217,21 @@ Hard rules:
   • strong = structured, confident, commercially aware. Tight ownership, a concrete example or number, a clear "so what".
   • standout = 20–30 seconds spoken (50–75 words, never more than 80). Sharp, controlled, intentional. One pointed opening line, one crisp judgement or trade-off, one concrete outcome — then stop. Not verbose. Not over-polished. Cut every word that isn't load-bearing. It should feel like restraint, not performance.
 - Avoid jargon unless the role demands it. Never use the words "basic", "intermediate", "advanced".
-- Position numbers are 1-based and sequential.`;
+- Position numbers are 1-based and sequential.
+
+CRITICAL — THE FIRST 10 QUESTIONS (positions 1–10):
+These ten questions are the only thing many candidates will ever see. They MUST feel uncomfortably accurate — the candidate should think "how do they know that?" Every one of the first 10 must reference a specific, named detail from the CV, the job description, or the company (a role title, employer, project, gap, transition, claim, number, or stated requirement). No generic openers. No filler. No "tell me about yourself" unless it is sharpened with a specific angle from their CV.
+
+The first 10 must include AT LEAST this category mix (positions can be in any order within 1–10):
+  • 2 × CV/Background — challenging questions that probe specific claims, transitions, gaps, or numbers from the CV. Pick the two most exposed or interesting items in this CV.
+  • 2 × Behavioural — STAR-style questions tied to a real scenario this candidate has plausibly faced given their CV.
+  • 2 × Role-Fit — questions that test fit against named requirements in this job description.
+  • 1 × Pressure — a sharp, slightly destabilising question (a challenge to a claim, a gap, a contradiction, or a hard hypothetical from the role). It should make a confident candidate pause.
+  • 1 × Company Motivation — the "why you / why us" question, made specific (reference the company, product, mission, or a public detail if mentioned in the spec).
+The remaining 2 slots in the first 10 should be the next-most-revealing categories for THIS candidate (typically Weaknesses, Leadership, Stakeholder, or Commercial Awareness — pick what exposes the most signal).
+
+Do NOT pad the first 10 with Opening pleasantries, Closing questions, or generic Strengths prompts. Save those for later in the pack.
+After position 10, distribute the remaining categories naturally across the interview arc.`;
 
         const userPrompt = `Generate exactly ${numQuestions} interview questions.
 
@@ -251,6 +265,8 @@ INTERVIEW PARAMETERS
 - Focus mix (rough %): ${JSON.stringify(session.focus_mix)}
 - Include follow-ups: ${session.include_followups}
 - Include answer framework: ${session.include_answer_angles}
+
+REMINDER: Positions 1–10 are the high-stakes preview. They must reference specific, named details from the CV/role above and meet the category mix in the system prompt (≥2 CV/Background, ≥2 Behavioural, ≥2 Role-Fit, ≥1 Pressure, ≥1 Company Motivation). No generic openers in the first 10.
 
 Return the result by calling the produce_interview_pack tool. Do not write any prose outside the tool call.`;
 

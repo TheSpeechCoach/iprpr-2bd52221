@@ -154,6 +154,7 @@ const Results = () => {
   const { id } = useParams();
   const nav = useNavigate();
   const { plan, questionLimit } = usePlan();
+  const { eligible: introEligible } = useProIntroOfferEligibility();
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [search, setSearch] = useState("");

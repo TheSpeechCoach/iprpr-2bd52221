@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { PLAN_LIMITS, type Plan } from "@/lib/planLimits";
 
-export const FREE_SESSION_LIMIT = 1;
-export const FREE_QUESTION_LIMIT = 25;
+export const FREE_SESSION_LIMIT = PLAN_LIMITS.free.maxPrepSessions;
+export const FREE_QUESTION_LIMIT = PLAN_LIMITS.free.visibleQuestions;
 
-export type Plan = "free" | "pro" | "coach_plus";
+export type { Plan };
 
 interface PlanState {
   plan: Plan;

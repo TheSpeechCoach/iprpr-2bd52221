@@ -251,6 +251,7 @@ export type Database = {
           answer_direction: Json | null
           answer_framework: string | null
           category: string
+          coach_insight: Json | null
           created_at: string
           difficulty: string | null
           example_answers: Json | null
@@ -271,6 +272,7 @@ export type Database = {
           answer_direction?: Json | null
           answer_framework?: string | null
           category: string
+          coach_insight?: Json | null
           created_at?: string
           difficulty?: string | null
           example_answers?: Json | null
@@ -291,6 +293,7 @@ export type Database = {
           answer_direction?: Json | null
           answer_framework?: string | null
           category?: string
+          coach_insight?: Json | null
           created_at?: string
           difficulty?: string | null
           example_answers?: Json | null

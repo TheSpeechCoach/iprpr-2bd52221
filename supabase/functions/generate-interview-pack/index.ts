@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-pro";
-const PROMPT_VERSION = "v6-2026-04-27-first10-uncomfortable";
+const PROMPT_VERSION = "v7-2026-04-27-coach-insights";
 
 const QUESTION_SCHEMA = {
   type: "object",
@@ -79,7 +79,7 @@ const QUESTION_SCHEMA = {
               },
               strong: {
                 type: "string",
-                description: "Strong tier. Structured, confident, commercially aware. Tight delivery, clear ownership ('I'), one concrete example or number. Spoken. 60–110 words.",
+                description: "Strong tier. Structured, confident, commercially aware. Tight ownership ('I'), one concrete example or number. Spoken. 60–110 words.",
               },
               standout: {
                 type: "string",
@@ -87,6 +87,26 @@ const QUESTION_SCHEMA = {
               },
             },
             required: ["foundation", "strong", "standout"],
+            additionalProperties: false,
+          },
+          coach_insight: {
+            type: "object",
+            description: "OPTIONAL expert annotation. Only populate on 3–5 of the most pivotal questions in the whole pack (typically inside positions 1–10). Leave null on every other question. Each field is ONE short sentence — together the three lines must be readable in under 15 seconds.",
+            properties: {
+              really_testing: {
+                type: "string",
+                description: "What the interviewer is really testing beneath the surface of the question. One sentence, ≤ 22 words.",
+              },
+              common_mistake: {
+                type: "string",
+                description: "The single most common mistake candidates make on this question. One sentence, ≤ 22 words.",
+              },
+              how_to_approach: {
+                type: "string",
+                description: "How a strong candidate should approach the answer. One sentence, ≤ 22 words.",
+              },
+            },
+            required: ["really_testing", "common_mistake", "how_to_approach"],
             additionalProperties: false,
           },
         },
@@ -231,7 +251,10 @@ The first 10 must include AT LEAST this category mix (positions can be in any or
 The remaining 2 slots in the first 10 should be the next-most-revealing categories for THIS candidate (typically Weaknesses, Leadership, Stakeholder, or Commercial Awareness — pick what exposes the most signal).
 
 Do NOT pad the first 10 with Opening pleasantries, Closing questions, or generic Strengths prompts. Save those for later in the pack.
-After position 10, distribute the remaining categories naturally across the interview arc.`;
+After position 10, distribute the remaining categories naturally across the interview arc.
+
+COACH INSIGHTS (selective):
+Choose EXACTLY 3–5 of the most pivotal questions in the entire pack and attach a "coach_insight" object to each. Pick the questions a coach would most want to flag — typically the Pressure question, the toughest CV/Background probe, the sharpest Behavioural, the Company Motivation question, and one more if warranted. Strongly prefer questions inside positions 1–10. Every other question MUST omit "coach_insight" entirely (do not include the field, do not return null padding). Each insight has three single-sentence fields, each ≤ 22 words: what the interviewer is really testing, the most common mistake, and how a strong candidate should approach it. Concrete, specific to this question — never generic.`;
 
         const userPrompt = `Generate exactly ${numQuestions} interview questions.
 
@@ -363,6 +386,7 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
           answer_framework: q.answer_framework || null,
           answer_direction: q.answer_direction ?? null,
           example_answers: q.example_answers ?? null,
+          coach_insight: q.coach_insight ?? null,
           difficulty: q.difficulty ?? null,
         }));
 

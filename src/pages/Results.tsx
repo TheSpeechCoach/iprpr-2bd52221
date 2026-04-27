@@ -104,6 +104,7 @@ interface Question {
   answer_framework: string | null;
   answer_direction: AnswerDirection | null;
   example_answers: ExampleAnswers | null;
+  coach_insight: CoachInsight | null;
   user_answer: string | null;
   difficulty: string | null;
   starred: boolean;
@@ -121,6 +122,12 @@ interface ExampleAnswers {
   foundation?: string;
   strong?: string;
   standout?: string;
+}
+
+interface CoachInsight {
+  really_testing?: string;
+  common_mistake?: string;
+  how_to_approach?: string;
 }
 
 const AUTHENTICITY_PROMPT = "Now say this in your own words. Write how you'd actually deliver it in the room.";
@@ -862,6 +869,11 @@ const Results = () => {
                                     <Pencil className="h-3 w-3" /> Your answer
                                   </span>
                                 )}
+                                {q.coach_insight && (q.coach_insight.really_testing || q.coach_insight.common_mistake || q.coach_insight.how_to_approach) && (
+                                  <span className="text-[10px] uppercase tracking-[0.15em] text-accent inline-flex items-center gap-1 border border-accent/40 px-1.5 py-0.5 rounded-sm">
+                                    <Compass className="h-3 w-3" /> Coach Insight
+                                  </span>
+                                )}
                               </div>
                               <div className="text-[15px] md:text-base font-medium leading-snug text-foreground pr-2">
                                 {q.question}
@@ -887,6 +899,9 @@ const Results = () => {
                         </AccordionTrigger>
                         <AccordionContent className="px-4 md:px-6 pb-6">
                           <div className="md:ml-14 space-y-3 text-sm">
+                            {q.coach_insight && (q.coach_insight.really_testing || q.coach_insight.common_mistake || q.coach_insight.how_to_approach) && (
+                              <CoachInsightBlock insight={q.coach_insight} />
+                            )}
                             {q.why_matters && (
                               <Block
                                 label="Why this matters"
@@ -1170,6 +1185,36 @@ const Block = ({
     <p className={`text-sm leading-relaxed ${tone === "strong" ? "text-foreground font-medium" : "text-foreground/85"}`}>
       {body}
     </p>
+  </div>
+);
+
+
+const CoachInsightBlock = ({ insight }: { insight: CoachInsight }) => (
+  <div className="border border-accent/40 bg-accent/[0.04] rounded-sm overflow-hidden">
+    <div className="px-4 py-2.5 border-b border-accent/30 bg-accent/[0.06] flex items-center gap-2">
+      <Compass className="h-3.5 w-3.5 text-accent" strokeWidth={1.75} />
+      <span className="text-[10px] uppercase tracking-[0.22em] font-medium text-accent">Coach Insight</span>
+    </div>
+    <div className="px-4 py-3 space-y-2 text-sm leading-relaxed">
+      {insight.really_testing && (
+        <div>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">Really testing</span>
+          <span className="text-foreground/90">{insight.really_testing}</span>
+        </div>
+      )}
+      {insight.common_mistake && (
+        <div>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">Common mistake</span>
+          <span className="text-foreground/90">{insight.common_mistake}</span>
+        </div>
+      )}
+      {insight.how_to_approach && (
+        <div>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mr-2">How to approach</span>
+          <span className="text-foreground/90">{insight.how_to_approach}</span>
+        </div>
+      )}
+    </div>
   </div>
 );
 

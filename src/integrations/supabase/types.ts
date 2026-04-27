@@ -702,6 +702,7 @@ export type Database = {
         Row: {
           bucket: string
           created_at: string
+          cv_content_hash: string | null
           extracted_text: string | null
           file_path: string
           id: string
@@ -716,6 +717,7 @@ export type Database = {
         Insert: {
           bucket?: string
           created_at?: string
+          cv_content_hash?: string | null
           extracted_text?: string | null
           file_path: string
           id?: string
@@ -730,6 +732,7 @@ export type Database = {
         Update: {
           bucket?: string
           created_at?: string
+          cv_content_hash?: string | null
           extracted_text?: string | null
           file_path?: string
           id?: string
@@ -845,6 +848,23 @@ export type Database = {
         Returns: boolean
       }
       plan_from_price_id: { Args: { _price_id: string }; Returns: string }
+      pro_period_bounds: {
+        Args: { _user_id: string }
+        Returns: {
+          period_end: string
+          period_start: string
+        }[]
+      }
+      pro_usage_counts: {
+        Args: { _user_id: string }
+        Returns: {
+          distinct_cvs: number
+          distinct_roles: number
+          job_specs: number
+          period_end: string
+          period_start: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"

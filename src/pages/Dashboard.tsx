@@ -35,6 +35,7 @@ const Dashboard = () => {
     currentPeriodEnd,
     refresh: refreshPlan,
   } = usePlan();
+  const { eligible: introEligible } = useProIntroOfferEligibility();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -138,24 +139,31 @@ const Dashboard = () => {
 
         {/* Free plan banner */}
         {!planLoading && plan === "free" && (
-          <div className="mt-8 border border-border bg-secondary/40 p-5 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-            <div className="flex-1">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Free plan</div>
-              <div className="text-sm">
-                <span className="font-medium">{Math.min(sessionsUsed, FREE_SESSION_LIMIT)} of {FREE_SESSION_LIMIT}</span>
-                <span className="text-muted-foreground"> session used · 10 questions visible per pack</span>
+          <>
+            <div className="mt-8 border border-border bg-secondary/40 p-5 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+              <div className="flex-1">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Free plan</div>
+                <div className="text-sm">
+                  <span className="font-medium">{Math.min(sessionsUsed, FREE_SESSION_LIMIT)} of {FREE_SESSION_LIMIT}</span>
+                  <span className="text-muted-foreground"> session used · 10 questions visible per pack</span>
+                </div>
+                <SoftUrgencyNote className="mt-3" showSocialProof={false} />
               </div>
-              <SoftUrgencyNote className="mt-3" showSocialProof={false} />
+              <Link
+                to={introEligible ? "/upgrade?offer=intro" : "/upgrade"}
+                onClick={() => track("upgrade_clicked", { plan, metadata: { surface: "dashboard_free_banner", intro_offer: introEligible } })}
+              >
+                <Button variant="outline" className="gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-accent" /> Upgrade to Pro
+                </Button>
+              </Link>
             </div>
-            <Link
-              to="/upgrade"
-              onClick={() => track("upgrade_clicked", { plan, metadata: { surface: "dashboard_free_banner" } })}
-            >
-              <Button variant="outline" className="gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-accent" /> Upgrade to Pro
-              </Button>
-            </Link>
-          </div>
+            {introEligible && (
+              <div className="mt-4">
+                <IntroOfferCallout variant="dashboard" />
+              </div>
+            )}
+          </>
         )}
 
         <div className="mt-10">

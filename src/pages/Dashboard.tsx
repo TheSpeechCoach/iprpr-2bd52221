@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { Plus, FileText, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { track } from "@/lib/analytics";
+import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 
 interface Session {
   id: string;

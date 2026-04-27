@@ -1016,6 +1016,7 @@ const Results = () => {
             {plan === "free" && (() => {
               const locked = filtered.filter((q) => q.position > questionLimit);
               if (locked.length === 0) return null;
+              if (id) trackOnce("upgrade_prompt_seen", `results:${id}`, { plan, sessionId: id, metadata: { surface: "results_locked_questions" } });
               const preview = locked.slice(0, 6);
               return (
                 <div className="relative mt-6">
@@ -1049,7 +1050,11 @@ const Results = () => {
                       <p className="mt-2 text-sm text-muted-foreground">
                         You're seeing the first {questionLimit} of your tailored pack. Upgrade to Pro to unlock the full set, plus PDF and DOCX export.
                       </p>
-                      <Link to="/upgrade" className="inline-block mt-5 w-full">
+                      <Link
+                        to="/upgrade"
+                        className="inline-block mt-5 w-full"
+                        onClick={() => track("upgrade_clicked", { plan, sessionId: id ?? null, metadata: { surface: "results_locked_questions" } })}
+                      >
                         <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
                           <Sparkles className="h-4 w-4" /> Upgrade to unlock all {questions.length} questions
                         </Button>

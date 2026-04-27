@@ -56,6 +56,14 @@ const PrepWizard = () => {
   const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
   const updateMix = (k: string, v: number) => setForm((f) => ({ ...f, focus_mix: { ...f.focus_mix, [k]: v } }));
 
+  // Track that the user started a new prep session (entered the wizard).
+  useEffect(() => {
+    if (user?.id) {
+      void track("prep_session_started", { userId: user.id, plan });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const handleFetchSpec = async () => {
     if (!form.job_spec_url.trim()) {
       toast({ title: "Add a link first", description: "Paste the URL of a public job posting.", variant: "destructive" });

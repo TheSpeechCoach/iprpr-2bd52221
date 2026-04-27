@@ -35,6 +35,36 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          metadata: Json | null
+          plan: string | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          metadata?: Json | null
+          plan?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          metadata?: Json | null
+          plan?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       candidate_inputs: {
         Row: {
           candidate_current_role: string | null
@@ -720,7 +750,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      analytics_funnel_summary: {
+        Row: {
+          day: string | null
+          reached_q10_users: number | null
+          results_to_upgrade_pct: number | null
+          results_viewed_users: number | null
+          subscription_started_users: number | null
+          upgrade_clicked_users: number | null
+          upgrade_prompt_users: number | null
+        }
+        Relationships: []
+      }
+      analytics_wizard_dropoff: {
+        Row: {
+          event_name: string | null
+          step_order: number | null
+          users_reached: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_user_plan: {

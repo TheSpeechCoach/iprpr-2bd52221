@@ -104,6 +104,7 @@ interface Question {
   answer_framework: string | null;
   answer_direction: AnswerDirection | null;
   example_answers: ExampleAnswers | null;
+  coach_insight: CoachInsight | null;
   user_answer: string | null;
   difficulty: string | null;
   starred: boolean;
@@ -121,6 +122,12 @@ interface ExampleAnswers {
   foundation?: string;
   strong?: string;
   standout?: string;
+}
+
+interface CoachInsight {
+  really_testing?: string;
+  common_mistake?: string;
+  how_to_approach?: string;
 }
 
 const AUTHENTICITY_PROMPT = "Now say this in your own words. Write how you'd actually deliver it in the room.";

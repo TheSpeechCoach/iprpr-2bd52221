@@ -899,6 +899,9 @@ const Results = () => {
                         </AccordionTrigger>
                         <AccordionContent className="px-4 md:px-6 pb-6">
                           <div className="md:ml-14 space-y-3 text-sm">
+                            {q.coach_insight && (q.coach_insight.really_testing || q.coach_insight.common_mistake || q.coach_insight.how_to_approach) && (
+                              <CoachInsightBlock insight={q.coach_insight} />
+                            )}
                             {q.why_matters && (
                               <Block
                                 label="Why this matters"

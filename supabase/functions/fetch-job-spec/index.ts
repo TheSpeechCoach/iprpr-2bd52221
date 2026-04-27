@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
   "behavioural_competencies": [],
   "leadership_scope": ""
 }
-Rules: arrays must be string lists of concise points. leadership_scope is a 1-2 sentence summary (e.g. team size, budget, span). Use British English. Empty string or empty array if unknown.`;
+Rules: arrays must be string lists of concise points. leadership_scope is a 1-2 sentence summary (e.g. team size, budget, span). Use British English (en-GB) only — UK spellings (organisation, behaviour, programme, optimise, recognise, analyse, centre, licence as noun, practise as verb), no Americanisms. Empty string or empty array if unknown.`;
 
     const aiResp = await fetch(AI_URL, {
       method: "POST",

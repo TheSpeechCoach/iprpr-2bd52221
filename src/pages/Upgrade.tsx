@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { track } from "@/lib/analytics";
+import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
 interface Tier {

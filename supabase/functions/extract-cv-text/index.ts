@@ -3,6 +3,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { extractText, getDocumentProxy } from "https://esm.sh/unpdf@0.12.1";
 import { unzipSync, strFromU8 } from "https://esm.sh/fflate@0.8.2";
+import {
+  PRO_LIMITS,
+  getProUsage,
+  getUserPlan,
+  sha256Hex,
+  buildLimitBlock,
+} from "../_shared/proLimits.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -143,6 +150,41 @@ Deno.serve(async (req) => {
     }
 
     const bytes = new Uint8Array(await blob.arrayBuffer());
+    const contentHash = await sha256Hex(bytes);
+
+    // ===== Pro plan distinct-CV cap =====
+    // Free has its own session cap elsewhere; Coach+ is uncapped.
+    const env = (req.headers.get("x-stripe-env") === "live") ? "live" : "sandbox";
+    const userPlan = await getUserPlan(admin, userId, env);
+    if (userPlan === "pro") {
+      const usage = await getProUsage(admin, userId);
+      if (usage) {
+        // Check whether this exact CV content already counts in this period.
+        const { data: existingHash } = await admin
+          .from("uploaded_files")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("kind", "cv")
+          .eq("cv_content_hash", contentHash)
+          .gte("created_at", usage.period_start)
+          .lt("created_at", usage.period_end)
+          .limit(1)
+          .maybeSingle();
+
+        const isNewCv = !existingHash;
+        if (isNewCv && usage.distinct_cvs >= PRO_LIMITS.distinctCvsPerPeriod) {
+          const block = buildLimitBlock(
+            "distinctCvsPerPeriod",
+            usage.distinct_cvs,
+            usage.period_end,
+          );
+          return new Response(JSON.stringify(block), {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+    }
 
     let raw = "";
     try {
@@ -170,7 +212,12 @@ Deno.serve(async (req) => {
       if (existing?.id) {
         await admin
           .from("uploaded_files")
-          .update({ extracted_text: text, mime_type: mime || null, size_bytes: blob.size })
+          .update({
+            extracted_text: text,
+            mime_type: mime || null,
+            size_bytes: blob.size,
+            cv_content_hash: contentHash,
+          })
           .eq("id", existing.id);
       } else {
         await admin.from("uploaded_files").insert({
@@ -182,6 +229,7 @@ Deno.serve(async (req) => {
           mime_type: mime || null,
           size_bytes: blob.size,
           extracted_text: text,
+          cv_content_hash: contentHash,
         });
       }
     } catch (persistErr) {

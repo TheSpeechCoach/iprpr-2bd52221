@@ -51,11 +51,23 @@ export const copy = {
     signUpTitle: "Create your account",
     emailLabel: "Email",
     passwordLabel: "Password",
-    fullNameLabel: "Full name",
+    fullNameLabel: "Your full name",
+    candidateNameLabel: "Candidate full name",
+    candidateNameHelp:
+      "Each Pro account is for one named candidate. This is the person who will be interviewed.",
+    candidateEmailLabel: "Candidate email",
+    candidateEmailHelp: "Used to keep prep tied to the named candidate.",
+    candidateLinkedinLabel: "LinkedIn URL (optional)",
+    candidateLinkedinHelp: "Helps us tailor questions more accurately.",
     forgotPassword: "Forgot password?",
     googleContinue: "Continue with Google",
     haveAccount: "Already have an account?",
     noAccount: "Don't have an account?",
+    candidateLockNotice:
+      "One Pro account = one candidate. Sessions for a different person will be blocked.",
+    candidateMismatchTitle: "Candidate mismatch",
+    candidateMismatchBody: (locked: string) =>
+      `This account is locked to ${locked}. Sessions or CVs for a different candidate aren't allowed. Contact support if you need to change the named candidate.`,
   },
 
   dashboard: {

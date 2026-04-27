@@ -2,6 +2,7 @@
 // Auth required. Strict JSON via tool-calling. Persists pack + questions.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { ukifyJson } from "../_shared/ukEnglish.ts";
+import { namesLooselyMatch, cvMentionsName, normaliseName } from "../_shared/candidateLock.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -184,7 +185,55 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ===== Single-candidate enforcement =====
+    // Each account is locked to one named candidate. Sessions whose candidate
+    // name or CV refer to a different person are hard-blocked AND flagged.
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("candidate_full_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const lockedName = (profile?.candidate_full_name ?? "").trim();
+    if (lockedName) {
+      const sessionName = (session.full_name ?? "").trim();
+      const nameMatches = sessionName ? namesLooselyMatch(lockedName, sessionName) : true;
+      const cvMatches = session.cv_text ? cvMentionsName(session.cv_text, lockedName) : true;
+
+      if (!nameMatches || !cvMatches) {
+        const reason = !nameMatches ? "candidate_name_mismatch" : "cv_name_mismatch";
+        const evidence = {
+          locked_candidate: lockedName,
+          session_id: sessionId,
+          session_full_name: sessionName || null,
+          normalised_locked: normaliseName(lockedName),
+          normalised_session: normaliseName(sessionName),
+          name_matches: nameMatches,
+          cv_matches: cvMatches,
+        };
+        // Best-effort insert: a partial unique index keeps one open flag per user.
+        await admin.from("account_flags")
+          .insert({ user_id: userId, reason, evidence, status: "open" })
+          .then(() => null, () => null);
+        await admin.from("admin_logs").insert({
+          event: "account_flagged_multi_candidate",
+          metadata: { user_id: userId, reason, ...evidence },
+        });
+        await admin.from("prep_sessions").update({ status: "blocked" }).eq("id", sessionId);
+        return new Response(
+          JSON.stringify({
+            error: "CANDIDATE_LOCK_VIOLATION",
+            reason,
+            locked_candidate: lockedName,
+            message: `This account is locked to ${lockedName}. Sessions or CVs for a different candidate aren't allowed. Contact support to change the named candidate.`,
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // ===== Server-side plan enforcement =====
+
     // Resolve the user's effective plan via the security-definer helper.
     // Free users: max 1 non-draft session ever.
     const env = (req.headers.get("x-stripe-env") === "live") ? "live" : "sandbox";

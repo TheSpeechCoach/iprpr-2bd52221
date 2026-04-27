@@ -207,8 +207,19 @@ const PrepWizard = () => {
       const { data: genData, error: fnErr } = await supabase.functions.invoke("generate-interview-pack", {
         body: { session_id: session.id },
       });
-      if (fnErr) throw new Error(fnErr.message || "We couldn't start the generator. Please try again.");
-      if (genData?.error) throw new Error(genData.error);
+      if (fnErr) {
+        // Edge functions returning non-2xx surface here; try to read the JSON body.
+        let friendly = fnErr.message || "We couldn't start the generator. Please try again.";
+        try {
+          const ctx: any = (fnErr as any).context;
+          if (ctx?.json) {
+            const j = await ctx.json();
+            if (j?.message) friendly = j.message;
+          }
+        } catch (_) {}
+        throw new Error(friendly);
+      }
+      if (genData?.error) throw new Error(genData?.message || genData.error);
 
       void track("generation_completed", {
         userId: user.id,

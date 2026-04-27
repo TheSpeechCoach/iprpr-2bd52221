@@ -60,6 +60,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 
 // Friendlier, plain-English category labels for the interviewer's lens.
 const CATEGORY_LABELS: Record<string, string> = {

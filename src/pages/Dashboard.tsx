@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan, FREE_SESSION_LIMIT } from "@/hooks/usePlan";
 import { SiteHeader } from "@/components/SiteHeader";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { Plus, FileText, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -19,9 +21,19 @@ interface Session {
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { plan, sessionsUsed, canCreateSession, loading: planLoading } = usePlan();
+  const {
+    plan,
+    sessionsUsed,
+    canCreateSession,
+    loading: planLoading,
+    pastDue,
+    cancelAtPeriodEnd,
+    currentPeriodEnd,
+    refresh: refreshPlan,
+  } = usePlan();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const load = async () => {
@@ -35,8 +47,39 @@ const Dashboard = () => {
     if (user) load();
   }, [user]);
 
+  // Handle return from Stripe checkout
+  useEffect(() => {
+    if (searchParams.get("checkout") === "success") {
+      toast({
+        title: "Payment received",
+        description: "Welcome to the paid plan. Your access is unlocking now.",
+      });
+      // Webhook may take a beat — refetch a few times.
+      void refreshPlan();
+      const t1 = setTimeout(() => refreshPlan(), 2000);
+      const t2 = setTimeout(() => refreshPlan(), 5000);
+      searchParams.delete("checkout");
+      searchParams.delete("session_id");
+      setSearchParams(searchParams, { replace: true });
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [searchParams, setSearchParams, refreshPlan]);
+
+  const planLabel = plan === "coach_plus" ? "Coach+" : plan === "pro" ? "Pro" : "Free";
+  const periodEndLabel = currentPeriodEnd
+    ? new Date(currentPeriodEnd).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+
   return (
     <div className="min-h-screen flex flex-col">
+      <PaymentTestModeBanner />
       <SiteHeader />
       <main className="container-tight flex-1 py-12">
         <div className="flex items-end justify-between flex-wrap gap-4">
@@ -60,7 +103,29 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Plan banner */}
+        {/* Past-due banner */}
+        {!planLoading && pastDue && (
+          <div className="mt-8 border border-accent/40 bg-accent/5 p-5 flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex-1 text-sm">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-accent mb-1">Payment issue</div>
+              Your last payment didn't go through. Update your card to keep your {planLabel} access.
+            </div>
+            <Link to="/upgrade">
+              <Button variant="outline">Update payment</Button>
+            </Link>
+          </div>
+        )}
+
+        {/* Cancellation notice */}
+        {!planLoading && cancelAtPeriodEnd && periodEndLabel && (
+          <div className="mt-8 border border-border bg-secondary/40 p-5 text-sm">
+            <span className="text-muted-foreground">Your {planLabel} plan ends on </span>
+            <span className="font-medium">{periodEndLabel}</span>
+            <span className="text-muted-foreground">. You'll keep full access until then.</span>
+          </div>
+        )}
+
+        {/* Free plan banner */}
         {!planLoading && plan === "free" && (
           <div className="mt-8 border border-border bg-secondary/40 p-5 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
             <div className="flex-1">

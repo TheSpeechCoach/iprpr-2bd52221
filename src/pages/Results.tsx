@@ -169,7 +169,19 @@ const Results = () => {
           .update({ user_answer: val })
           .eq("id", qid);
         setSavingAnswerId(null);
-        if (!error) {
+        if (error) {
+          if (
+            error.message?.includes("UPGRADE_REQUIRED") ||
+            (error as any).code === "42501"
+          ) {
+            toast({
+              title: "Upgrade to save answers",
+              description: "Saving written answers is part of Pro. Upgrade to keep your work.",
+              variant: "destructive",
+            });
+            nav("/upgrade");
+          }
+        } else {
           setQuestions((prev) =>
             prev.map((x) => (x.id === qid ? { ...x, user_answer: val } : x))
           );

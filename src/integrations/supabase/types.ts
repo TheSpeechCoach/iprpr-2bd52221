@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_flags: {
+        Row: {
+          created_at: string
+          evidence: Json
+          id: string
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          evidence?: Json
+          id?: string
+          reason: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          evidence?: Json
+          id?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_logs: {
         Row: {
           created_at: string
@@ -527,6 +563,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          candidate_email: string | null
+          candidate_full_name: string | null
+          candidate_linkedin_url: string | null
+          candidate_locked_at: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -534,6 +574,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          candidate_email?: string | null
+          candidate_full_name?: string | null
+          candidate_linkedin_url?: string | null
+          candidate_locked_at?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -541,6 +585,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          candidate_email?: string | null
+          candidate_full_name?: string | null
+          candidate_linkedin_url?: string | null
+          candidate_locked_at?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null

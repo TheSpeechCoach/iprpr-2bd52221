@@ -20,6 +20,7 @@ import { getStripeEnvironment } from "@/lib/stripe";
 import { track } from "@/lib/analytics";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { copy } from "@/lib/copy";
+import { PRICING } from "@/lib/pricing";
 import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
 interface Tier {

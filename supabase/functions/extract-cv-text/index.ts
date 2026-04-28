@@ -11,6 +11,8 @@ import {
   hashCvContent,
   buildLimitBlock,
 } from "../_shared/proLimits.ts";
+import { logRequest } from "../_shared/requestAudit.ts";
+import { evaluateAccount } from "../_shared/abuseDetector.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,6 +104,8 @@ Deno.serve(async (req) => {
       });
     }
     userId = userData.user.id;
+    logRequest(req, userId, "extract-cv-text").catch(() => {});
+    evaluateAccount(userId).catch(() => {});
 
     const body = await req.json().catch(() => ({}));
     const bucket = (body.bucket ?? "cvs") as string;

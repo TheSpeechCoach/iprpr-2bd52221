@@ -74,6 +74,7 @@ Deno.serve(async (req) => {
       });
     }
     userId = userData.user.id;
+    logRequest(req, userId, "fetch-job-spec").catch(() => {});
 
     if (!FIRECRAWL_API_KEY) throw new Error("FIRECRAWL_API_KEY is not configured");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");

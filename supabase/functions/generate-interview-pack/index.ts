@@ -169,6 +169,8 @@ Deno.serve(async (req) => {
       });
     }
     userId = userData.user.id;
+    logRequest(req, userId, "generate-interview-pack").catch(() => {});
+    evaluateAccount(userId).catch(() => {});
 
     const body = await req.json().catch(() => ({}));
     sessionId = body.session_id ?? null;

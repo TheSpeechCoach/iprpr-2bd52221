@@ -104,6 +104,8 @@ Deno.serve(async (req) => {
       });
     }
     userId = userData.user.id;
+    logRequest(req, userId, "extract-cv-text").catch(() => {});
+    evaluateAccount(userId).catch(() => {});
 
     const body = await req.json().catch(() => ({}));
     const bucket = (body.bucket ?? "cvs") as string;

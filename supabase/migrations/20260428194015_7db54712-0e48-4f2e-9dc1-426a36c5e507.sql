@@ -1,0 +1,1 @@
+UPDATE public.profiles SET candidate_full_name = NULL, candidate_locked_at = NULL WHERE id = '5c95d81c-9e39-43e9-86ca-24bde13e670c';

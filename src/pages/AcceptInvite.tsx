@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { isInviteExpired } from "@/lib/workspaceRoles";
 
 interface InvitePreview {
   workspace_name: string;
@@ -91,7 +92,7 @@ const AcceptInvite = () => {
     );
   }
 
-  const expired = new Date(preview.expires_at) < new Date();
+  const expired = isInviteExpired(preview.expires_at);
   const blocked =
     preview.status === "revoked" ||
     preview.status === "expired" ||

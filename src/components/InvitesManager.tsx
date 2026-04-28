@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Copy, Loader2, Mail, X } from "lucide-react";
+import { isInviteExpired } from "@/lib/workspaceRoles";
 
 interface InviteRow {
   id: string;
@@ -151,7 +152,7 @@ export const InvitesManager = ({ workspaceId, userId }: Props) => {
       ) : (
         <div className="border border-border divide-y divide-border">
           {invites.map((inv) => {
-            const expired = new Date(inv.expires_at) < new Date();
+            const expired = isInviteExpired(inv.expires_at);
             const effectiveStatus = inv.status === "pending" && expired ? "expired" : inv.status;
             return (
               <div key={inv.id} className="flex items-center justify-between gap-3 p-3">

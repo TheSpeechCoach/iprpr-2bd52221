@@ -350,6 +350,57 @@ export type Database = {
           },
         ]
       }
+      generation_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_stage: string | null
+          error_message: string | null
+          id: string
+          metadata: Json
+          progress_percentage: number
+          questions_generated: number
+          session_id: string
+          status: string
+          total_questions: number
+          updated_at: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_stage?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json
+          progress_percentage?: number
+          questions_generated?: number
+          session_id: string
+          status?: string
+          total_questions?: number
+          updated_at?: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_stage?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json
+          progress_percentage?: number
+          questions_generated?: number
+          session_id?: string
+          status?: string
+          total_questions?: number
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       interview_questions: {
         Row: {
           answer_direction: Json | null

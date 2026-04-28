@@ -155,7 +155,23 @@ const Results = () => {
   const { id } = useParams();
   const nav = useNavigate();
   const { plan, questionLimit } = usePlan();
+  const { user } = useAuth();
   const { eligible: introEligible } = useProIntroOfferEligibility();
+  const [candidateName, setCandidateName] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("candidate_full_name")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setCandidateName(data?.candidate_full_name ?? "");
+      });
+    return () => { cancelled = true; };
+  }, [user?.id]);
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [search, setSearch] = useState("");

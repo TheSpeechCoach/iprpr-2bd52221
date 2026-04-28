@@ -33,3 +33,10 @@ export const PRODUCT_DECISIONS = {
 } as const;
 
 export type ProductDecisions = typeof PRODUCT_DECISIONS;
+
+export function getDecision<T extends keyof typeof PRODUCT_DECISIONS>(
+  key: T
+) {
+  return PRODUCT_DECISIONS[key];
+}
+

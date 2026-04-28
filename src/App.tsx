@@ -15,6 +15,7 @@ import Practice from "./pages/Practice";
 import Upgrade from "./pages/Upgrade";
 import PractiseDelivery from "./pages/PractiseDelivery";
 import WorkspacePage from "./pages/Workspace";
+import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/workspace" element={<ProtectedRoute><WorkspacePage /></ProtectedRoute>} />
+              <Route path="/invite/:token" element={<AcceptInvite />} />
               <Route path="/prep/new" element={<ProtectedRoute><PrepWizard /></ProtectedRoute>} />
               <Route path="/prep/:id/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
               <Route path="/prep/:id/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />

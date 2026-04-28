@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Users, UserPlus, Loader2 } from "lucide-react";
+import { InvitesManager } from "@/components/InvitesManager";
 import {
   Dialog,
   DialogContent,
@@ -116,11 +117,6 @@ const WorkspacePage = () => {
             <h2 className="font-display text-xl font-semibold flex items-center gap-2">
               <Users className="h-4 w-4" /> Members
             </h2>
-            {canManage && !current.is_personal && (
-              <Button size="sm" variant="outline" disabled title="Invites coming next">
-                <UserPlus className="h-4 w-4 mr-1.5" /> Invite (soon)
-              </Button>
-            )}
           </div>
           {loadingMembers ? (
             <div className="text-sm text-muted-foreground">Loading…</div>
@@ -138,6 +134,18 @@ const WorkspacePage = () => {
             </div>
           )}
         </section>
+
+        {/* Invites */}
+        {canManage && !current.is_personal && user && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+                <UserPlus className="h-4 w-4" /> Invites
+              </h2>
+            </div>
+            <InvitesManager workspaceId={current.id} userId={user.id} />
+          </section>
+        )}
 
         {/* Candidates */}
         <section>

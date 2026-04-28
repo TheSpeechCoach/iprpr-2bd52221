@@ -682,7 +682,7 @@ const Results = () => {
     const pct = Math.max(2, Math.min(99, job?.progress_percentage ?? 5));
     const stage = job?.current_stage ?? "Preparing your pack";
     const generated = job?.questions_generated ?? 0;
-    const total = job?.total_questions ?? session?.num_questions ?? 0;
+    const total = job?.total_questions ?? 0;
     return (
       <div className="min-h-screen flex flex-col">
         <SiteHeader />

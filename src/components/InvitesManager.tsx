@@ -152,7 +152,7 @@ export const InvitesManager = ({ workspaceId, userId }: Props) => {
       ) : (
         <div className="border border-border divide-y divide-border">
           {invites.map((inv) => {
-            const expired = new Date(inv.expires_at) < new Date();
+            const expired = isInviteExpired(inv.expires_at);
             const effectiveStatus = inv.status === "pending" && expired ? "expired" : inv.status;
             return (
               <div key={inv.id} className="flex items-center justify-between gap-3 p-3">

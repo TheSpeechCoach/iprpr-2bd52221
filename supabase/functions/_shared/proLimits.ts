@@ -8,6 +8,43 @@ export const PRO_LIMITS = {
   jobSpecsPerPeriod: 5,
 } as const;
 
+/** Per-plan distinct CV upload caps within the current billing period. */
+export const CV_DISTINCT_LIMITS: Record<"free" | "pro" | "coach_plus", number> = {
+  free: 0,            // free tier handled separately (session cap)
+  pro: 3,
+  coach_plus: 8,
+};
+
+/**
+ * Normalise extracted CV text for stable content hashing:
+ * lowercase, trim, collapse whitespace. Minor punctuation/formatting
+ * tweaks therefore still match the same hash.
+ */
+export function normaliseCvText(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/\r\n?/g, "\n")
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Hash the normalised extracted CV text. Falls back to hashing raw file
+ * bytes if extraction produced nothing usable.
+ */
+export async function hashCvContent(
+  extractedText: string | null | undefined,
+  rawBytes: Uint8Array,
+): Promise<{ hash: string; source: "text" | "bytes" }> {
+  const normalised = normaliseCvText(extractedText ?? "");
+  if (normalised.length >= 50) {
+    const enc = new TextEncoder().encode(normalised);
+    return { hash: await sha256Hex(enc), source: "text" };
+  }
+  return { hash: await sha256Hex(rawBytes), source: "bytes" };
+}
+
 export interface ProUsageRow {
   period_start: string;
   period_end: string;

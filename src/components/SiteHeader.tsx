@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 
 export const SiteHeader = () => {
   const { user, signOut } = useAuth();
@@ -21,6 +22,7 @@ export const SiteHeader = () => {
         <nav className="flex items-center gap-6 text-sm">
           {user ? (
             <>
+              <WorkspaceSwitcher />
               <Link to="/dashboard" className="hover:text-accent transition-colors">Dashboard</Link>
               <Button variant="ghost" size="sm" onClick={async () => { await signOut(); nav("/"); }}>
                 Sign out

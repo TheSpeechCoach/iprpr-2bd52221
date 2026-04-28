@@ -447,12 +447,21 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
         const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
         if (!questions.length) throw new Error("AI returned no questions");
 
+        // Resolve workspace_id from the session.
+        const { data: psRow } = await admin
+          .from("prep_sessions")
+          .select("workspace_id")
+          .eq("id", sessionId)
+          .maybeSingle();
+        const wsId = (psRow as any)?.workspace_id ?? null;
+
         // Persist pack
         const { data: pack, error: pErr } = await admin
           .from("generated_interview_packs")
           .insert({
             user_id: userId,
             session_id: sessionId,
+            workspace_id: wsId,
             status: "ready",
             candidate_summary: parsed.candidate_summary ?? null,
             role_summary: parsed.role_summary ?? null,

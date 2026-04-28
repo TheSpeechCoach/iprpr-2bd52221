@@ -125,6 +125,15 @@ const PrepWizard = () => {
 
   const handleGenerate = async () => {
     if (!user) return;
+    if (!workspace) {
+      toast({ title: "Workspace required", description: "Pick a workspace from the top-right switcher.", variant: "destructive" });
+      return;
+    }
+    if (isTeamWorkspace && !selectedCandidateId) {
+      toast({ title: "Pick a candidate", description: "Select which candidate this prep session is for.", variant: "destructive" });
+      setStep(0);
+      return;
+    }
     if (!canCreateSession) {
       toast({
         title: "Free limit reached",

@@ -95,7 +95,7 @@ const Auth = () => {
           return;
         }
         toast({ title: "Account created", description: "You're signed in." });
-        nav("/dashboard");
+        nav(redirectTo);
       } else {
         if (password.length < 6) {
           toast({ title: "Password too short", description: "Use at least 6 characters.", variant: "destructive" });
@@ -103,7 +103,7 @@ const Auth = () => {
         }
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        nav("/dashboard");
+        nav(redirectTo);
       }
     } catch (err: any) {
       const msg = err?.message ?? "Something went wrong. Please try again.";

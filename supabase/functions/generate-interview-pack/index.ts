@@ -634,7 +634,7 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
     EdgeRuntime.waitUntil(generate());
 
     return new Response(
-      JSON.stringify({ ok: true, status: "generating", session_id: sessionId }),
+      JSON.stringify({ ok: true, status: "queued", session_id: sessionId, job_id: jobId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e: any) {

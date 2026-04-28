@@ -95,8 +95,9 @@ const DIFFICULTY_TONE: Record<string, string> = {
 import { toast } from "@/hooks/use-toast";
 import { track, trackOnce } from "@/lib/analytics";
 import jsPDF from "jspdf";
-import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";
+import { Document, Packer, Paragraph, HeadingLevel, TextRun, Header, Footer, AlignmentType } from "docx";
 import { saveAs } from "file-saver";
+import { EXPORT_DISTINCT_LIMITS, formatResetDate } from "@/lib/proLimits";
 
 interface Question {
   id: string;

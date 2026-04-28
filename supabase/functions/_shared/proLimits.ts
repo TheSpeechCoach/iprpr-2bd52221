@@ -106,8 +106,9 @@ export function buildLimitBlock(
   key: LimitBlock["limit_key"],
   used: number,
   periodEnd: string,
+  overrideLimit?: number,
 ): LimitBlock {
-  const limit = PRO_LIMITS[key];
+  const limit = overrideLimit ?? PRO_LIMITS[key];
   const labels: Record<LimitBlock["limit_key"], string> = {
     distinctRolesPerPeriod: "target roles",
     distinctCvsPerPeriod: "CV uploads",
@@ -125,7 +126,7 @@ export function buildLimitBlock(
     limit,
     period_end: periodEnd,
     message:
-      `You've reached your Pro plan allowance of ${limit} ${labels[key]} this period. ` +
+      `You've reached your plan allowance of ${limit} ${labels[key]} this period. ` +
       `Your allowance resets on ${reset}.`,
   };
 }

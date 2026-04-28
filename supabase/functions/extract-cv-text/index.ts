@@ -5,9 +5,10 @@ import { extractText, getDocumentProxy } from "https://esm.sh/unpdf@0.12.1";
 import { unzipSync, strFromU8 } from "https://esm.sh/fflate@0.8.2";
 import {
   PRO_LIMITS,
+  CV_DISTINCT_LIMITS,
   getProUsage,
   getUserPlan,
-  sha256Hex,
+  hashCvContent,
   buildLimitBlock,
 } from "../_shared/proLimits.ts";
 

@@ -375,23 +375,104 @@ const Results = () => {
     toast({ title: "Copied", description: "Question copied to your clipboard." });
   };
 
-  const exportPDF = () => {
+  /**
+   * Gate exports against the per-billing-period cap.
+   *  - Pro: 3 distinct sessions / period
+   *  - Coach+: 10 distinct sessions / period
+   * Re-exporting the same session in the same period does NOT count again.
+   * Returns true if the export may proceed.
+   */
+  const checkExportAllowed = async (): Promise<boolean> => {
+    if (!user || !id) return false;
+    if (plan !== "pro" && plan !== "coach_plus") {
+      nav("/upgrade");
+      return false;
+    }
+    const limit = EXPORT_DISTINCT_LIMITS[plan];
+
+    try {
+      const [{ data: usage }, { data: alreadyExported }] = await Promise.all([
+        supabase.rpc("pack_export_usage", { _user_id: user.id }),
+        supabase.rpc("has_exported_session_in_period", {
+          _user_id: user.id,
+          _session_id: id,
+        }),
+      ]);
+      const row = Array.isArray(usage) ? usage[0] : usage;
+      const used = Number(row?.distinct_sessions_exported ?? 0);
+      const periodEnd = (row?.period_end as string | null) ?? null;
+      const isReExport = Boolean(alreadyExported);
+
+      if (!isReExport && used >= limit) {
+        track("pack_export_blocked", {
+          plan,
+          sessionId: id,
+          metadata: { used, limit, period_end: periodEnd },
+        });
+        toast({
+          title: "Export limit reached",
+          description: `You've used ${used} of ${limit} pack exports this billing period. Resets ${formatResetDate(periodEnd)}.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn("[exports] usage check failed, allowing export", err);
+      return true;
+    }
+  };
+
+  // Watermark text shown in header + footer of every exported page.
+  // Tied to the named candidate; cannot be removed by the user.
+  const watermarkLine = () => {
+    const name = (session?.full_name || candidateName || "—").trim();
+    const acct = user?.email ?? "—";
+    return {
+      header: `Prepared for ${name} — Account: ${acct}`,
+      footer: "Interview Prep Pal by The Speech Coach — Not for resale or redistribution",
+    };
+  };
+
+  const exportPDF = async () => {
+    if (!(await checkExportAllowed())) return;
+    const wm = watermarkLine();
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
     const margin = 48;
+    const topBand = 28; // reserved for header watermark
+    const bottomBand = 28; // reserved for footer watermark
     const maxW = pageW - margin * 2;
-    let y = margin;
+    let y = margin + topBand;
+
+    const drawWatermark = () => {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(120);
+      // Header band
+      doc.text(wm.header, margin, margin - 6);
+      doc.setDrawColor(200);
+      doc.line(margin, margin, pageW - margin, margin);
+      // Footer band
+      doc.line(margin, pageH - margin, pageW - margin, pageH - margin);
+      const pageNum = doc.getNumberOfPages();
+      doc.text(wm.footer, margin, pageH - margin + 14);
+      doc.text(`Page ${pageNum}`, pageW - margin, pageH - margin + 14, { align: "right" });
+      doc.setTextColor(0);
+    };
+
+    const newPage = () => {
+      doc.addPage();
+      y = margin + topBand;
+    };
 
     const writeWrapped = (text: string, size: number, bold = false, gap = 6) => {
       doc.setFont("helvetica", bold ? "bold" : "normal");
       doc.setFontSize(size);
       const lines = doc.splitTextToSize(text, maxW);
       for (const line of lines) {
-        if (y > pageH - margin) {
-          doc.addPage();
-          y = margin;
-        }
+        if (y > pageH - margin - bottomBand) newPage();
         doc.text(line, margin, y);
         y += size * 1.25;
       }
@@ -432,10 +513,20 @@ const Results = () => {
       y += 6;
     });
 
+    // Stamp watermark on every page after content is laid out
+    const total = doc.getNumberOfPages();
+    for (let i = 1; i <= total; i += 1) {
+      doc.setPage(i);
+      drawWatermark();
+    }
+
     doc.save(`${session?.title ?? "interview-pack"}.pdf`);
+    track("pack_exported_pdf", { plan, sessionId: id });
   };
 
   const exportDOCX = async () => {
+    if (!(await checkExportAllowed())) return;
+    const wm = watermarkLine();
     const children: Paragraph[] = [];
     children.push(
       new Paragraph({
@@ -500,9 +591,40 @@ const Results = () => {
       children.push(new Paragraph({ text: "" }));
     });
 
-    const doc = new Document({ sections: [{ children }] });
+    const doc = new Document({
+      sections: [
+        {
+          headers: {
+            default: new Header({
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.LEFT,
+                  children: [
+                    new TextRun({ text: wm.header, size: 16, color: "888888" }),
+                  ],
+                }),
+              ],
+            }),
+          },
+          footers: {
+            default: new Footer({
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new TextRun({ text: wm.footer, size: 16, color: "888888" }),
+                  ],
+                }),
+              ],
+            }),
+          },
+          children,
+        },
+      ],
+    });
     const blob = await Packer.toBlob(doc);
     saveAs(blob, `${session?.title ?? "interview-pack"}.docx`);
+    track("pack_exported_docx", { plan, sessionId: id });
   };
 
   // ----- Loading state -----

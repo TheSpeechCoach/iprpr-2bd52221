@@ -1087,6 +1087,7 @@ export type Database = {
           score: number
         }[]
       }
+      workspace_plan: { Args: { _workspace_id: string }; Returns: string }
       workspace_role_of: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: Database["public"]["Enums"]["workspace_role"]

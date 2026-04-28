@@ -111,6 +111,24 @@ Deno.serve(async (req) => {
     const bucket = (body.bucket ?? "cvs") as string;
     filePath = (body.file_path ?? "") as string;
     const sessionId = (body.session_id ?? null) as string | null;
+    const workspaceId = (body.workspace_id ?? null) as string | null;
+    const candidateId = (body.candidate_id ?? null) as string | null;
+
+    // Verify caller is a member of the workspace if one was provided.
+    if (workspaceId) {
+      const { data: memberCheck } = await admin
+        .from("workspace_members")
+        .select("user_id")
+        .eq("workspace_id", workspaceId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!memberCheck) {
+        return new Response(JSON.stringify({ error: "Forbidden", message: "Not a member of that workspace." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     if (!filePath || typeof filePath !== "string") {
       return new Response(JSON.stringify({ error: "file_path is required" }), {
@@ -237,6 +255,8 @@ Deno.serve(async (req) => {
         await admin.from("uploaded_files").insert({
           user_id: userId,
           session_id: sessionId,
+          workspace_id: workspaceId,
+          candidate_id: candidateId,
           kind: "cv",
           bucket,
           file_path: filePath,

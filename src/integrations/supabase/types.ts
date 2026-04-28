@@ -25,6 +25,7 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string
@@ -36,6 +37,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string
@@ -47,6 +49,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -80,6 +83,7 @@ export type Database = {
           plan: string | null
           session_id: string | null
           user_id: string | null
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string
@@ -89,6 +93,7 @@ export type Database = {
           plan?: string | null
           session_id?: string | null
           user_id?: string | null
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string
@@ -98,12 +103,14 @@ export type Database = {
           plan?: string | null
           session_id?: string | null
           user_id?: string | null
+          workspace_id?: string | null
         }
         Relationships: []
       }
       candidate_inputs: {
         Row: {
           candidate_current_role: string | null
+          candidate_id: string | null
           country: string | null
           created_at: string
           full_name: string | null
@@ -117,10 +124,12 @@ export type Database = {
           target_role: string | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
           years_experience: string | null
         }
         Insert: {
           candidate_current_role?: string | null
+          candidate_id?: string | null
           country?: string | null
           created_at?: string
           full_name?: string | null
@@ -134,10 +143,12 @@ export type Database = {
           target_role?: string | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
           years_experience?: string | null
         }
         Update: {
           candidate_current_role?: string | null
+          candidate_id?: string | null
           country?: string | null
           created_at?: string
           full_name?: string | null
@@ -151,6 +162,7 @@ export type Database = {
           target_role?: string | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
           years_experience?: string | null
         }
         Relationships: [
@@ -159,6 +171,56 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "prep_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidates: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          created_by: string
+          current_role_text: string | null
+          email: string | null
+          full_name: string
+          id: string
+          linkedin_url: string | null
+          notes: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          created_by: string
+          current_role_text?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          linkedin_url?: string | null
+          notes?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string
+          current_role_text?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          linkedin_url?: string | null
+          notes?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidates_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -178,6 +240,7 @@ export type Database = {
           summary: string | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string
@@ -193,6 +256,7 @@ export type Database = {
           summary?: string | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string
@@ -208,6 +272,7 @@ export type Database = {
           summary?: string | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -241,6 +306,7 @@ export type Database = {
           total_questions: number
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           candidate_summary?: string | null
@@ -256,6 +322,7 @@ export type Database = {
           total_questions?: number
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           candidate_summary?: string | null
@@ -271,6 +338,7 @@ export type Database = {
           total_questions?: number
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -368,6 +436,7 @@ export type Database = {
           session_id: string | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           company_name?: string | null
@@ -380,6 +449,7 @@ export type Database = {
           session_id?: string | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           company_name?: string | null
@@ -392,6 +462,7 @@ export type Database = {
           session_id?: string | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -447,6 +518,7 @@ export type Database = {
       prep_sessions: {
         Row: {
           candidate_current_role: string | null
+          candidate_id: string | null
           candidate_notes: string | null
           candidate_summary: string | null
           company_name: string | null
@@ -481,10 +553,12 @@ export type Database = {
           top_themes: Json | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
           years_experience: string | null
         }
         Insert: {
           candidate_current_role?: string | null
+          candidate_id?: string | null
           candidate_notes?: string | null
           candidate_summary?: string | null
           company_name?: string | null
@@ -519,10 +593,12 @@ export type Database = {
           top_themes?: Json | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
           years_experience?: string | null
         }
         Update: {
           candidate_current_role?: string | null
+          candidate_id?: string | null
           candidate_notes?: string | null
           candidate_summary?: string | null
           company_name?: string | null
@@ -557,6 +633,7 @@ export type Database = {
           top_themes?: Json | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
           years_experience?: string | null
         }
         Relationships: []
@@ -640,6 +717,7 @@ export type Database = {
           route: string | null
           user_agent: string | null
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string
@@ -648,6 +726,7 @@ export type Database = {
           route?: string | null
           user_agent?: string | null
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string
@@ -656,6 +735,7 @@ export type Database = {
           route?: string | null
           user_agent?: string | null
           user_id?: string
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -680,6 +760,7 @@ export type Database = {
           stripe_subscription_id: string | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           cancel_at_period_end?: boolean
@@ -701,6 +782,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           cancel_at_period_end?: boolean
@@ -722,12 +804,14 @@ export type Database = {
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
         Relationships: []
       }
       uploaded_files: {
         Row: {
           bucket: string
+          candidate_id: string | null
           created_at: string
           cv_content_hash: string | null
           extracted_text: string | null
@@ -740,9 +824,11 @@ export type Database = {
           size_bytes: number | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           bucket?: string
+          candidate_id?: string | null
           created_at?: string
           cv_content_hash?: string | null
           extracted_text?: string | null
@@ -755,9 +841,11 @@ export type Database = {
           size_bytes?: number | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           bucket?: string
+          candidate_id?: string | null
           created_at?: string
           cv_content_hash?: string | null
           extracted_text?: string | null
@@ -770,6 +858,7 @@ export type Database = {
           size_bytes?: number | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -835,6 +924,77 @@ export type Database = {
         }
         Relationships: []
       }
+      workspace_members: {
+        Row: {
+          id: string
+          invited_by: string | null
+          joined_at: string
+          role: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          role?: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          role?: Database["public"]["Enums"]["workspace_role"]
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          created_at: string
+          id: string
+          is_personal: boolean
+          name: string
+          owner_id: string
+          plan: string
+          seat_tier: string | null
+          stripe_customer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_personal?: boolean
+          name: string
+          owner_id: string
+          plan?: string
+          seat_tier?: string | null
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_personal?: boolean
+          name?: string
+          owner_id?: string
+          plan?: string
+          seat_tier?: string | null
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       analytics_funnel_summary: {
@@ -859,6 +1019,7 @@ export type Database = {
       }
     }
     Functions: {
+      current_user_workspaces: { Args: { _user_id: string }; Returns: string[] }
       get_user_plan: {
         Args: { _env?: string; _user_id: string }
         Returns: string
@@ -876,6 +1037,10 @@ export type Database = {
       }
       is_eligible_for_pro_intro_offer: {
         Args: { _user_id: string }
+        Returns: boolean
+      }
+      is_workspace_member: {
+        Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
       pack_export_usage: {
@@ -922,9 +1087,15 @@ export type Database = {
           score: number
         }[]
       }
+      workspace_plan: { Args: { _workspace_id: string }; Returns: string }
+      workspace_role_of: {
+        Args: { _user_id: string; _workspace_id: string }
+        Returns: Database["public"]["Enums"]["workspace_role"]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
+      workspace_role: "owner" | "admin" | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1053,6 +1224,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      workspace_role: ["owner", "admin", "member"],
     },
   },
 } as const

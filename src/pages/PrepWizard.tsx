@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan, FREE_QUESTION_LIMIT } from "@/hooks/usePlan";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { useCandidates } from "@/hooks/useCandidates";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +22,39 @@ const STEPS = ["Candidate", "Career", "Job", "Parameters", "Generate"] as const;
 const PrepWizard = () => {
   const { user } = useAuth();
   const { plan, canCreateSession, sessionsUsed } = usePlan();
+  const { current: workspace } = useWorkspace();
+  const { candidates, refresh: refreshCandidates } = useCandidates();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [fetchingSpec, setFetchingSpec] = useState(false);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string>("");
+
+  // Auto-select if there's exactly one candidate; clear when workspace changes.
+  useEffect(() => {
+    if (candidates.length === 1) setSelectedCandidateId(candidates[0].id);
+    else if (!candidates.some((c) => c.id === selectedCandidateId)) setSelectedCandidateId("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidates]);
+
+  // When a candidate is picked, prefill the candidate-related form fields.
+  useEffect(() => {
+    if (!selectedCandidateId) return;
+    const c = candidates.find((x) => x.id === selectedCandidateId);
+    if (!c) return;
+    setForm((f) => ({
+      ...f,
+      full_name: f.full_name || c.full_name,
+      candidate_current_role: f.candidate_current_role || c.current_role_text || "",
+      linkedin_url: f.linkedin_url || c.linkedin_url || "",
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCandidateId]);
+
+  const isTeamWorkspace = useMemo(
+    () => workspace ? !workspace.is_personal : false,
+    [workspace],
+  );
 
   const [form, setForm] = useState({
     full_name: "",
@@ -108,6 +139,15 @@ const PrepWizard = () => {
 
   const handleGenerate = async () => {
     if (!user) return;
+    if (!workspace) {
+      toast({ title: "Workspace required", description: "Pick a workspace from the top-right switcher.", variant: "destructive" });
+      return;
+    }
+    if (isTeamWorkspace && !selectedCandidateId) {
+      toast({ title: "Pick a candidate", description: "Select which candidate this prep session is for.", variant: "destructive" });
+      setStep(0);
+      return;
+    }
     if (!canCreateSession) {
       toast({
         title: "Free limit reached",
@@ -155,7 +195,7 @@ const PrepWizard = () => {
 
         toast({ title: "Reading your CV", description: "Pulling out the text we'll use to tailor your pack." });
         const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
-          body: { file_path: path, bucket: "cvs" },
+          body: { file_path: path, bucket: "cvs", workspace_id: workspace.id, candidate_id: selectedCandidateId || null },
         });
         if (exErr) {
           let friendly = `We couldn't read your CV: ${exErr.message}`;
@@ -186,6 +226,8 @@ const PrepWizard = () => {
       // 2) Create session
       const { data: session, error: sErr } = await supabase.from("prep_sessions").insert({
         user_id: user.id,
+        workspace_id: workspace.id,
+        candidate_id: selectedCandidateId || null,
         title: `${form.target_role.trim()}${form.company_name ? ` · ${form.company_name.trim()}` : ""}`,
         status: "generating",
         ...form,
@@ -314,6 +356,32 @@ const PrepWizard = () => {
 
         {step === 0 && (
           <div className="space-y-5">
+            {isTeamWorkspace && (
+              <Field
+                label="Candidate"
+                hint={
+                  candidates.length === 0
+                    ? "No candidates yet — add one from the Workspace page first."
+                    : "Which candidate is this prep session for?"
+                }
+              >
+                <div className="flex items-center gap-2">
+                  <Select value={selectedCandidateId} onValueChange={setSelectedCandidateId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a candidate…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {candidates.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Link to="/workspace">
+                    <Button type="button" variant="outline" size="sm">+ New</Button>
+                  </Link>
+                </div>
+              </Field>
+            )}
             <Field label="Full name" hint="Used in the candidate summary on your pack.">
               <Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="e.g. Alex Morgan" />
             </Field>

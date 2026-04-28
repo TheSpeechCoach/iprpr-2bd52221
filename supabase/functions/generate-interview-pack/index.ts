@@ -310,8 +310,51 @@ Deno.serve(async (req) => {
 
     await admin.from("prep_sessions").update({ status: "generating" }).eq("id", sessionId);
 
+    // Wipe any prior questions for this session so retries don't duplicate.
+    await admin.from("interview_questions").delete().eq("session_id", sessionId);
+    await admin.from("generated_interview_packs").delete().eq("session_id", sessionId);
+
+    // Create the generation job row up-front.
+    const { data: jobRow, error: jobErr } = await admin
+      .from("generation_jobs")
+      .insert({
+        session_id: sessionId,
+        user_id: userId,
+        workspace_id: session.workspace_id ?? null,
+        status: "queued",
+        current_stage: "Preparing",
+        progress_percentage: 0,
+        questions_generated: 0,
+        total_questions: numQuestions,
+      })
+      .select("id")
+      .single();
+    if (jobErr) throw jobErr;
+    const jobId: string = jobRow.id;
+
+    const updateJob = async (patch: Record<string, unknown>) => {
+      await admin.from("generation_jobs").update(patch).eq("id", jobId);
+    };
+
+    // Plan chunks: priority preview chunk (1–10), then 30-question chunks.
+    const PREVIEW_SIZE = Math.min(10, numQuestions);
+    const REMAINING = numQuestions - PREVIEW_SIZE;
+    const CHUNK_SIZE = 30;
+    const chunkRanges: Array<{ start: number; end: number; label: string }> = [];
+    if (PREVIEW_SIZE > 0) {
+      chunkRanges.push({ start: 1, end: PREVIEW_SIZE, label: `Writing the high-stakes opening (1–${PREVIEW_SIZE})` });
+    }
+    let cursor = PREVIEW_SIZE + 1;
+    while (cursor <= numQuestions) {
+      const end = Math.min(numQuestions, cursor + CHUNK_SIZE - 1);
+      chunkRanges.push({ start: cursor, end, label: `Writing questions ${cursor}–${end}` });
+      cursor = end + 1;
+    }
+
     const generate = async () => {
       try {
+        await updateJob({ status: "processing", current_stage: "Preparing", progress_percentage: 2 });
+
         const systemPrompt = `You are a senior UK-based interview coach for The Speech Coach. You write in British English (en-GB).
 Your job: generate sharp, realistic, interview-grade questions tailored to a specific candidate and role.
 

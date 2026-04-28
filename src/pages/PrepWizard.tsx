@@ -37,6 +37,20 @@ const PrepWizard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candidates]);
 
+  // When a candidate is picked, prefill the candidate-related form fields.
+  useEffect(() => {
+    if (!selectedCandidateId) return;
+    const c = candidates.find((x) => x.id === selectedCandidateId);
+    if (!c) return;
+    setForm((f) => ({
+      ...f,
+      full_name: f.full_name || c.full_name,
+      candidate_current_role: f.candidate_current_role || c.current_role_text || "",
+      linkedin_url: f.linkedin_url || c.linkedin_url || "",
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCandidateId]);
+
   const isTeamWorkspace = useMemo(
     () => workspace ? !workspace.is_personal : false,
     [workspace],

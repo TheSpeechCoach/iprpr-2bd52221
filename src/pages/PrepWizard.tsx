@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan, FREE_QUESTION_LIMIT } from "@/hooks/usePlan";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { useCandidates } from "@/hooks/useCandidates";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +22,25 @@ const STEPS = ["Candidate", "Career", "Job", "Parameters", "Generate"] as const;
 const PrepWizard = () => {
   const { user } = useAuth();
   const { plan, canCreateSession, sessionsUsed } = usePlan();
+  const { current: workspace } = useWorkspace();
+  const { candidates, refresh: refreshCandidates } = useCandidates();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [fetchingSpec, setFetchingSpec] = useState(false);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string>("");
+
+  // Auto-select if there's exactly one candidate; clear when workspace changes.
+  useEffect(() => {
+    if (candidates.length === 1) setSelectedCandidateId(candidates[0].id);
+    else if (!candidates.some((c) => c.id === selectedCandidateId)) setSelectedCandidateId("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidates]);
+
+  const isTeamWorkspace = useMemo(
+    () => workspace ? !workspace.is_personal : false,
+    [workspace],
+  );
 
   const [form, setForm] = useState({
     full_name: "",

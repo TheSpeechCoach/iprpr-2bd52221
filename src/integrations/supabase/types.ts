@@ -632,6 +632,33 @@ export type Database = {
           },
         ]
       }
+      request_audit: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          route: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          route?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          route?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean
@@ -863,6 +890,24 @@ export type Database = {
           job_specs: number
           period_end: string
           period_start: string
+        }[]
+      }
+      recent_abuse_signals: {
+        Args: { _user_id: string }
+        Returns: {
+          distinct_candidate_names: number
+          distinct_cv_names: number
+          distinct_ips_24h: number
+          distinct_job_titles_7d: number
+          distinct_target_industries: number
+          exports_24h: number
+        }[]
+      }
+      score_account_abuse: {
+        Args: { _user_id: string }
+        Returns: {
+          reasons: Json
+          score: number
         }[]
       }
     }

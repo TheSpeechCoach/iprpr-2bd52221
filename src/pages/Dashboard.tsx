@@ -14,6 +14,7 @@ import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { IntroOfferCallout } from "@/components/IntroOfferCallout";
 import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
 import { ProUsageBanner } from "@/components/ProUsageBanner";
+import { AccountFlagBanner } from "@/components/AccountFlagBanner";
 
 interface Session {
   id: string;
@@ -138,7 +139,10 @@ const Dashboard = () => {
           </div>
         )}
 
-        {!planLoading && plan === "pro" && <ProUsageBanner className="mt-8" />}
+        <div className="mt-8 space-y-4">
+          <AccountFlagBanner />
+          {!planLoading && plan === "pro" && <ProUsageBanner />}
+        </div>
 
         {/* Free plan banner */}
         {!planLoading && plan === "free" && (

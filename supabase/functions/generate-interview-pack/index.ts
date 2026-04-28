@@ -310,8 +310,51 @@ Deno.serve(async (req) => {
 
     await admin.from("prep_sessions").update({ status: "generating" }).eq("id", sessionId);
 
+    // Wipe any prior questions for this session so retries don't duplicate.
+    await admin.from("interview_questions").delete().eq("session_id", sessionId);
+    await admin.from("generated_interview_packs").delete().eq("session_id", sessionId);
+
+    // Create the generation job row up-front.
+    const { data: jobRow, error: jobErr } = await admin
+      .from("generation_jobs")
+      .insert({
+        session_id: sessionId,
+        user_id: userId,
+        workspace_id: session.workspace_id ?? null,
+        status: "queued",
+        current_stage: "Preparing",
+        progress_percentage: 0,
+        questions_generated: 0,
+        total_questions: numQuestions,
+      })
+      .select("id")
+      .single();
+    if (jobErr) throw jobErr;
+    const jobId: string = jobRow.id;
+
+    const updateJob = async (patch: Record<string, unknown>) => {
+      await admin.from("generation_jobs").update(patch).eq("id", jobId);
+    };
+
+    // Plan chunks: priority preview chunk (1–10), then 30-question chunks.
+    const PREVIEW_SIZE = Math.min(10, numQuestions);
+    const REMAINING = numQuestions - PREVIEW_SIZE;
+    const CHUNK_SIZE = 30;
+    const chunkRanges: Array<{ start: number; end: number; label: string }> = [];
+    if (PREVIEW_SIZE > 0) {
+      chunkRanges.push({ start: 1, end: PREVIEW_SIZE, label: `Writing the high-stakes opening (1–${PREVIEW_SIZE})` });
+    }
+    let cursor = PREVIEW_SIZE + 1;
+    while (cursor <= numQuestions) {
+      const end = Math.min(numQuestions, cursor + CHUNK_SIZE - 1);
+      chunkRanges.push({ start: cursor, end, label: `Writing questions ${cursor}–${end}` });
+      cursor = end + 1;
+    }
+
     const generate = async () => {
       try {
+        await updateJob({ status: "processing", current_stage: "Preparing", progress_percentage: 2 });
+
         const systemPrompt = `You are a senior UK-based interview coach for The Speech Coach. You write in British English (en-GB).
 Your job: generate sharp, realistic, interview-grade questions tailored to a specific candidate and role.
 
@@ -355,9 +398,7 @@ After position 10, distribute the remaining categories naturally across the inte
 COACH INSIGHTS (selective):
 Choose EXACTLY 3–5 of the most pivotal questions in the entire pack and attach a "coach_insight" object to each. Pick the questions a coach would most want to flag — typically the Pressure question, the toughest CV/Background probe, the sharpest Behavioural, the Company Motivation question, and one more if warranted. Strongly prefer questions inside positions 1–10. Every other question MUST omit "coach_insight" entirely (do not include the field, do not return null padding). Each insight has three single-sentence fields, each ≤ 22 words: what the interviewer is really testing, the most common mistake, and how a strong candidate should approach it. Concrete, specific to this question — never generic.`;
 
-        const userPrompt = `Generate exactly ${numQuestions} interview questions.
-
-CANDIDATE PROFILE
+        const candidateRoleBlock = `CANDIDATE PROFILE
 - Name: ${session.full_name || "—"}
 - Current role: ${session.candidate_current_role || "—"}
 - Years experience: ${session.years_experience || "—"}
@@ -386,76 +427,159 @@ INTERVIEW PARAMETERS
 - Style: ${session.interview_style}
 - Focus mix (rough %): ${JSON.stringify(session.focus_mix)}
 - Include follow-ups: ${session.include_followups}
-- Include answer framework: ${session.include_answer_angles}
+- Include answer framework: ${session.include_answer_angles}`;
 
-REMINDER: Positions 1–10 are the high-stakes preview. They must reference specific, named details from the CV/role above and meet the category mix in the system prompt (≥2 CV/Background, ≥2 Behavioural, ≥2 Role-Fit, ≥1 Pressure, ≥1 Company Motivation). No generic openers in the first 10.
-
-Return the result by calling the produce_interview_pack tool. Do not write any prose outside the tool call.`;
-
-        const aiResp = await fetch(AI_URL, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: MODEL,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt },
-            ],
-            tools: [{
-              type: "function",
-              function: {
-                name: "produce_interview_pack",
-                description: "Return the structured interview pack.",
-                parameters: QUESTION_SCHEMA,
-              },
-            }],
-            tool_choice: { type: "function", function: { name: "produce_interview_pack" } },
-          }),
-        });
-
-        if (!aiResp.ok) {
-          const t = await aiResp.text();
-          let label = "AI gateway error";
-          if (aiResp.status === 429) label = "Rate limit hit. Try again shortly.";
-          if (aiResp.status === 402) label = "Lovable AI credits exhausted.";
-          await admin.from("prep_sessions").update({ status: "failed" }).eq("id", sessionId);
-          await admin.from("admin_logs").insert({
-            event: "pack_generation_failed",
-            metadata: { user_id: userId, session_id: sessionId, status: aiResp.status, error: t.slice(0, 500), label },
-          });
-          return;
-        }
-
-        const aiJson = await aiResp.json();
-        const toolCall = aiJson?.choices?.[0]?.message?.tool_calls?.[0];
-        const argsRaw = toolCall?.function?.arguments;
-        if (!argsRaw) throw new Error("AI returned no tool call");
-
-        let parsed: any;
-        try {
-          parsed = typeof argsRaw === "string" ? JSON.parse(argsRaw) : argsRaw;
-        } catch {
-          throw new Error("AI tool arguments were not valid JSON");
-        }
-
-        // UK-English safety net: rewrite all string leaves before persistence.
-        parsed = ukifyJson(parsed);
-
-        const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
-        if (!questions.length) throw new Error("AI returned no questions");
+        // Schema variant for chunked calls — require only `questions` (and optionally summary fields on the first chunk).
+        const buildChunkSchema = (includeSummary: boolean) => {
+          const props: any = {
+            questions: QUESTION_SCHEMA.properties.questions,
+          };
+          const required: string[] = ["questions"];
+          if (includeSummary) {
+            props.candidate_summary = QUESTION_SCHEMA.properties.candidate_summary;
+            props.role_summary = QUESTION_SCHEMA.properties.role_summary;
+            props.top_themes = QUESTION_SCHEMA.properties.top_themes;
+            props.red_flag_areas = QUESTION_SCHEMA.properties.red_flag_areas;
+            required.push("candidate_summary", "role_summary", "top_themes", "red_flag_areas");
+          }
+          return {
+            type: "object",
+            properties: props,
+            required,
+            additionalProperties: false,
+          };
+        };
 
         // Resolve workspace_id from the session.
-        const { data: psRow } = await admin
-          .from("prep_sessions")
-          .select("workspace_id")
-          .eq("id", sessionId)
-          .maybeSingle();
-        const wsId = (psRow as any)?.workspace_id ?? null;
+        const wsId = session.workspace_id ?? null;
 
-        // Persist pack
+        // Track summary captured on first chunk so we can persist a pack.
+        let summary: {
+          candidate_summary: string | null;
+          role_summary: string | null;
+          top_themes: any[];
+          red_flag_areas: any[];
+        } = { candidate_summary: null, role_summary: null, top_themes: [], red_flag_areas: [] };
+
+        let totalGenerated = 0;
+        const totalChunks = chunkRanges.length;
+
+        for (let ci = 0; ci < chunkRanges.length; ci++) {
+          const range = chunkRanges[ci];
+          const isFirst = ci === 0;
+          const expectedCount = range.end - range.start + 1;
+
+          await updateJob({
+            current_stage: range.label,
+            progress_percentage: Math.max(2, Math.round((ci / totalChunks) * 90) + 2),
+          });
+
+          const chunkInstruction = isFirst
+            ? `This is CHUNK 1 of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. These are the high-stakes opening questions — apply the FIRST 10 rules strictly. Also return the overall candidate_summary, role_summary, top_themes, and red_flag_areas for the whole pack (these are written once, not per chunk).`
+            : `This is CHUNK ${ci + 1} of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. Do NOT repeat earlier positions. Distribute categories naturally across the interview arc — these are mid/late questions, so include a mix of Behavioural, Strengths, Weaknesses, Leadership, Stakeholder, Problem-Solving, Commercial Awareness, Technical, and Closing as appropriate. Coach insights: only attach if you'd genuinely flag this question (most should omit it).`;
+
+          const userPrompt = `${chunkInstruction}
+
+${candidateRoleBlock}
+
+REMINDER: Return EXACTLY ${expectedCount} questions, each with the position field set to its absolute position (between ${range.start} and ${range.end}). Use the produce_interview_pack tool. Do not write any prose outside the tool call.`;
+
+          const aiResp = await fetch(AI_URL, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: MODEL,
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt },
+              ],
+              tools: [{
+                type: "function",
+                function: {
+                  name: "produce_interview_pack",
+                  description: "Return the structured interview pack chunk.",
+                  parameters: buildChunkSchema(isFirst),
+                },
+              }],
+              tool_choice: { type: "function", function: { name: "produce_interview_pack" } },
+            }),
+          });
+
+          if (!aiResp.ok) {
+            const t = await aiResp.text();
+            let label = "AI gateway error";
+            if (aiResp.status === 429) label = "We're being rate limited. Try again shortly.";
+            if (aiResp.status === 402) label = "AI credits exhausted. Please contact support.";
+            throw new Error(`${label} (status ${aiResp.status}): ${t.slice(0, 200)}`);
+          }
+
+          const aiJson = await aiResp.json();
+          const toolCall = aiJson?.choices?.[0]?.message?.tool_calls?.[0];
+          const argsRaw = toolCall?.function?.arguments;
+          if (!argsRaw) throw new Error("AI returned no tool call for this chunk");
+
+          let parsed: any;
+          try {
+            parsed = typeof argsRaw === "string" ? JSON.parse(argsRaw) : argsRaw;
+          } catch {
+            throw new Error("AI tool arguments were not valid JSON");
+          }
+          parsed = ukifyJson(parsed);
+
+          if (isFirst) {
+            summary = {
+              candidate_summary: parsed.candidate_summary ?? null,
+              role_summary: parsed.role_summary ?? null,
+              top_themes: parsed.top_themes ?? [],
+              red_flag_areas: parsed.red_flag_areas ?? [],
+            };
+            // Mirror the summary onto the session early so Results can show context.
+            await admin.from("prep_sessions").update({
+              candidate_summary: summary.candidate_summary,
+              role_summary: summary.role_summary,
+              top_themes: summary.top_themes,
+              red_flags: summary.red_flag_areas,
+            }).eq("id", sessionId);
+          }
+
+          const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
+          if (!questions.length) throw new Error(`AI returned no questions for chunk ${ci + 1}`);
+
+          const rows = questions.map((q: any, i: number) => ({
+            session_id: sessionId,
+            user_id: userId,
+            position: Number.isInteger(q.position) ? q.position : range.start + i,
+            category: q.category ?? "General",
+            question: q.question ?? "",
+            why_matters: q.why_this_question_matters ?? null,
+            what_good_covers: q.what_good_answers_should_cover ?? null,
+            follow_up: q.optional_follow_up || null,
+            answer_framework: q.answer_framework || null,
+            answer_direction: q.answer_direction ?? null,
+            example_answers: q.example_answers ?? null,
+            coach_insight: q.coach_insight ?? null,
+            difficulty: q.difficulty ?? null,
+          }));
+
+          // Insert this chunk (in sub-chunks of 50 if huge).
+          for (let i = 0; i < rows.length; i += 50) {
+            const sub = rows.slice(i, i + 50);
+            const { error } = await admin.from("interview_questions").insert(sub);
+            if (error) console.error("question insert error", error);
+          }
+
+          totalGenerated += rows.length;
+
+          await updateJob({
+            questions_generated: totalGenerated,
+            progress_percentage: Math.min(95, Math.round(((ci + 1) / totalChunks) * 90) + 2),
+          });
+        }
+
+        // Persist final pack record.
         const { data: pack, error: pErr } = await admin
           .from("generated_interview_packs")
           .insert({
@@ -463,11 +587,11 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
             session_id: sessionId,
             workspace_id: wsId,
             status: "ready",
-            candidate_summary: parsed.candidate_summary ?? null,
-            role_summary: parsed.role_summary ?? null,
-            top_themes: parsed.top_themes ?? [],
-            red_flags: parsed.red_flag_areas ?? [],
-            total_questions: questions.length,
+            candidate_summary: summary.candidate_summary,
+            role_summary: summary.role_summary,
+            top_themes: summary.top_themes,
+            red_flags: summary.red_flag_areas,
+            total_questions: totalGenerated,
             model: MODEL,
             prompt_version: PROMPT_VERSION,
           })
@@ -475,49 +599,32 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
           .single();
         if (pErr) throw pErr;
 
-        // Mirror summary onto the session for the Results page
-        await admin.from("prep_sessions").update({
-          status: "ready",
-          candidate_summary: parsed.candidate_summary ?? null,
-          role_summary: parsed.role_summary ?? null,
-          top_themes: parsed.top_themes ?? [],
-          red_flags: parsed.red_flag_areas ?? [],
-        }).eq("id", sessionId);
+        await admin.from("prep_sessions").update({ status: "ready" }).eq("id", sessionId);
 
-        // Insert questions in chunks
-        const rows = questions.map((q: any, i: number) => ({
-          session_id: sessionId,
-          user_id: userId,
-          position: Number.isInteger(q.position) ? q.position : i + 1,
-          category: q.category ?? "General",
-          question: q.question ?? "",
-          why_matters: q.why_this_question_matters ?? null,
-          what_good_covers: q.what_good_answers_should_cover ?? null,
-          follow_up: q.optional_follow_up || null,
-          answer_framework: q.answer_framework || null,
-          answer_direction: q.answer_direction ?? null,
-          example_answers: q.example_answers ?? null,
-          coach_insight: q.coach_insight ?? null,
-          difficulty: q.difficulty ?? null,
-        }));
-
-        for (let i = 0; i < rows.length; i += 50) {
-          const chunk = rows.slice(i, i + 50);
-          const { error } = await admin.from("interview_questions").insert(chunk);
-          if (error) console.error("question insert error", error);
-        }
+        await updateJob({
+          status: "completed",
+          progress_percentage: 100,
+          current_stage: "Completed",
+          questions_generated: totalGenerated,
+          completed_at: new Date().toISOString(),
+        });
 
         await admin.from("admin_logs").insert({
           event: "pack_generated",
-          metadata: { user_id: userId, session_id: sessionId, pack_id: pack.id, count: rows.length, model: MODEL },
+          metadata: { user_id: userId, session_id: sessionId, pack_id: pack.id, count: totalGenerated, model: MODEL, chunks: totalChunks },
         });
       } catch (e: any) {
         const message = e?.message ?? String(e);
         console.error("generation failed", message);
         await admin.from("prep_sessions").update({ status: "failed" }).eq("id", sessionId);
+        await updateJob({
+          status: "failed",
+          error_message: message.slice(0, 500),
+          completed_at: new Date().toISOString(),
+        });
         await admin.from("admin_logs").insert({
           event: "pack_generation_failed",
-          metadata: { user_id: userId, session_id: sessionId, error: message },
+          metadata: { user_id: userId, session_id: sessionId, job_id: jobId, error: message },
         });
       }
     };
@@ -527,7 +634,7 @@ Return the result by calling the produce_interview_pack tool. Do not write any p
     EdgeRuntime.waitUntil(generate());
 
     return new Response(
-      JSON.stringify({ ok: true, status: "generating", session_id: sessionId }),
+      JSON.stringify({ ok: true, status: "queued", session_id: sessionId, job_id: jobId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e: any) {

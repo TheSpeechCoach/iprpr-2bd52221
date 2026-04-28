@@ -186,6 +186,14 @@ const Results = () => {
   const [savedAnswerId, setSavedAnswerId] = useState<string | null>(null);
 
   const [retrying, setRetrying] = useState(false);
+  const [job, setJob] = useState<{
+    status: string;
+    progress_percentage: number;
+    current_stage: string | null;
+    questions_generated: number;
+    total_questions: number;
+    error_message: string | null;
+  } | null>(null);
 
   // Debounced autosave for user answers.
   useEffect(() => {
@@ -250,22 +258,35 @@ const Results = () => {
     let cancelled = false;
     let interval: ReturnType<typeof setInterval> | null = null;
     const tick = async () => {
+      // Poll the latest generation_jobs row for this session.
+      const { data: j } = await supabase
+        .from("generation_jobs")
+        .select("status, progress_percentage, current_stage, questions_generated, total_questions, error_message")
+        .eq("session_id", id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (j) setJob(j as any);
+
+      // Also check the session row in case there's no job (legacy sessions) or it just flipped to ready.
       const { data: s } = await supabase
         .from("prep_sessions")
         .select("status")
         .eq("id", id)
         .maybeSingle();
       if (cancelled) return;
-      if (s?.status === "ready") {
-        await loadAll();
-        if (interval) clearInterval(interval);
-      } else if (s?.status === "failed") {
+
+      const done = j?.status === "completed" || j?.status === "failed" || s?.status === "ready" || s?.status === "failed";
+      if (done) {
         await loadAll();
         if (interval) clearInterval(interval);
       }
     };
     loadAll().then(() => {
-      interval = setInterval(tick, 3000);
+      // Kick off an immediate tick, then poll every 2.5 s.
+      void tick();
+      interval = setInterval(tick, 2500);
     });
     return () => {
       cancelled = true;
@@ -653,7 +674,15 @@ const Results = () => {
   }
 
   // ----- Generating state -----
-  if (session?.status === "generating") {
+  const isGenerating =
+    session?.status === "generating" ||
+    job?.status === "queued" ||
+    job?.status === "processing";
+  if (isGenerating) {
+    const pct = Math.max(2, Math.min(99, job?.progress_percentage ?? 5));
+    const stage = job?.current_stage ?? "Preparing your pack";
+    const generated = job?.questions_generated ?? 0;
+    const total = job?.total_questions ?? 0;
     return (
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
@@ -664,7 +693,19 @@ const Results = () => {
             We're writing your interview questions
           </h1>
           <p className="mt-3 text-muted-foreground max-w-md">
-            Tailoring each question to your CV and the role. This usually takes 30–60 seconds — feel free to leave this page and come back from your dashboard.
+            {stage}{total > 0 ? ` · ${generated} of ${total} questions ready` : ""}
+          </p>
+          <div className="mt-8 w-full max-w-md">
+            <div className="h-2 w-full bg-secondary overflow-hidden rounded-full">
+              <div
+                className="h-full bg-accent transition-all duration-500 ease-out"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <div className="mt-2 text-xs text-muted-foreground">{pct}%</div>
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground max-w-md">
+            This usually takes 60–120 seconds. Feel free to leave this page and come back from your dashboard — your pack will keep building in the background.
           </p>
         </main>
       </div>
@@ -672,7 +713,8 @@ const Results = () => {
   }
 
   // ----- Failed state -----
-  if (session?.status === "failed") {
+  const hasFailed = session?.status === "failed" || job?.status === "failed";
+  if (hasFailed) {
     return (
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
@@ -680,7 +722,9 @@ const Results = () => {
           <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Something went wrong</div>
           <h1 className="mt-2 font-display text-3xl font-semibold">We couldn't finish your pack</h1>
           <p className="mt-3 text-muted-foreground max-w-md">
-            This is usually a brief hiccup with the AI service. Retry now, or come back in a minute or two — your inputs are saved.
+            {job?.error_message
+              ? job.error_message
+              : "This is usually a brief hiccup with the AI service. Retry now, or come back in a minute or two — your inputs are saved."}
           </p>
           <div className="mt-8 flex gap-3">
             <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">

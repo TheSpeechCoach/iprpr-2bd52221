@@ -143,7 +143,7 @@ const WorkspacePage = () => {
                 <UserPlus className="h-4 w-4" /> Invites
               </h2>
             </div>
-            <InvitesManager workspaceId={current.id} userId={user.id} />
+            <InvitesManager workspaceId={current.id} userId={user.id} inviterRole={current.role} />
           </section>
         )}
 

@@ -10,9 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { Copy, Loader2, Mail, X } from "lucide-react";
-import { isInviteExpired } from "@/lib/workspaceRoles";
+import { Copy, Loader2, Mail, MailCheck, UserPlus, X } from "lucide-react";
+import {
+  canAssignInviteRole,
+  isInviteExpired,
+  type WorkspaceRole,
+} from "@/lib/workspaceRoles";
 
 interface InviteRow {
   id: string;
@@ -27,6 +39,7 @@ interface InviteRow {
 interface Props {
   workspaceId: string;
   userId: string;
+  inviterRole: WorkspaceRole;
 }
 
 const generateToken = () => {
@@ -40,12 +53,18 @@ const generateToken = () => {
 const acceptUrl = (token: string) =>
   `${window.location.origin}/invite/${token}`;
 
-export const InvitesManager = ({ workspaceId, userId }: Props) => {
+export const InvitesManager = ({ workspaceId, userId, inviterRole }: Props) => {
   const [invites, setInvites] = useState<InviteRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member">("member");
   const [creating, setCreating] = useState(false);
+
+  // Post-create result state (shown inside modal)
+  const [createdInvite, setCreatedInvite] = useState<{ token: string; email: string; emailed: boolean } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,10 +81,20 @@ export const InvitesManager = ({ workspaceId, userId }: Props) => {
     void load();
   }, [load]);
 
+  const resetModal = () => {
+    setEmail("");
+    setRole("member");
+    setCreatedInvite(null);
+  };
+
   const handleCreate = async () => {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed || !/^\S+@\S+\.\S+$/.test(trimmed)) {
       toast({ title: "Enter a valid email", variant: "destructive" });
+      return;
+    }
+    if (!canAssignInviteRole(inviterRole, role)) {
+      toast({ title: "You cannot assign that role", variant: "destructive" });
       return;
     }
     setCreating(true);
@@ -79,10 +108,11 @@ export const InvitesManager = ({ workspaceId, userId }: Props) => {
         token,
         invited_by: userId,
       })
-      .select("id, token")
+      .select("id, token, email")
       .single();
-    setCreating(false);
+
     if (error || !data) {
+      setCreating(false);
       toast({
         title: "Couldn't create invite",
         description: error?.message,
@@ -90,10 +120,20 @@ export const InvitesManager = ({ workspaceId, userId }: Props) => {
       });
       return;
     }
-    await navigator.clipboard.writeText(acceptUrl(data.token)).catch(() => {});
-    toast({ title: "Invite created", description: "Link copied to clipboard." });
-    setEmail("");
-    setRole("member");
+
+    // Best-effort email send
+    let emailed = false;
+    try {
+      const { data: res } = await supabase.functions.invoke("send-workspace-invite", {
+        body: { inviteId: data.id },
+      });
+      emailed = !!(res && (res as any).sent);
+    } catch {
+      emailed = false;
+    }
+
+    setCreatedInvite({ token: data.token, email: data.email, emailed });
+    setCreating(false);
     void load();
   };
 
@@ -103,6 +143,7 @@ export const InvitesManager = ({ workspaceId, userId }: Props) => {
       toast({ title: "Couldn't revoke", description: error.message, variant: "destructive" });
       return;
     }
+    toast({ title: "Invite revoked" });
     void load();
   };
 
@@ -111,72 +152,164 @@ export const InvitesManager = ({ workspaceId, userId }: Props) => {
     toast({ title: "Link copied" });
   };
 
+  const pending = invites.filter(
+    (i) => i.status === "pending" && !isInviteExpired(i.expires_at),
+  );
+  const history = invites.filter(
+    (i) => !(i.status === "pending" && !isInviteExpired(i.expires_at)),
+  );
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
-        <div className="flex-1">
-          <Label htmlFor="invite-email" className="text-xs">Invite email</Label>
-          <Input
-            id="invite-email"
-            type="email"
-            placeholder="teammate@company.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="w-full sm:w-32">
-          <Label className="text-xs">Role</Label>
-          <Select value={role} onValueChange={(v) => setRole(v as "admin" | "member")}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="member">Member</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button onClick={handleCreate} disabled={creating}>
-          {creating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
-          Create invite
-        </Button>
+      <div className="flex justify-end">
+        <Dialog
+          open={modalOpen}
+          onOpenChange={(open) => {
+            setModalOpen(open);
+            if (!open) resetModal();
+          }}
+        >
+          <Button onClick={() => setModalOpen(true)} size="sm">
+            <UserPlus className="h-4 w-4 mr-1.5" /> Invite member
+          </Button>
+          <DialogContent>
+            {!createdInvite ? (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Invite a teammate</DialogTitle>
+                  <DialogDescription>
+                    They'll receive a single-use link valid for 72 hours.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="invite-email">Email address</Label>
+                    <Input
+                      id="invite-email"
+                      type="email"
+                      placeholder="teammate@company.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Role</Label>
+                    <Select value={role} onValueChange={(v) => setRole(v as "admin" | "member")}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="member">Member</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
+                  <Button onClick={handleCreate} disabled={creating}>
+                    {creating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+                    Send invite
+                  </Button>
+                </DialogFooter>
+              </>
+            ) : (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <MailCheck className="h-5 w-5 text-primary" />
+                    Invite sent
+                  </DialogTitle>
+                  <DialogDescription>
+                    {createdInvite.emailed
+                      ? `We've emailed an invite link to ${createdInvite.email}.`
+                      : `Invite created for ${createdInvite.email}. Email sending isn't set up yet — share the link below instead.`}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2">
+                  <Label className="text-xs">Copyable invite link (fallback)</Label>
+                  <div className="flex gap-2">
+                    <Input readOnly value={acceptUrl(createdInvite.token)} className="font-mono text-xs" />
+                    <Button variant="outline" size="icon" onClick={() => handleCopy(createdInvite.token)}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Single-use · expires in 72 hours · invitee must sign in to join.
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => { resetModal(); }}>
+                    Send another
+                  </Button>
+                  <Button onClick={() => setModalOpen(false)}>Done</Button>
+                </DialogFooter>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-      <p className="text-xs text-muted-foreground">
-        We'll generate a single-use link valid for 72 hours. Share it with your teammate — they'll sign in and auto-join.
-      </p>
 
-      {loading ? (
-        <div className="text-sm text-muted-foreground">Loading invites…</div>
-      ) : invites.length === 0 ? (
-        <div className="border border-dashed border-border p-4 text-sm text-muted-foreground text-center">
-          No invites yet.
-        </div>
-      ) : (
-        <div className="border border-border divide-y divide-border">
-          {invites.map((inv) => {
-            const expired = isInviteExpired(inv.expires_at);
-            const effectiveStatus = inv.status === "pending" && expired ? "expired" : inv.status;
-            return (
+      {/* Pending invites */}
+      <div>
+        <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+          Pending invites
+        </h3>
+        {loading ? (
+          <div className="text-sm text-muted-foreground">Loading…</div>
+        ) : pending.length === 0 ? (
+          <div className="border border-dashed border-border p-4 text-sm text-muted-foreground text-center">
+            No pending invites.
+          </div>
+        ) : (
+          <div className="border border-border divide-y divide-border">
+            {pending.map((inv) => (
               <div key={inv.id} className="flex items-center justify-between gap-3 p-3">
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{inv.email}</div>
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {inv.role} · {effectiveStatus}
+                    {inv.role} · expires {new Date(inv.expires_at).toLocaleDateString("en-GB")}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  {effectiveStatus === "pending" && (
-                    <>
-                      <Button size="sm" variant="ghost" onClick={() => handleCopy(inv.token)}>
-                        <Copy className="h-3.5 w-3.5 mr-1" /> Copy link
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleRevoke(inv.id)}>
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                    </>
-                  )}
+                  <Button size="sm" variant="ghost" onClick={() => handleCopy(inv.token)}>
+                    <Copy className="h-3.5 w-3.5 mr-1" /> Copy link
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleRevoke(inv.id)}
+                    aria-label="Revoke invite"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* History */}
+      {history.length > 0 && (
+        <div>
+          <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+            History
+          </h3>
+          <div className="border border-border divide-y divide-border">
+            {history.slice(0, 8).map((inv) => {
+              const expired = isInviteExpired(inv.expires_at);
+              const status = inv.status === "pending" && expired ? "expired" : inv.status;
+              return (
+                <div key={inv.id} className="flex items-center justify-between p-3">
+                  <div className="min-w-0">
+                    <div className="text-sm truncate">{inv.email}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {inv.role} · {status}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

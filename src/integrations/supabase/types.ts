@@ -424,6 +424,51 @@ export type Database = {
           },
         ]
       }
+      invite_logs: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          event: string
+          id: string
+          invite_id: string | null
+          metadata: Json
+          workspace_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event: string
+          id?: string
+          invite_id?: string | null
+          metadata?: Json
+          workspace_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event?: string
+          id?: string
+          invite_id?: string | null
+          metadata?: Json
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invite_logs_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_invites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invite_logs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_inputs: {
         Row: {
           company_name: string | null

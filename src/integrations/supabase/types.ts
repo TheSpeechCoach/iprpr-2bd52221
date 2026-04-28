@@ -354,15 +354,14 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
-          current_stage: string | null
           error_message: string | null
+          failed_at: string | null
           id: string
-          metadata: Json
-          progress_percentage: number
-          questions_generated: number
-          session_id: string
-          status: string
-          total_questions: number
+          prep_session_id: string
+          progress: number
+          stage: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["generation_job_status"]
           updated_at: string
           user_id: string
           workspace_id: string | null
@@ -370,15 +369,14 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
-          current_stage?: string | null
           error_message?: string | null
+          failed_at?: string | null
           id?: string
-          metadata?: Json
-          progress_percentage?: number
-          questions_generated?: number
-          session_id: string
-          status?: string
-          total_questions?: number
+          prep_session_id: string
+          progress?: number
+          stage?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["generation_job_status"]
           updated_at?: string
           user_id: string
           workspace_id?: string | null
@@ -386,20 +384,34 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
-          current_stage?: string | null
           error_message?: string | null
+          failed_at?: string | null
           id?: string
-          metadata?: Json
-          progress_percentage?: number
-          questions_generated?: number
-          session_id?: string
-          status?: string
-          total_questions?: number
+          prep_session_id?: string
+          progress?: number
+          stage?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["generation_job_status"]
           updated_at?: string
           user_id?: string
           workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "generation_jobs_prep_session_id_fkey"
+            columns: ["prep_session_id"]
+            isOneToOne: false
+            referencedRelation: "prep_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generation_jobs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       interview_questions: {
         Row: {
@@ -1249,6 +1261,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      generation_job_status: "queued" | "processing" | "completed" | "failed"
       workspace_invite_status: "pending" | "accepted" | "revoked" | "expired"
       workspace_role: "owner" | "admin" | "member"
     }
@@ -1379,6 +1392,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      generation_job_status: ["queued", "processing", "completed", "failed"],
       workspace_invite_status: ["pending", "accepted", "revoked", "expired"],
       workspace_role: ["owner", "admin", "member"],
     },

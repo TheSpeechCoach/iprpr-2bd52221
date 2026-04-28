@@ -318,14 +318,12 @@ Deno.serve(async (req) => {
     const { data: jobRow, error: jobErr } = await admin
       .from("generation_jobs")
       .insert({
-        session_id: sessionId,
+        prep_session_id: sessionId,
         user_id: userId,
         workspace_id: session.workspace_id ?? null,
         status: "queued",
-        current_stage: "Preparing",
-        progress_percentage: 0,
-        questions_generated: 0,
-        total_questions: numQuestions,
+        stage: "Preparing",
+        progress: 0,
       })
       .select("id")
       .single();
@@ -353,7 +351,7 @@ Deno.serve(async (req) => {
 
     const generate = async () => {
       try {
-        await updateJob({ status: "processing", current_stage: "Preparing", progress_percentage: 2 });
+        await updateJob({ status: "processing", stage: "Preparing", progress: 2, started_at: new Date().toISOString() });
 
         const systemPrompt = `You are a senior UK-based interview coach for The Speech Coach. You write in British English (en-GB).
 Your job: generate sharp, realistic, interview-grade questions tailored to a specific candidate and role.
@@ -470,8 +468,8 @@ INTERVIEW PARAMETERS
           const expectedCount = range.end - range.start + 1;
 
           await updateJob({
-            current_stage: range.label,
-            progress_percentage: Math.max(2, Math.round((ci / totalChunks) * 90) + 2),
+            stage: range.label,
+            progress: Math.max(2, Math.round((ci / totalChunks) * 90) + 2),
           });
 
           const chunkInstruction = isFirst
@@ -574,8 +572,8 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
           totalGenerated += rows.length;
 
           await updateJob({
-            questions_generated: totalGenerated,
-            progress_percentage: Math.min(95, Math.round(((ci + 1) / totalChunks) * 90) + 2),
+            stage: `${range.label} · saved`,
+            progress: Math.min(95, Math.round(((ci + 1) / totalChunks) * 90) + 2),
           });
         }
 
@@ -603,9 +601,8 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
 
         await updateJob({
           status: "completed",
-          progress_percentage: 100,
-          current_stage: "Completed",
-          questions_generated: totalGenerated,
+          progress: 100,
+          stage: "Completed",
           completed_at: new Date().toISOString(),
         });
 
@@ -620,7 +617,7 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
         await updateJob({
           status: "failed",
           error_message: message.slice(0, 500),
-          completed_at: new Date().toISOString(),
+          failed_at: new Date().toISOString(),
         });
         await admin.from("admin_logs").insert({
           event: "pack_generation_failed",

@@ -197,11 +197,23 @@ Rules: arrays must be string lists of concise points. leadership_scope is a 1-2 
 
     // 3) Persist (best-effort)
     try {
+      // Resolve workspace_id from the prep session if available.
+      let wsId: string | null = null;
+      if (sessionId) {
+        const { data: ps } = await admin
+          .from("prep_sessions")
+          .select("workspace_id")
+          .eq("id", sessionId)
+          .maybeSingle();
+        wsId = (ps as any)?.workspace_id ?? null;
+      }
+
       const { data: jobInput } = await admin
         .from("job_inputs")
         .insert({
           user_id: userId,
           session_id: sessionId,
+          workspace_id: wsId,
           input_type: "url",
           job_spec_url: url,
           job_title: result.job_title || null,
@@ -214,6 +226,7 @@ Rules: arrays must be string lists of concise points. leadership_scope is a 1-2 
       await admin.from("extracted_job_specs").insert({
         user_id: userId,
         session_id: sessionId,
+        workspace_id: wsId,
         job_input_id: jobInput?.id ?? null,
         summary: result.leadership_scope || null,
         responsibilities: result.responsibilities,

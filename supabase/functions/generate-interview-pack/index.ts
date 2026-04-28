@@ -4,6 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { ukifyJson } from "../_shared/ukEnglish.ts";
 import { namesLooselyMatch, cvMentionsName, normaliseName } from "../_shared/candidateLock.ts";
 import { PRO_LIMITS, getProUsage, buildLimitBlock } from "../_shared/proLimits.ts";
+import { logRequest } from "../_shared/requestAudit.ts";
+import { evaluateAccount } from "../_shared/abuseDetector.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

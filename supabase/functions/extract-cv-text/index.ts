@@ -11,6 +11,8 @@ import {
   hashCvContent,
   buildLimitBlock,
 } from "../_shared/proLimits.ts";
+import { logRequest } from "../_shared/requestAudit.ts";
+import { evaluateAccount } from "../_shared/abuseDetector.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

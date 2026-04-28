@@ -188,10 +188,8 @@ const Results = () => {
   const [retrying, setRetrying] = useState(false);
   const [job, setJob] = useState<{
     status: string;
-    progress_percentage: number;
-    current_stage: string | null;
-    questions_generated: number;
-    total_questions: number;
+    progress: number;
+    stage: string | null;
     error_message: string | null;
   } | null>(null);
 
@@ -261,8 +259,8 @@ const Results = () => {
       // Poll the latest generation_jobs row for this session.
       const { data: j } = await supabase
         .from("generation_jobs")
-        .select("status, progress_percentage, current_stage, questions_generated, total_questions, error_message")
-        .eq("session_id", id)
+        .select("status, progress, stage, error_message")
+        .eq("prep_session_id", id)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -679,10 +677,8 @@ const Results = () => {
     job?.status === "queued" ||
     job?.status === "processing";
   if (isGenerating) {
-    const pct = Math.max(2, Math.min(99, job?.progress_percentage ?? 5));
-    const stage = job?.current_stage ?? "Preparing your pack";
-    const generated = job?.questions_generated ?? 0;
-    const total = job?.total_questions ?? 0;
+    const pct = Math.max(2, Math.min(99, job?.progress ?? 5));
+    const stage = job?.stage ?? "Preparing your pack";
     return (
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
@@ -693,7 +689,7 @@ const Results = () => {
             We're writing your interview questions
           </h1>
           <p className="mt-3 text-muted-foreground max-w-md">
-            {stage}{total > 0 ? ` · ${generated} of ${total} questions ready` : ""}
+            {stage}
           </p>
           <div className="mt-8 w-full max-w-md">
             <div className="h-2 w-full bg-secondary overflow-hidden rounded-full">

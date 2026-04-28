@@ -11,7 +11,10 @@ export type AnalyticsEvent =
   | "question_10_reached"
   | "upgrade_prompt_seen"
   | "upgrade_clicked"
-  | "subscription_started";
+  | "subscription_started"
+  | "pack_exported_pdf"
+  | "pack_exported_docx"
+  | "pack_export_blocked";
 
 interface TrackOptions {
   userId?: string | null;

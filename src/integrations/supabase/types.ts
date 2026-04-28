@@ -924,6 +924,59 @@ export type Database = {
         }
         Relationships: []
       }
+      workspace_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["workspace_role"]
+          status: Database["public"]["Enums"]["workspace_invite_status"]
+          token: string
+          workspace_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["workspace_role"]
+          status?: Database["public"]["Enums"]["workspace_invite_status"]
+          token: string
+          workspace_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["workspace_role"]
+          status?: Database["public"]["Enums"]["workspace_invite_status"]
+          token?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_invites_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_members: {
         Row: {
           id: string
@@ -1019,6 +1072,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_workspace_invite: { Args: { _token: string }; Returns: Json }
       current_user_workspaces: { Args: { _user_id: string }; Returns: string[] }
       get_user_plan: {
         Args: { _env?: string; _user_id: string }
@@ -1080,6 +1134,10 @@ export type Database = {
           exports_24h: number
         }[]
       }
+      revoke_workspace_invite: {
+        Args: { _invite_id: string }
+        Returns: undefined
+      }
       score_account_abuse: {
         Args: { _user_id: string }
         Returns: {
@@ -1095,6 +1153,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      workspace_invite_status: "pending" | "accepted" | "revoked" | "expired"
       workspace_role: "owner" | "admin" | "member"
     }
     CompositeTypes: {
@@ -1224,6 +1283,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      workspace_invite_status: ["pending", "accepted", "revoked", "expired"],
       workspace_role: ["owner", "admin", "member"],
     },
   },

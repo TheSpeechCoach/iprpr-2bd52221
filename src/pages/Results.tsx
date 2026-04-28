@@ -258,22 +258,35 @@ const Results = () => {
     let cancelled = false;
     let interval: ReturnType<typeof setInterval> | null = null;
     const tick = async () => {
+      // Poll the latest generation_jobs row for this session.
+      const { data: j } = await supabase
+        .from("generation_jobs")
+        .select("status, progress_percentage, current_stage, questions_generated, total_questions, error_message")
+        .eq("session_id", id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (j) setJob(j as any);
+
+      // Also check the session row in case there's no job (legacy sessions) or it just flipped to ready.
       const { data: s } = await supabase
         .from("prep_sessions")
         .select("status")
         .eq("id", id)
         .maybeSingle();
       if (cancelled) return;
-      if (s?.status === "ready") {
-        await loadAll();
-        if (interval) clearInterval(interval);
-      } else if (s?.status === "failed") {
+
+      const done = j?.status === "completed" || j?.status === "failed" || s?.status === "ready" || s?.status === "failed";
+      if (done) {
         await loadAll();
         if (interval) clearInterval(interval);
       }
     };
     loadAll().then(() => {
-      interval = setInterval(tick, 3000);
+      // Kick off an immediate tick, then poll every 2.5 s.
+      void tick();
+      interval = setInterval(tick, 2500);
     });
     return () => {
       cancelled = true;

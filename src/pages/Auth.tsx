@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -41,9 +41,11 @@ const Auth = () => {
   const [candidateLinkedinUrl, setCandidateLinkedinUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
   const { user } = useAuth();
 
-  useEffect(() => { if (user) nav("/dashboard"); }, [user, nav]);
+  useEffect(() => { if (user) nav(redirectTo); }, [user, nav, redirectTo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +70,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${window.location.origin}${redirectTo}`,
             data: {
               full_name: fullName.trim(),
               candidate_full_name: candidateFullName.trim(),
@@ -93,7 +95,7 @@ const Auth = () => {
           return;
         }
         toast({ title: "Account created", description: "You're signed in." });
-        nav("/dashboard");
+        nav(redirectTo);
       } else {
         if (password.length < 6) {
           toast({ title: "Password too short", description: "Use at least 6 characters.", variant: "destructive" });
@@ -101,7 +103,7 @@ const Auth = () => {
         }
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        nav("/dashboard");
+        nav(redirectTo);
       }
     } catch (err: any) {
       const msg = err?.message ?? "Something went wrong. Please try again.";

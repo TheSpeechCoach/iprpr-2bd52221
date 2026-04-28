@@ -18,6 +18,17 @@ export const CV_DISTINCT_LIMITS: Record<"free" | "pro" | "coach_plus", number> =
   coach_plus: 8,
 };
 
+/**
+ * Per-plan export caps within the current billing period.
+ * Counted as distinct prep sessions exported (re-exports of the same pack
+ * in the same period don't count again). PDF and DOCX share this budget.
+ */
+export const EXPORT_DISTINCT_LIMITS: Record<"free" | "pro" | "coach_plus", number> = {
+  free: 0,
+  pro: 3,
+  coach_plus: 10,
+};
+
 export type ProLimitKey = keyof typeof PRO_LIMITS;
 
 export const PRO_LIMIT_LABEL: Record<ProLimitKey, string> = {

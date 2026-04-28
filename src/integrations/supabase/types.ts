@@ -863,6 +863,10 @@ export type Database = {
         Args: { _env?: string; _user_id: string }
         Returns: string
       }
+      has_exported_session_in_period: {
+        Args: { _session_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -873,6 +877,14 @@ export type Database = {
       is_eligible_for_pro_intro_offer: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      pack_export_usage: {
+        Args: { _user_id: string }
+        Returns: {
+          distinct_sessions_exported: number
+          period_end: string
+          period_start: string
+        }[]
       }
       plan_from_price_id: { Args: { _price_id: string }; Returns: string }
       pro_period_bounds: {

@@ -92,7 +92,7 @@ const AcceptInvite = () => {
     );
   }
 
-  const expired = new Date(preview.expires_at) < new Date();
+  const expired = isInviteExpired(preview.expires_at);
   const blocked =
     preview.status === "revoked" ||
     preview.status === "expired" ||

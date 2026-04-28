@@ -20,12 +20,18 @@ interface TrackOptions {
   userId?: string | null;
   plan?: string | null;
   sessionId?: string | null;
+  workspaceId?: string | null;
   metadata?: Record<string, unknown>;
 }
 
 // In-memory dedupe so view-style events (results_viewed, question_10_reached,
 // upgrade_prompt_seen) don't get spammed on re-render within a session.
 const seenKeys = new Set<string>();
+
+function readActiveWorkspaceId(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem("ipp.currentWorkspaceId");
+}
 
 /**
  * Fire-and-forget analytics tracker. Resolves the user id automatically if not
@@ -38,6 +44,7 @@ export async function track(event: AnalyticsEvent, opts: TrackOptions = {}): Pro
       const { data } = await supabase.auth.getUser();
       userId = data.user?.id ?? null;
     }
+    const workspaceId = opts.workspaceId ?? readActiveWorkspaceId();
 
     await supabase.from("analytics_events").insert([
       {
@@ -45,6 +52,7 @@ export async function track(event: AnalyticsEvent, opts: TrackOptions = {}): Pro
         user_id: userId,
         plan: opts.plan ?? null,
         session_id: opts.sessionId ?? null,
+        workspace_id: workspaceId,
         metadata: (opts.metadata ?? {}) as never,
       },
     ]);

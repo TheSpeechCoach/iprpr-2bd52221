@@ -273,12 +273,7 @@ const PrepWizard = () => {
       }
       if (genData?.error) throw new Error(genData?.message || genData.error);
 
-      void track("generation_completed", {
-        userId: user.id,
-        plan,
-        sessionId: session.id,
-      });
-      toast({ title: "We're on it", description: "Your pack is being written. This usually takes 30–60 seconds." });
+      toast({ title: "We're on it", description: "Your pack is being written. You can watch progress on the next screen." });
       nav(`/prep/${session.id}/results`);
     } catch (err: any) {
       if (createdSessionId) {

@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -13,6 +14,7 @@ import Results from "./pages/Results";
 import Practice from "./pages/Practice";
 import Upgrade from "./pages/Upgrade";
 import PractiseDelivery from "./pages/PractiseDelivery";
+import WorkspacePage from "./pages/Workspace";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -24,17 +26,20 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/prep/new" element={<ProtectedRoute><PrepWizard /></ProtectedRoute>} />
-            <Route path="/prep/:id/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
-            <Route path="/prep/:id/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
-            <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
-            <Route path="/practise-delivery" element={<ProtectedRoute><PractiseDelivery /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <WorkspaceProvider>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/workspace" element={<ProtectedRoute><WorkspacePage /></ProtectedRoute>} />
+              <Route path="/prep/new" element={<ProtectedRoute><PrepWizard /></ProtectedRoute>} />
+              <Route path="/prep/:id/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
+              <Route path="/prep/:id/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
+              <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
+              <Route path="/practise-delivery" element={<ProtectedRoute><PractiseDelivery /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </WorkspaceProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

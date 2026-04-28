@@ -342,6 +342,32 @@ const PrepWizard = () => {
 
         {step === 0 && (
           <div className="space-y-5">
+            {isTeamWorkspace && (
+              <Field
+                label="Candidate"
+                hint={
+                  candidates.length === 0
+                    ? "No candidates yet — add one from the Workspace page first."
+                    : "Which candidate is this prep session for?"
+                }
+              >
+                <div className="flex items-center gap-2">
+                  <Select value={selectedCandidateId} onValueChange={setSelectedCandidateId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a candidate…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {candidates.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Link to="/workspace">
+                    <Button type="button" variant="outline" size="sm">+ New</Button>
+                  </Link>
+                </div>
+              </Field>
+            )}
             <Field label="Full name" hint="Used in the candidate summary on your pack.">
               <Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="e.g. Alex Morgan" />
             </Field>

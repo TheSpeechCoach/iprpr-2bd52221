@@ -11,6 +11,13 @@ export const PRO_LIMITS = {
   jobSpecsPerPeriod: 5,
 } as const;
 
+/** Per-plan distinct CV upload caps within the current billing period. */
+export const CV_DISTINCT_LIMITS: Record<"free" | "pro" | "coach_plus", number> = {
+  free: 0,
+  pro: 3,
+  coach_plus: 8,
+};
+
 export type ProLimitKey = keyof typeof PRO_LIMITS;
 
 export const PRO_LIMIT_LABEL: Record<ProLimitKey, string> = {

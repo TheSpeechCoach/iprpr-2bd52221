@@ -5,9 +5,10 @@ import { extractText, getDocumentProxy } from "https://esm.sh/unpdf@0.12.1";
 import { unzipSync, strFromU8 } from "https://esm.sh/fflate@0.8.2";
 import {
   PRO_LIMITS,
+  CV_DISTINCT_LIMITS,
   getProUsage,
   getUserPlan,
-  sha256Hex,
+  hashCvContent,
   buildLimitBlock,
 } from "../_shared/proLimits.ts";
 
@@ -150,16 +151,32 @@ Deno.serve(async (req) => {
     }
 
     const bytes = new Uint8Array(await blob.arrayBuffer());
-    const contentHash = await sha256Hex(bytes);
 
-    // ===== Pro plan distinct-CV cap =====
-    // Free has its own session cap elsewhere; Coach+ is uncapped.
+    let raw = "";
+    let parseError: string | null = null;
+    try {
+      raw = ext === "pdf" ? await extractPdf(bytes) : extractDocx(bytes);
+    } catch (parseErr: any) {
+      parseError = `Parse failure (${ext}): ${parseErr?.message ?? parseErr}`;
+    }
+
+    const text = normaliseWhitespace(raw);
+    const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+    const extractionUsable = !!text && wordCount >= 20;
+
+    // Hash from normalised extracted text where possible; fall back to raw bytes.
+    const { hash: contentHash, source: hashSource } = await hashCvContent(
+      extractionUsable ? text : null,
+      bytes,
+    );
+
+    // ===== Distinct-CV cap (Pro: 3, Coach+: 8). Free handled elsewhere. =====
     const env = (req.headers.get("x-stripe-env") === "live") ? "live" : "sandbox";
     const userPlan = await getUserPlan(admin, userId, env);
-    if (userPlan === "pro") {
+    if (userPlan === "pro" || userPlan === "coach_plus") {
       const usage = await getProUsage(admin, userId);
       if (usage) {
-        // Check whether this exact CV content already counts in this period.
+        const planLimit = CV_DISTINCT_LIMITS[userPlan];
         const { data: existingHash } = await admin
           .from("uploaded_files")
           .select("id")
@@ -172,11 +189,12 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         const isNewCv = !existingHash;
-        if (isNewCv && usage.distinct_cvs >= PRO_LIMITS.distinctCvsPerPeriod) {
+        if (isNewCv && usage.distinct_cvs >= planLimit) {
           const block = buildLimitBlock(
             "distinctCvsPerPeriod",
             usage.distinct_cvs,
             usage.period_end,
+            planLimit,
           );
           return new Response(JSON.stringify(block), {
             status: 402,
@@ -186,19 +204,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    let raw = "";
-    try {
-      raw = ext === "pdf" ? await extractPdf(bytes) : extractDocx(bytes);
-    } catch (parseErr: any) {
-      throw new Error(`Parse failure (${ext}): ${parseErr?.message ?? parseErr}`);
+    if (!extractionUsable) {
+      throw new Error(parseError ?? "Extraction produced no usable text (scanned PDF?).");
     }
 
-    const text = normaliseWhitespace(raw);
-    const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
-
-    if (!text || wordCount < 20) {
-      throw new Error("Extraction produced no usable text (scanned PDF?).");
-    }
+    console.log("cv_hash", { userId, hashSource, contentHash: contentHash.slice(0, 12) });
 
     // Persist to uploaded_files (best-effort). If a row exists for this path, update it.
     try {

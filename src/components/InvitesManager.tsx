@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Copy, Loader2, Mail, X } from "lucide-react";
+import { isInviteExpired } from "@/lib/workspaceRoles";
 
 interface InviteRow {
   id: string;

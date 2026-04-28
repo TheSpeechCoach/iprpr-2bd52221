@@ -186,6 +186,14 @@ const Results = () => {
   const [savedAnswerId, setSavedAnswerId] = useState<string | null>(null);
 
   const [retrying, setRetrying] = useState(false);
+  const [job, setJob] = useState<{
+    status: string;
+    progress_percentage: number;
+    current_stage: string | null;
+    questions_generated: number;
+    total_questions: number;
+    error_message: string | null;
+  } | null>(null);
 
   // Debounced autosave for user answers.
   useEffect(() => {

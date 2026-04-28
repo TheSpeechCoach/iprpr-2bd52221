@@ -181,7 +181,7 @@ const PrepWizard = () => {
 
         toast({ title: "Reading your CV", description: "Pulling out the text we'll use to tailor your pack." });
         const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
-          body: { file_path: path, bucket: "cvs" },
+          body: { file_path: path, bucket: "cvs", workspace_id: workspace.id, candidate_id: selectedCandidateId || null },
         });
         if (exErr) {
           let friendly = `We couldn't read your CV: ${exErr.message}`;
@@ -212,6 +212,8 @@ const PrepWizard = () => {
       // 2) Create session
       const { data: session, error: sErr } = await supabase.from("prep_sessions").insert({
         user_id: user.id,
+        workspace_id: workspace.id,
+        candidate_id: selectedCandidateId || null,
         title: `${form.target_role.trim()}${form.company_name ? ` · ${form.company_name.trim()}` : ""}`,
         status: "generating",
         ...form,

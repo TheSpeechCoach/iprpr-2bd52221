@@ -150,6 +150,7 @@ interface Session {
   company_name: string | null;
   full_name: string | null;
   candidate_current_role: string | null;
+  num_questions: number | null;
 }
 
 const Results = () => {

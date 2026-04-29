@@ -584,7 +584,7 @@ const PrepWizard = () => {
             <Button onClick={handleGenerate} disabled={submitting} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
               {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Preparing your pack…</> : <>Generate my interview pack <ArrowRight className="h-4 w-4 ml-2" /></>}
             </Button>
-            <p className="text-[11px] text-muted-foreground text-center">This usually takes 30–60 seconds.</p>
+            <p className="text-[11px] text-muted-foreground text-center">Building your full interview pack (100 tailored questions). This usually takes 1–3 minutes.</p>
           </div>
         )}
 

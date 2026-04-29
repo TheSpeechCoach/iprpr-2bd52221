@@ -453,8 +453,11 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
         .select("id", { count: "exact", head: true })
         .eq("session_id", sessionId);
 
+      const stageAfterSave = testingMode && isFirst
+        ? "Your first questions are ready. We're building the rest in the background."
+        : `${range.label} · saved`;
       await updateJob({
-        stage: `${range.label} · saved`,
+        stage: stageAfterSave,
         progress: Math.min(95, Math.round(((ci + 1) / totalChunks) * 90) + 2),
         questions_generated: livePersisted ?? totalGenerated,
       });

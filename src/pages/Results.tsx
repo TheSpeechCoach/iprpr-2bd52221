@@ -282,7 +282,19 @@ const Results = () => {
         .select("id", { count: "exact", head: true })
         .eq("session_id", id);
       if (cancelled) return;
-      if (typeof qCount === "number") setQuestionsGenerated(qCount);
+      if (typeof qCount === "number") {
+        // If the persisted count has moved on since our last load, refetch
+        // questions so newly-saved chunks appear without a manual refresh.
+        if (qCount !== questionsGenerated && qCount !== questions.length) {
+          const { data: qs } = await supabase
+            .from("interview_questions")
+            .select("*")
+            .eq("session_id", id)
+            .order("position");
+          if (!cancelled && qs) setQuestions(qs as Question[]);
+        }
+        setQuestionsGenerated(qCount);
+      }
 
       // Also check the session row in case there's no job (legacy sessions) or it just flipped to ready.
       const { data: s } = await supabase
@@ -291,6 +303,7 @@ const Results = () => {
         .eq("id", id)
         .maybeSingle();
       if (cancelled) return;
+      if (s) setSession((prev) => (prev ? { ...prev, status: s.status } : prev));
 
       const done = j?.status === "completed" || j?.status === "failed" || s?.status === "ready" || s?.status === "failed";
       if (done) {

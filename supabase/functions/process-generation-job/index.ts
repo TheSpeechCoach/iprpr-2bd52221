@@ -378,11 +378,32 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
 
       totalGenerated += rows.length;
 
+      // Re-count from the database — that's the source of truth the
+      // frontend polls against. (`interview_questions.session_id` ≡
+      // `generation_jobs.prep_session_id`; see migration comments.)
+      const { count: livePersisted } = await admin
+        .from("interview_questions")
+        .select("id", { count: "exact", head: true })
+        .eq("session_id", sessionId);
+
       await updateJob({
         stage: `${range.label} · saved`,
         progress: Math.min(95, Math.round(((ci + 1) / totalChunks) * 90) + 2),
+        questions_generated: livePersisted ?? totalGenerated,
       });
-      console.log(`[worker] job ${jobId} chunk ${ci + 1}/${totalChunks} saved (${rows.length} rows; total ${totalGenerated})`);
+
+      // Fast first-value flip: as soon as the opening chunk lands, mark the
+      // session `initial_ready` so the wizard / Results page can show the
+      // first 10 questions immediately while the worker keeps going.
+      if (isFirst) {
+        await admin
+          .from("prep_sessions")
+          .update({ status: "initial_ready" })
+          .eq("id", sessionId);
+        console.log(`[worker] job ${jobId} marked prep_session ${sessionId} initial_ready (${livePersisted ?? totalGenerated} questions visible)`);
+      }
+
+      console.log(`[worker] job ${jobId} chunk ${ci + 1}/${totalChunks} saved (${rows.length} rows; total ${livePersisted ?? totalGenerated})`);
     }
 
     // ===== Verification gate =====

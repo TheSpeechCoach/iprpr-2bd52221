@@ -106,13 +106,17 @@ const Auth = () => {
         nav(redirectTo);
       }
     } catch (err: any) {
-      const msg = err?.message ?? "Something went wrong. Please try again.";
+      const msg = err?.message ?? "";
       const friendly = /invalid login credentials/i.test(msg)
-        ? "Email or password is incorrect."
-        : /already registered/i.test(msg)
-        ? "An account with this email already exists. Try signing in."
-        : msg;
-      toast({ title: "Authentication failed", description: friendly, variant: "destructive" });
+        ? "We couldn't complete sign-in. Please check your details or request a new link."
+        : /already registered|already been registered|user already/i.test(msg)
+        ? "An account with this email already exists. Try signing in, or use \"Forgotten password?\" to reset it."
+        : /email not confirmed/i.test(msg)
+        ? "We couldn't complete sign-in. Please check your email verification link or request a new one. If no email arrives, check spam or try again in a few minutes."
+        : /rate limit|too many/i.test(msg)
+        ? "Too many attempts. Please wait a moment and try again."
+        : "We couldn't complete sign-in. Please check your details or request a new link.";
+      toast({ title: "Sign-in problem", description: friendly, variant: "destructive" });
     } finally {
       setLoading(false);
     }

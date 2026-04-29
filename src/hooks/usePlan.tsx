@@ -40,6 +40,7 @@ export const usePlan = (): PlanState => {
   const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [testingMode, setTestingMode] = useState(false);
 
   const load = async () => {
     if (!user) {

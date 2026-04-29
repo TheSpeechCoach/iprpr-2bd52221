@@ -460,6 +460,7 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
       status: "completed",
       progress: 100,
       stage: "Completed",
+      questions_generated: persistedCount ?? numQuestions,
       completed_at: new Date().toISOString(),
     });
 

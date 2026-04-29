@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
+import { TestingPlanSwitcher } from "@/components/TestingPlanSwitcher";
 
 export const SiteHeader = () => {
   const { user, signOut } = useAuth();

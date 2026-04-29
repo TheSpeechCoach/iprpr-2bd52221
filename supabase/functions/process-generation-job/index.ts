@@ -153,6 +153,27 @@ Deno.serve(async (req) => {
 
     const numQuestions = Math.max(20, Math.min(120, session.num_questions ?? 100));
 
+    // ===== TESTING_MODE: fast beta generation =====
+    // In testing mode we generate a lean preview chunk first (no answer tiers,
+    // no coach insights, no answer_direction) using a faster model, so the
+    // first 10 questions are visible in seconds. Remaining questions are
+    // generated in the background with the same lean schema; enrichment is
+    // deferred to on-demand later.
+    let testingMode = false;
+    try {
+      const { data: tm } = await admin.rpc("testing_mode_enabled");
+      testingMode = tm === true;
+    } catch (_) { /* default off */ }
+
+    const FAST_MODEL = "google/gemini-2.5-flash";
+    const previewModel = testingMode ? FAST_MODEL : MODEL;
+    const restModel = testingMode ? FAST_MODEL : MODEL;
+    const leanPreview = testingMode;
+    const leanRest = testingMode;
+    if (testingMode) {
+      console.log(`[worker] job ${jobId} TESTING_MODE on — lean preview + flash model`);
+    }
+
     const updateJob = async (patch: Record<string, unknown>) => {
       await admin.from("generation_jobs").update(patch).eq("id", jobId);
     };
@@ -165,17 +186,28 @@ Deno.serve(async (req) => {
     });
     console.log(`[worker] job ${jobId} marked processing`);
 
-    // Plan chunks
+    // Plan chunks. In testing mode we use a smaller chunk size for the
+    // background tail too, so progress updates flow more frequently.
     const PREVIEW_SIZE = Math.min(10, numQuestions);
-    const CHUNK_SIZE = 30;
+    const CHUNK_SIZE = testingMode ? 20 : 30;
     const chunkRanges: Array<{ start: number; end: number; label: string }> = [];
     if (PREVIEW_SIZE > 0) {
-      chunkRanges.push({ start: 1, end: PREVIEW_SIZE, label: `Writing the high-stakes opening (1–${PREVIEW_SIZE})` });
+      chunkRanges.push({
+        start: 1,
+        end: PREVIEW_SIZE,
+        label: testingMode ? "Preparing your first questions" : `Writing the high-stakes opening (1–${PREVIEW_SIZE})`,
+      });
     }
     let cursor = PREVIEW_SIZE + 1;
     while (cursor <= numQuestions) {
       const end = Math.min(numQuestions, cursor + CHUNK_SIZE - 1);
-      chunkRanges.push({ start: cursor, end, label: `Writing questions ${cursor}–${end}` });
+      chunkRanges.push({
+        start: cursor,
+        end,
+        label: testingMode
+          ? `Building the rest in the background (${cursor}–${end})`
+          : `Writing questions ${cursor}–${end}`,
+      });
       cursor = end + 1;
     }
 
@@ -246,8 +278,36 @@ INTERVIEW PARAMETERS
 - Include follow-ups: ${session.include_followups}
 - Include answer framework: ${session.include_answer_angles}`;
 
-    const buildChunkSchema = (includeSummary: boolean) => {
-      const props: any = { questions: QUESTION_SCHEMA.properties.questions };
+    // Lean question schema for fast beta generation: drop expensive fields
+    // (answer_direction, example_answers, coach_insight) so the model can
+    // return the first 10 questions in seconds. Enrichment is added on demand.
+    const LEAN_QUESTION_PROPS = {
+      position: { type: "integer" },
+      category: (QUESTION_SCHEMA.properties.questions as any).items.properties.category,
+      difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
+      question: { type: "string" },
+      why_this_question_matters: { type: "string" },
+      what_good_answers_should_cover: { type: "string" },
+      optional_follow_up: { type: "string" },
+    } as const;
+    const LEAN_QUESTION_SCHEMA = {
+      type: "array",
+      description: "Tailored interview questions in interview order (lean schema).",
+      items: {
+        type: "object",
+        properties: LEAN_QUESTION_PROPS,
+        required: [
+          "position", "category", "difficulty", "question",
+          "why_this_question_matters", "what_good_answers_should_cover",
+        ],
+        additionalProperties: false,
+      },
+    } as const;
+
+    const buildChunkSchema = (includeSummary: boolean, lean: boolean) => {
+      const props: any = {
+        questions: lean ? LEAN_QUESTION_SCHEMA : QUESTION_SCHEMA.properties.questions,
+      };
       const required: string[] = ["questions"];
       if (includeSummary) {
         props.candidate_summary = QUESTION_SCHEMA.properties.candidate_summary;
@@ -281,9 +341,16 @@ INTERVIEW PARAMETERS
         progress: Math.max(2, Math.round((ci / totalChunks) * 90) + 2),
       });
 
+      const useLeanForChunk = isFirst ? leanPreview : leanRest;
+      const modelForChunk = isFirst ? previewModel : restModel;
+
+      const leanNote = useLeanForChunk
+        ? ` Use the LEAN schema only — do NOT include answer_direction, example_answers, or coach_insight. Keep "why_this_question_matters" and "what_good_answers_should_cover" tight (one sentence each).`
+        : "";
+
       const chunkInstruction = isFirst
-        ? `This is CHUNK 1 of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. These are the high-stakes opening questions — apply the FIRST 10 rules strictly. Also return the overall candidate_summary, role_summary, top_themes, and red_flag_areas for the whole pack.`
-        : `This is CHUNK ${ci + 1} of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. Do NOT repeat earlier positions. Distribute categories naturally across the interview arc.`;
+        ? `This is CHUNK 1 of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. These are the high-stakes opening questions — apply the FIRST 10 rules strictly. Also return the overall candidate_summary, role_summary, top_themes, and red_flag_areas for the whole pack.${leanNote}`
+        : `This is CHUNK ${ci + 1} of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. Do NOT repeat earlier positions. Distribute categories naturally across the interview arc.${leanNote}`;
 
       const userPrompt = `${chunkInstruction}
 
@@ -298,7 +365,7 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: MODEL,
+          model: modelForChunk,
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
@@ -308,7 +375,7 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
             function: {
               name: "produce_interview_pack",
               description: "Return the structured interview pack chunk.",
-              parameters: buildChunkSchema(isFirst),
+              parameters: buildChunkSchema(isFirst, useLeanForChunk),
             },
           }],
           tool_choice: { type: "function", function: { name: "produce_interview_pack" } },
@@ -386,8 +453,11 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
         .select("id", { count: "exact", head: true })
         .eq("session_id", sessionId);
 
+      const stageAfterSave = testingMode && isFirst
+        ? "Your first questions are ready. We're building the rest in the background."
+        : `${range.label} · saved`;
       await updateJob({
-        stage: `${range.label} · saved`,
+        stage: stageAfterSave,
         progress: Math.min(95, Math.round(((ci + 1) / totalChunks) * 90) + 2),
         questions_generated: livePersisted ?? totalGenerated,
       });

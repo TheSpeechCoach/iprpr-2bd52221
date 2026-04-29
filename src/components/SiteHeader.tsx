@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { TestingPlanSwitcher } from "@/components/TestingPlanSwitcher";
 import { TestingModeBanner } from "@/components/TestingModeBanner";
+import { ResetTestAccountsPanel } from "@/components/ResetTestAccountsPanel";
 import { ReportIssueButton } from "@/components/ReportIssueButton";
 
 export const SiteHeader = () => {
@@ -28,6 +29,7 @@ export const SiteHeader = () => {
             <>
               <ReportIssueButton />
               <TestingPlanSwitcher />
+              <ResetTestAccountsPanel />
               <WorkspaceSwitcher />
               <Link to="/dashboard" className="hover:text-accent transition-colors">Dashboard</Link>
               <Button variant="ghost" size="sm" onClick={async () => { await signOut(); nav("/"); }}>

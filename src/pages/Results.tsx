@@ -696,10 +696,19 @@ const Results = () => {
   }
 
   // ----- Generating state -----
-  const isGenerating =
+  // Treat ONLY the pre-first-10 phase as "blocking generating". Once the worker
+  // flips prep_sessions.status to `initial_ready`, fall through to the main
+  // view and pin a slim progress bar on top until status === 'ready'.
+  const isStillBuilding =
     session?.status === "generating" ||
+    session?.status === "initial_ready" ||
     job?.status === "queued" ||
     job?.status === "processing";
+  const isBlockingGenerating =
+    (session?.status === "generating" || job?.status === "queued" || job?.status === "processing") &&
+    session?.status !== "initial_ready" &&
+    questions.length === 0;
+  const isGenerating = isBlockingGenerating;
   if (isGenerating) {
     const totalQ = session?.num_questions ?? 100;
     const pct = Math.max(2, Math.min(99, job?.progress ?? 5));

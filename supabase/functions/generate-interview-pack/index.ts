@@ -191,10 +191,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ===== TESTING_MODE bypass =====
+    // When app_settings.testing_mode = true we relax commercial gates only:
+    // single-candidate lock, free 1-session cap, and Pro distinct-role cap.
+    // We do NOT relax auth, RLS, workspace scoping, or AI-server enforcement.
+    let testingMode = false;
+    try {
+      const { data: tm } = await admin.rpc("testing_mode_enabled");
+      testingMode = tm === true;
+    } catch (_) { /* default off */ }
+    if (testingMode) {
+      console.log(`[generate-interview-pack] TESTING_MODE on — bypassing commercial limits for user ${userId}`);
+    }
+
     // ===== Single-candidate enforcement =====
     // Each account is locked to one named candidate. Sessions whose candidate
     // name or CV refer to a different person are hard-blocked AND flagged.
-    const { data: profile } = await admin
+    const { data: profile } = testingMode ? { data: null as any } : await admin
       .from("profiles")
       .select("candidate_full_name")
       .eq("id", userId)

@@ -186,17 +186,28 @@ Deno.serve(async (req) => {
     });
     console.log(`[worker] job ${jobId} marked processing`);
 
-    // Plan chunks
+    // Plan chunks. In testing mode we use a smaller chunk size for the
+    // background tail too, so progress updates flow more frequently.
     const PREVIEW_SIZE = Math.min(10, numQuestions);
-    const CHUNK_SIZE = 30;
+    const CHUNK_SIZE = testingMode ? 20 : 30;
     const chunkRanges: Array<{ start: number; end: number; label: string }> = [];
     if (PREVIEW_SIZE > 0) {
-      chunkRanges.push({ start: 1, end: PREVIEW_SIZE, label: `Writing the high-stakes opening (1–${PREVIEW_SIZE})` });
+      chunkRanges.push({
+        start: 1,
+        end: PREVIEW_SIZE,
+        label: testingMode ? "Preparing your first questions" : `Writing the high-stakes opening (1–${PREVIEW_SIZE})`,
+      });
     }
     let cursor = PREVIEW_SIZE + 1;
     while (cursor <= numQuestions) {
       const end = Math.min(numQuestions, cursor + CHUNK_SIZE - 1);
-      chunkRanges.push({ start: cursor, end, label: `Writing questions ${cursor}–${end}` });
+      chunkRanges.push({
+        start: cursor,
+        end,
+        label: testingMode
+          ? `Building the rest in the background (${cursor}–${end})`
+          : `Writing questions ${cursor}–${end}`,
+      });
       cursor = end + 1;
     }
 

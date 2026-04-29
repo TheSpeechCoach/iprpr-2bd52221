@@ -193,7 +193,17 @@ const Auth = () => {
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{copy.auth.passwordLabel}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{copy.auth.passwordLabel}</Label>
+                {mode === "signin" && (
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                  >
+                    Forgotten password?
+                  </Link>
+                )}
+              </div>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={200} />
             </div>
             <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={loading}>

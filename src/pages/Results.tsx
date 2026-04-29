@@ -150,6 +150,7 @@ interface Session {
   company_name: string | null;
   full_name: string | null;
   candidate_current_role: string | null;
+  num_questions: number | null;
 }
 
 const Results = () => {
@@ -192,6 +193,9 @@ const Results = () => {
     stage: string | null;
     error_message: string | null;
   } | null>(null);
+  const [questionsGenerated, setQuestionsGenerated] = useState(0);
+  const [processingStartedAt, setProcessingStartedAt] = useState<number | null>(null);
+  const [nowTs, setNowTs] = useState(() => Date.now());
 
   // Debounced autosave for user answers.
   useEffect(() => {
@@ -265,7 +269,20 @@ const Results = () => {
         .limit(1)
         .maybeSingle();
       if (cancelled) return;
-      if (j) setJob(j as any);
+      if (j) {
+        setJob(j as any);
+        if ((j.status === "processing" || j.status === "queued") && processingStartedAt === null) {
+          setProcessingStartedAt(Date.now());
+        }
+      }
+
+      // Live question count for the progress display.
+      const { count: qCount } = await supabase
+        .from("interview_questions")
+        .select("id", { count: "exact", head: true })
+        .eq("session_id", id);
+      if (cancelled) return;
+      if (typeof qCount === "number") setQuestionsGenerated(qCount);
 
       // Also check the session row in case there's no job (legacy sessions) or it just flipped to ready.
       const { data: s } = await supabase
@@ -293,6 +310,13 @@ const Results = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Drive slow-job messages with a 1s ticker while a job is active.
+  useEffect(() => {
+    if (!processingStartedAt) return;
+    const t = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [processingStartedAt]);
+
   // Track results_viewed once the pack is ready, plus question_10_reached when the
   // user actually has access to a 10th question.
   useEffect(() => {
@@ -317,7 +341,7 @@ const Results = () => {
         body: { session_id: id },
       });
       if (error) throw error;
-      toast({ title: "Retrying generation", description: "This usually takes 30–60 seconds." });
+      toast({ title: "Retrying generation", description: "Building your full interview pack (100 tailored questions). This usually takes 1–3 minutes." });
       await loadAll();
     } catch (e: any) {
       toast({ title: "Retry failed", description: e?.message ?? "Please try again.", variant: "destructive" });
@@ -677,32 +701,69 @@ const Results = () => {
     job?.status === "queued" ||
     job?.status === "processing";
   if (isGenerating) {
+    const totalQ = session?.num_questions ?? 100;
     const pct = Math.max(2, Math.min(99, job?.progress ?? 5));
-    const stage = job?.stage ?? "Preparing your pack";
+
+    // Map machine stage keys → human-readable labels. Falls back to whatever
+    // the worker put in `stage` (it already writes friendly strings) and
+    // finally to a default.
+    const STAGE_LABELS: Record<string, string> = {
+      queued: "Preparing your interview pack",
+      analysing_candidate: "Analysing your CV",
+      analysing_role: "Reading the role requirements",
+      generating_questions_1: "Generating questions (1–25)",
+      generating_questions_2: "Generating questions (26–50)",
+      generating_questions_3: "Generating questions (51–75)",
+      generating_questions_4: "Generating questions (76–100)",
+      generating_answers: "Adding answer guidance",
+      saving: "Saving your interview pack",
+      completed: "Ready",
+    };
+    const rawStage = job?.stage ?? (job?.status === "queued" ? "queued" : "");
+    const stageLabel =
+      STAGE_LABELS[rawStage as keyof typeof STAGE_LABELS] ??
+      (rawStage && rawStage.length > 0 ? rawStage : "Preparing your interview pack");
+
+    const elapsedMs = processingStartedAt ? nowTs - processingStartedAt : 0;
+    const slowMessage =
+      elapsedMs > 120_000
+        ? "Still processing — this can happen with more detailed roles. Your interview pack will appear shortly."
+        : elapsedMs > 60_000
+        ? "This is taking a little longer than usual. We're still working."
+        : null;
+
     return (
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
           <Loader2 className="h-10 w-10 animate-spin text-accent" strokeWidth={1.5} />
           <div className="mt-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Preparing your pack</div>
-          <h1 className="mt-2 font-display text-3xl font-semibold">
-            We're writing your interview questions
+          <h1 className="mt-2 font-display text-3xl font-semibold max-w-xl">
+            Building your full interview pack ({totalQ} tailored questions). This usually takes 1–3 minutes.
           </h1>
-          <p className="mt-3 text-muted-foreground max-w-md">
-            {stage}
+          <p className="mt-3 text-sm text-muted-foreground max-w-md">
+            You can leave this page and return from your dashboard at any time.
           </p>
-          <div className="mt-8 w-full max-w-md">
+
+          <div className="mt-8 w-full max-w-md" role="status" aria-live="polite">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+              <span>{stageLabel}</span>
+              <span>{pct}%</span>
+            </div>
             <div className="h-2 w-full bg-secondary overflow-hidden rounded-full">
               <div
                 className="h-full bg-accent transition-all duration-500 ease-out"
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <div className="mt-2 text-xs text-muted-foreground">{pct}%</div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              {questionsGenerated} of {totalQ} generated
+            </div>
           </div>
-          <p className="mt-6 text-xs text-muted-foreground max-w-md">
-            This usually takes 60–120 seconds. Feel free to leave this page and come back from your dashboard — your pack will keep building in the background.
-          </p>
+
+          {slowMessage && (
+            <p className="mt-6 text-xs text-amber-700 max-w-md">{slowMessage}</p>
+          )}
         </main>
       </div>
     );

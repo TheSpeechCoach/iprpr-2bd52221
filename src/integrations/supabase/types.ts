@@ -125,6 +125,36 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_feedback: {
+        Row: {
+          created_at: string
+          id: string
+          issue_type: string
+          message: string
+          page_url: string | null
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issue_type: string
+          message: string
+          page_url?: string | null
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issue_type?: string
+          message?: string
+          page_url?: string | null
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       candidate_inputs: {
         Row: {
           candidate_current_role: string | null
@@ -377,6 +407,7 @@ export type Database = {
           id: string
           prep_session_id: string
           progress: number
+          questions_generated: number
           stage: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["generation_job_status"]
@@ -392,6 +423,7 @@ export type Database = {
           id?: string
           prep_session_id: string
           progress?: number
+          questions_generated?: number
           stage?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["generation_job_status"]
@@ -407,6 +439,7 @@ export type Database = {
           id?: string
           prep_session_id?: string
           progress?: number
+          questions_generated?: number
           stage?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["generation_job_status"]

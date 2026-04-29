@@ -282,7 +282,19 @@ const Results = () => {
         .select("id", { count: "exact", head: true })
         .eq("session_id", id);
       if (cancelled) return;
-      if (typeof qCount === "number") setQuestionsGenerated(qCount);
+      if (typeof qCount === "number") {
+        // If the persisted count has moved on since our last load, refetch
+        // questions so newly-saved chunks appear without a manual refresh.
+        if (qCount !== questionsGenerated && qCount !== questions.length) {
+          const { data: qs } = await supabase
+            .from("interview_questions")
+            .select("*")
+            .eq("session_id", id)
+            .order("position");
+          if (!cancelled && qs) setQuestions(qs as Question[]);
+        }
+        setQuestionsGenerated(qCount);
+      }
 
       // Also check the session row in case there's no job (legacy sessions) or it just flipped to ready.
       const { data: s } = await supabase
@@ -291,6 +303,7 @@ const Results = () => {
         .eq("id", id)
         .maybeSingle();
       if (cancelled) return;
+      if (s) setSession((prev) => (prev ? { ...prev, status: s.status } : prev));
 
       const done = j?.status === "completed" || j?.status === "failed" || s?.status === "ready" || s?.status === "failed";
       if (done) {
@@ -696,10 +709,19 @@ const Results = () => {
   }
 
   // ----- Generating state -----
-  const isGenerating =
+  // Treat ONLY the pre-first-10 phase as "blocking generating". Once the worker
+  // flips prep_sessions.status to `initial_ready`, fall through to the main
+  // view and pin a slim progress bar on top until status === 'ready'.
+  const isStillBuilding =
     session?.status === "generating" ||
+    session?.status === "initial_ready" ||
     job?.status === "queued" ||
     job?.status === "processing";
+  const isBlockingGenerating =
+    (session?.status === "generating" || job?.status === "queued" || job?.status === "processing") &&
+    session?.status !== "initial_ready" &&
+    questions.length === 0;
+  const isGenerating = isBlockingGenerating;
   if (isGenerating) {
     const totalQ = session?.num_questions ?? 100;
     const pct = Math.max(2, Math.min(99, job?.progress ?? 5));
@@ -739,10 +761,10 @@ const Results = () => {
           <Loader2 className="h-10 w-10 animate-spin text-accent" strokeWidth={1.5} />
           <div className="mt-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Preparing your pack</div>
           <h1 className="mt-2 font-display text-3xl font-semibold max-w-xl">
-            Building your full interview pack ({totalQ} tailored questions). This usually takes 1–3 minutes.
+            Your first questions are being prepared.
           </h1>
           <p className="mt-3 text-sm text-muted-foreground max-w-md">
-            You can leave this page and return from your dashboard at any time.
+            We're tailoring your full interview pack ({totalQ} questions). The first 10 will appear here in under a minute. You can leave this page and return from your dashboard at any time.
           </p>
 
           <div className="mt-8 w-full max-w-md" role="status" aria-live="polite">
@@ -821,9 +843,34 @@ const Results = () => {
   }
 
   // ----- Main view -----
+  const totalTarget = session?.num_questions ?? 100;
+  const showProgressStrip = isStillBuilding && session?.status !== "ready";
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
+      {showProgressStrip && (
+        <div className="sticky top-0 z-30 w-full border-b border-amber-200 bg-amber-50/95 backdrop-blur supports-[backdrop-filter]:bg-amber-50/80">
+          <div className="container-tight flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs text-amber-900">
+              <strong>Your first questions are ready.</strong>{" "}
+              We're building the rest of your interview pack.
+            </div>
+            <div className="flex items-center gap-3 sm:min-w-[260px]">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-amber-200">
+                <div
+                  className="h-full bg-amber-600 transition-all duration-500 ease-out"
+                  style={{
+                    width: `${Math.min(100, Math.round((questionsGenerated / totalTarget) * 100))}%`,
+                  }}
+                />
+              </div>
+              <div className="text-xs tabular-nums text-amber-900 whitespace-nowrap">
+                {questionsGenerated} of {totalTarget} generated
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <ResultsOnboardingOverlay ready={session?.status === "ready" && questions.length > 0} />
       <main className="container-tight flex-1 py-8 md:py-10">
         <Link

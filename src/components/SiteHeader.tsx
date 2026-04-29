@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { TestingPlanSwitcher } from "@/components/TestingPlanSwitcher";
 import { TestingModeBanner } from "@/components/TestingModeBanner";
+import { ReportIssueButton } from "@/components/ReportIssueButton";
 
 export const SiteHeader = () => {
   const { user, signOut } = useAuth();
@@ -25,6 +26,7 @@ export const SiteHeader = () => {
         <nav className="flex items-center gap-6 text-sm">
           {user ? (
             <>
+              <ReportIssueButton />
               <TestingPlanSwitcher />
               <WorkspaceSwitcher />
               <Link to="/dashboard" className="hover:text-accent transition-colors">Dashboard</Link>

@@ -1,7 +1,8 @@
-// Generate a tailored interview pack via Lovable AI Gateway.
-// Auth required. Strict JSON via tool-calling. Persists pack + questions.
+// Orchestrator: validates auth, plan and candidate-lock, then queues a
+// generation_jobs row and fire-and-forget invokes `process-generation-job`
+// to do the actual chunked AI work. Returns { job_id } immediately so the
+// frontend can begin polling.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { ukifyJson } from "../_shared/ukEnglish.ts";
 import { namesLooselyMatch, cvMentionsName, normaliseName } from "../_shared/candidateLock.ts";
 import { PRO_LIMITS, getProUsage, buildLimitBlock } from "../_shared/proLimits.ts";
 import { logRequest } from "../_shared/requestAudit.ts";

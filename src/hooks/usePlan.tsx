@@ -40,6 +40,7 @@ export const usePlan = (): PlanState => {
   const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [testingMode, setTestingMode] = useState(false);
 
   const load = async () => {
     if (!user) {
@@ -93,6 +94,7 @@ export const usePlan = (): PlanState => {
         .eq("key", "testing_mode")
         .maybeSingle();
       const testingOn = setting?.value === true || (setting?.value as any) === "true";
+      setTestingMode(testingOn);
       if (testingOn) {
         const { data: override } = await supabase
           .from("testing_plan_overrides")
@@ -137,10 +139,10 @@ export const usePlan = (): PlanState => {
     sessionsUsed,
     sessionLimit,
     questionLimit,
-    canCreateSession: sessionsUsed < limits.maxPrepSessions,
+    canCreateSession: testingMode || sessionsUsed < limits.maxPrepSessions,
     canSeeAnswerTiers: limits.answerTiers,
     canSaveAnswers: limits.savedAnswers,
-    canExport: limits.exports,
+    canExport: testingMode || limits.exports,
     hasEnhancedGuidance: limits.realityCheck,
     isPaid,
     pastDue,

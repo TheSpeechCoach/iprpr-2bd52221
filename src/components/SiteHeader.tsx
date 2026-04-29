@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { TestingPlanSwitcher } from "@/components/TestingPlanSwitcher";
+import { TestingModeBanner } from "@/components/TestingModeBanner";
 
 export const SiteHeader = () => {
   const { user, signOut } = useAuth();
@@ -10,6 +11,7 @@ export const SiteHeader = () => {
 
   return (
     <header className="border-b border-border bg-background">
+      <TestingModeBanner />
       <div className="container-tight flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="h-7 w-7 bg-foreground rounded-sm flex items-center justify-center">

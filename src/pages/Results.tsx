@@ -192,6 +192,9 @@ const Results = () => {
     stage: string | null;
     error_message: string | null;
   } | null>(null);
+  const [questionsGenerated, setQuestionsGenerated] = useState(0);
+  const [processingStartedAt, setProcessingStartedAt] = useState<number | null>(null);
+  const [nowTs, setNowTs] = useState(() => Date.now());
 
   // Debounced autosave for user answers.
   useEffect(() => {
@@ -265,7 +268,20 @@ const Results = () => {
         .limit(1)
         .maybeSingle();
       if (cancelled) return;
-      if (j) setJob(j as any);
+      if (j) {
+        setJob(j as any);
+        if ((j.status === "processing" || j.status === "queued") && processingStartedAt === null) {
+          setProcessingStartedAt(Date.now());
+        }
+      }
+
+      // Live question count for the progress display.
+      const { count: qCount } = await supabase
+        .from("interview_questions")
+        .select("id", { count: "exact", head: true })
+        .eq("session_id", id);
+      if (cancelled) return;
+      if (typeof qCount === "number") setQuestionsGenerated(qCount);
 
       // Also check the session row in case there's no job (legacy sessions) or it just flipped to ready.
       const { data: s } = await supabase

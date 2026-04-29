@@ -309,6 +309,13 @@ const Results = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Drive slow-job messages with a 1s ticker while a job is active.
+  useEffect(() => {
+    if (!processingStartedAt) return;
+    const t = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [processingStartedAt]);
+
   // Track results_viewed once the pack is ready, plus question_10_reached when the
   // user actually has access to a 10th question.
   useEffect(() => {
@@ -333,7 +340,7 @@ const Results = () => {
         body: { session_id: id },
       });
       if (error) throw error;
-      toast({ title: "Retrying generation", description: "This usually takes 30–60 seconds." });
+      toast({ title: "Retrying generation", description: "Building your full interview pack (100 tailored questions). This usually takes 1–3 minutes." });
       await loadAll();
     } catch (e: any) {
       toast({ title: "Retry failed", description: e?.message ?? "Please try again.", variant: "destructive" });

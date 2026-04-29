@@ -278,8 +278,36 @@ INTERVIEW PARAMETERS
 - Include follow-ups: ${session.include_followups}
 - Include answer framework: ${session.include_answer_angles}`;
 
-    const buildChunkSchema = (includeSummary: boolean) => {
-      const props: any = { questions: QUESTION_SCHEMA.properties.questions };
+    // Lean question schema for fast beta generation: drop expensive fields
+    // (answer_direction, example_answers, coach_insight) so the model can
+    // return the first 10 questions in seconds. Enrichment is added on demand.
+    const LEAN_QUESTION_PROPS = {
+      position: { type: "integer" },
+      category: (QUESTION_SCHEMA.properties.questions as any).items.properties.category,
+      difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
+      question: { type: "string" },
+      why_this_question_matters: { type: "string" },
+      what_good_answers_should_cover: { type: "string" },
+      optional_follow_up: { type: "string" },
+    } as const;
+    const LEAN_QUESTION_SCHEMA = {
+      type: "array",
+      description: "Tailored interview questions in interview order (lean schema).",
+      items: {
+        type: "object",
+        properties: LEAN_QUESTION_PROPS,
+        required: [
+          "position", "category", "difficulty", "question",
+          "why_this_question_matters", "what_good_answers_should_cover",
+        ],
+        additionalProperties: false,
+      },
+    } as const;
+
+    const buildChunkSchema = (includeSummary: boolean, lean: boolean) => {
+      const props: any = {
+        questions: lean ? LEAN_QUESTION_SCHEMA : QUESTION_SCHEMA.properties.questions,
+      };
       const required: string[] = ["questions"];
       if (includeSummary) {
         props.candidate_summary = QUESTION_SCHEMA.properties.candidate_summary;

@@ -1,7 +1,8 @@
-// Generate a tailored interview pack via Lovable AI Gateway.
-// Auth required. Strict JSON via tool-calling. Persists pack + questions.
+// Orchestrator: validates auth, plan and candidate-lock, then queues a
+// generation_jobs row and fire-and-forget invokes `process-generation-job`
+// to do the actual chunked AI work. Returns { job_id } immediately so the
+// frontend can begin polling.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { ukifyJson } from "../_shared/ukEnglish.ts";
 import { namesLooselyMatch, cvMentionsName, normaliseName } from "../_shared/candidateLock.ts";
 import { PRO_LIMITS, getProUsage, buildLimitBlock } from "../_shared/proLimits.ts";
 import { logRequest } from "../_shared/requestAudit.ts";
@@ -308,13 +309,14 @@ Deno.serve(async (req) => {
 
     const numQuestions = Math.max(20, Math.min(120, session.num_questions ?? 100));
 
+    // Mark the session generating and wipe any prior artefacts so retries
+    // don't duplicate questions.
     await admin.from("prep_sessions").update({ status: "generating" }).eq("id", sessionId);
-
-    // Wipe any prior questions for this session so retries don't duplicate.
     await admin.from("interview_questions").delete().eq("session_id", sessionId);
     await admin.from("generated_interview_packs").delete().eq("session_id", sessionId);
 
-    // Create the generation job row up-front.
+    // Insert the generation_jobs row BEFORE invoking the worker so the
+    // frontend can begin polling immediately on receiving job_id.
     const { data: jobRow, error: jobErr } = await admin
       .from("generation_jobs")
       .insert({
@@ -322,313 +324,33 @@ Deno.serve(async (req) => {
         user_id: userId,
         workspace_id: session.workspace_id ?? null,
         status: "queued",
-        stage: "Preparing",
+        stage: "Queued",
         progress: 0,
       })
       .select("id")
       .single();
     if (jobErr) throw jobErr;
     const jobId: string = jobRow.id;
+    console.log(`[generate-interview-pack] queued job ${jobId} for session ${sessionId} (n=${numQuestions})`);
 
-    const updateJob = async (patch: Record<string, unknown>) => {
-      await admin.from("generation_jobs").update(patch).eq("id", jobId);
-    };
-
-    // Plan chunks: priority preview chunk (1–10), then 30-question chunks.
-    const PREVIEW_SIZE = Math.min(10, numQuestions);
-    const REMAINING = numQuestions - PREVIEW_SIZE;
-    const CHUNK_SIZE = 30;
-    const chunkRanges: Array<{ start: number; end: number; label: string }> = [];
-    if (PREVIEW_SIZE > 0) {
-      chunkRanges.push({ start: 1, end: PREVIEW_SIZE, label: `Writing the high-stakes opening (1–${PREVIEW_SIZE})` });
-    }
-    let cursor = PREVIEW_SIZE + 1;
-    while (cursor <= numQuestions) {
-      const end = Math.min(numQuestions, cursor + CHUNK_SIZE - 1);
-      chunkRanges.push({ start: cursor, end, label: `Writing questions ${cursor}–${end}` });
-      cursor = end + 1;
-    }
-
-    const generate = async () => {
-      try {
-        await updateJob({ status: "processing", stage: "Preparing", progress: 2, started_at: new Date().toISOString() });
-
-        const systemPrompt = `You are a senior UK-based interview coach for The Speech Coach. You write in British English (en-GB).
-Your job: generate sharp, realistic, interview-grade questions tailored to a specific candidate and role.
-
-LANGUAGE — UK ENGLISH ONLY (non-negotiable):
-- Use British spelling everywhere: organisation, behaviour, behavioural, favour, favourite, colour, recognise, realise, optimise, prioritise, summarise, analyse, programme (not program, except for software code), centre, defence, licence (noun) / license (verb), practice (noun) / practise (verb), enrolment, fulfil, modelling, travelling, cancelled, labelled, judgement, acknowledgement.
-- Reject US spellings: NEVER write organize, behavior, favorite, color, recognize, realize, optimize, analyze, prioritize, gotten, gray, defense, license (as noun), practiced (as verb), enrollment, fulfillment, traveled, labeled, modeling, judgment.
-- Avoid Americanisms in phrasing and idiom: no "reach out", no "circle back", no "I'd love to", no "awesome", no "leverage" as a verb where "use" works, no "gotten". Prefer "have" over "have got".
-- Use British punctuation conventions: single quotes for inner quotes where natural; full stop inside quotation marks only when the quote is a complete sentence.
-- Tone: direct, professional, concise, confident. No American sales language, no hype, no exclamation marks unless quoting someone.
-
-Hard rules:
-- No generic filler. Every question must reference something specific from the CV, the role, or the company context.
-- Questions must read as if a real, experienced interviewer wrote them.
-- Calibrate difficulty mix to the seniority and chosen difficulty level.
-- Distribute categories across the interview arc (Opening → Closing).
-- "why_this_question_matters" explains the interviewer's intent in one tight sentence.
-- "what_good_answers_should_cover" lists the substance a strong answer should hit (2-4 concrete points).
-- "optional_follow_up" is a sharp probing follow-up the interviewer might use; empty string if none.
-- "answer_direction" is short, sharp, practical coaching for delivery — not content. Keep "structure" to one sentence, "length" to a concrete time/size cue, and "avoid" to 2-4 specific traps phrased as quick warnings ("Don't ramble through context", "Avoid 'we' — own the action", "Skip the jargon, give the proof"). Tailor to the question type — behavioural answers need STAR-style shape; opinion or commercial questions need a clear stance + rationale; technical answers need brevity and a worked example.
-- "example_answers" gives THREE tiers: foundation, strong, standout. These are SPOKEN answers, not written prose. Read them out loud — they should sound like a real candidate talking, with natural rhythm, contractions, the occasional connecting phrase ("So…", "Honestly,", "The way I think about it…"). No bullet points, no headings, no markdown. Use first person ("I"). Reference specifics from the CV/role wherever possible. Tier intent:
-  • foundation = clear, simple, direct. A solid baseline answer a junior or nervous candidate could deliver well.
-  • strong = structured, confident, commercially aware. Tight ownership, a concrete example or number, a clear "so what".
-  • standout = 20–30 seconds spoken (50–75 words, never more than 80). Sharp, controlled, intentional. One pointed opening line, one crisp judgement or trade-off, one concrete outcome — then stop. Not verbose. Not over-polished. Cut every word that isn't load-bearing. It should feel like restraint, not performance.
-- Avoid jargon unless the role demands it. Never use the words "basic", "intermediate", "advanced".
-- Position numbers are 1-based and sequential.
-
-CRITICAL — THE FIRST 10 QUESTIONS (positions 1–10):
-These ten questions are the only thing many candidates will ever see. They MUST feel uncomfortably accurate — the candidate should think "how do they know that?" Every one of the first 10 must reference a specific, named detail from the CV, the job description, or the company (a role title, employer, project, gap, transition, claim, number, or stated requirement). No generic openers. No filler. No "tell me about yourself" unless it is sharpened with a specific angle from their CV.
-
-The first 10 must include AT LEAST this category mix (positions can be in any order within 1–10):
-  • 2 × CV/Background — challenging questions that probe specific claims, transitions, gaps, or numbers from the CV. Pick the two most exposed or interesting items in this CV.
-  • 2 × Behavioural — STAR-style questions tied to a real scenario this candidate has plausibly faced given their CV.
-  • 2 × Role-Fit — questions that test fit against named requirements in this job description.
-  • 1 × Pressure — a sharp, slightly destabilising question (a challenge to a claim, a gap, a contradiction, or a hard hypothetical from the role). It should make a confident candidate pause.
-  • 1 × Company Motivation — the "why you / why us" question, made specific (reference the company, product, mission, or a public detail if mentioned in the spec).
-The remaining 2 slots in the first 10 should be the next-most-revealing categories for THIS candidate (typically Weaknesses, Leadership, Stakeholder, or Commercial Awareness — pick what exposes the most signal).
-
-Do NOT pad the first 10 with Opening pleasantries, Closing questions, or generic Strengths prompts. Save those for later in the pack.
-After position 10, distribute the remaining categories naturally across the interview arc.
-
-COACH INSIGHTS (selective):
-Choose EXACTLY 3–5 of the most pivotal questions in the entire pack and attach a "coach_insight" object to each. Pick the questions a coach would most want to flag — typically the Pressure question, the toughest CV/Background probe, the sharpest Behavioural, the Company Motivation question, and one more if warranted. Strongly prefer questions inside positions 1–10. Every other question MUST omit "coach_insight" entirely (do not include the field, do not return null padding). Each insight has three single-sentence fields, each ≤ 22 words: what the interviewer is really testing, the most common mistake, and how a strong candidate should approach it. Concrete, specific to this question — never generic.`;
-
-        const candidateRoleBlock = `CANDIDATE PROFILE
-- Name: ${session.full_name || "—"}
-- Current role: ${session.candidate_current_role || "—"}
-- Years experience: ${session.years_experience || "—"}
-- Target role: ${session.target_role || "—"}
-- Target industry: ${session.target_industry || "—"}
-- Seniority: ${session.seniority_level || "—"}
-- Country: ${session.country || "—"}
-- Notes: ${session.candidate_notes || "—"}
-
-CV TEXT
-${clip(session.cv_text, 8000) || "Not provided"}
-
-LINKEDIN SUMMARY (reference)
-${clip(session.linkedin_text, 2000) || "Not provided"}
-
-ROLE
-- Job title: ${session.job_title || session.target_role || "—"}
-- Company: ${session.company_name || "—"}
-- Description / spec:
-${clip(session.job_description, 8000) || "Not provided"}
-
-INTERVIEW PARAMETERS
-- Interview type: ${session.interview_type}
-- Difficulty: ${session.difficulty}
-- Tone: ${session.output_tone}
-- Style: ${session.interview_style}
-- Focus mix (rough %): ${JSON.stringify(session.focus_mix)}
-- Include follow-ups: ${session.include_followups}
-- Include answer framework: ${session.include_answer_angles}`;
-
-        // Schema variant for chunked calls — require only `questions` (and optionally summary fields on the first chunk).
-        const buildChunkSchema = (includeSummary: boolean) => {
-          const props: any = {
-            questions: QUESTION_SCHEMA.properties.questions,
-          };
-          const required: string[] = ["questions"];
-          if (includeSummary) {
-            props.candidate_summary = QUESTION_SCHEMA.properties.candidate_summary;
-            props.role_summary = QUESTION_SCHEMA.properties.role_summary;
-            props.top_themes = QUESTION_SCHEMA.properties.top_themes;
-            props.red_flag_areas = QUESTION_SCHEMA.properties.red_flag_areas;
-            required.push("candidate_summary", "role_summary", "top_themes", "red_flag_areas");
-          }
-          return {
-            type: "object",
-            properties: props,
-            required,
-            additionalProperties: false,
-          };
-        };
-
-        // Resolve workspace_id from the session.
-        const wsId = session.workspace_id ?? null;
-
-        // Track summary captured on first chunk so we can persist a pack.
-        let summary: {
-          candidate_summary: string | null;
-          role_summary: string | null;
-          top_themes: any[];
-          red_flag_areas: any[];
-        } = { candidate_summary: null, role_summary: null, top_themes: [], red_flag_areas: [] };
-
-        let totalGenerated = 0;
-        const totalChunks = chunkRanges.length;
-
-        for (let ci = 0; ci < chunkRanges.length; ci++) {
-          const range = chunkRanges[ci];
-          const isFirst = ci === 0;
-          const expectedCount = range.end - range.start + 1;
-
-          await updateJob({
-            stage: range.label,
-            progress: Math.max(2, Math.round((ci / totalChunks) * 90) + 2),
-          });
-
-          const chunkInstruction = isFirst
-            ? `This is CHUNK 1 of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. These are the high-stakes opening questions — apply the FIRST 10 rules strictly. Also return the overall candidate_summary, role_summary, top_themes, and red_flag_areas for the whole pack (these are written once, not per chunk).`
-            : `This is CHUNK ${ci + 1} of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. Do NOT repeat earlier positions. Distribute categories naturally across the interview arc — these are mid/late questions, so include a mix of Behavioural, Strengths, Weaknesses, Leadership, Stakeholder, Problem-Solving, Commercial Awareness, Technical, and Closing as appropriate. Coach insights: only attach if you'd genuinely flag this question (most should omit it).`;
-
-          const userPrompt = `${chunkInstruction}
-
-${candidateRoleBlock}
-
-REMINDER: Return EXACTLY ${expectedCount} questions, each with the position field set to its absolute position (between ${range.start} and ${range.end}). Use the produce_interview_pack tool. Do not write any prose outside the tool call.`;
-
-          const aiResp = await fetch(AI_URL, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: MODEL,
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt },
-              ],
-              tools: [{
-                type: "function",
-                function: {
-                  name: "produce_interview_pack",
-                  description: "Return the structured interview pack chunk.",
-                  parameters: buildChunkSchema(isFirst),
-                },
-              }],
-              tool_choice: { type: "function", function: { name: "produce_interview_pack" } },
-            }),
-          });
-
-          if (!aiResp.ok) {
-            const t = await aiResp.text();
-            let label = "AI gateway error";
-            if (aiResp.status === 429) label = "We're being rate limited. Try again shortly.";
-            if (aiResp.status === 402) label = "AI credits exhausted. Please contact support.";
-            throw new Error(`${label} (status ${aiResp.status}): ${t.slice(0, 200)}`);
-          }
-
-          const aiJson = await aiResp.json();
-          const toolCall = aiJson?.choices?.[0]?.message?.tool_calls?.[0];
-          const argsRaw = toolCall?.function?.arguments;
-          if (!argsRaw) throw new Error("AI returned no tool call for this chunk");
-
-          let parsed: any;
-          try {
-            parsed = typeof argsRaw === "string" ? JSON.parse(argsRaw) : argsRaw;
-          } catch {
-            throw new Error("AI tool arguments were not valid JSON");
-          }
-          parsed = ukifyJson(parsed);
-
-          if (isFirst) {
-            summary = {
-              candidate_summary: parsed.candidate_summary ?? null,
-              role_summary: parsed.role_summary ?? null,
-              top_themes: parsed.top_themes ?? [],
-              red_flag_areas: parsed.red_flag_areas ?? [],
-            };
-            // Mirror the summary onto the session early so Results can show context.
-            await admin.from("prep_sessions").update({
-              candidate_summary: summary.candidate_summary,
-              role_summary: summary.role_summary,
-              top_themes: summary.top_themes,
-              red_flags: summary.red_flag_areas,
-            }).eq("id", sessionId);
-          }
-
-          const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
-          if (!questions.length) throw new Error(`AI returned no questions for chunk ${ci + 1}`);
-
-          const rows = questions.map((q: any, i: number) => ({
-            session_id: sessionId,
-            user_id: userId,
-            position: Number.isInteger(q.position) ? q.position : range.start + i,
-            category: q.category ?? "General",
-            question: q.question ?? "",
-            why_matters: q.why_this_question_matters ?? null,
-            what_good_covers: q.what_good_answers_should_cover ?? null,
-            follow_up: q.optional_follow_up || null,
-            answer_framework: q.answer_framework || null,
-            answer_direction: q.answer_direction ?? null,
-            example_answers: q.example_answers ?? null,
-            coach_insight: q.coach_insight ?? null,
-            difficulty: q.difficulty ?? null,
-          }));
-
-          // Insert this chunk (in sub-chunks of 50 if huge).
-          for (let i = 0; i < rows.length; i += 50) {
-            const sub = rows.slice(i, i + 50);
-            const { error } = await admin.from("interview_questions").insert(sub);
-            if (error) console.error("question insert error", error);
-          }
-
-          totalGenerated += rows.length;
-
-          await updateJob({
-            stage: `${range.label} · saved`,
-            progress: Math.min(95, Math.round(((ci + 1) / totalChunks) * 90) + 2),
-          });
-        }
-
-        // Persist final pack record.
-        const { data: pack, error: pErr } = await admin
-          .from("generated_interview_packs")
-          .insert({
-            user_id: userId,
-            session_id: sessionId,
-            workspace_id: wsId,
-            status: "ready",
-            candidate_summary: summary.candidate_summary,
-            role_summary: summary.role_summary,
-            top_themes: summary.top_themes,
-            red_flags: summary.red_flag_areas,
-            total_questions: totalGenerated,
-            model: MODEL,
-            prompt_version: PROMPT_VERSION,
-          })
-          .select()
-          .single();
-        if (pErr) throw pErr;
-
-        await admin.from("prep_sessions").update({ status: "ready" }).eq("id", sessionId);
-
-        await updateJob({
-          status: "completed",
-          progress: 100,
-          stage: "Completed",
-          completed_at: new Date().toISOString(),
-        });
-
-        await admin.from("admin_logs").insert({
-          event: "pack_generated",
-          metadata: { user_id: userId, session_id: sessionId, pack_id: pack.id, count: totalGenerated, model: MODEL, chunks: totalChunks },
-        });
-      } catch (e: any) {
-        const message = e?.message ?? String(e);
-        console.error("generation failed", message);
-        await admin.from("prep_sessions").update({ status: "failed" }).eq("id", sessionId);
-        await updateJob({
-          status: "failed",
-          error_message: message.slice(0, 500),
-          failed_at: new Date().toISOString(),
-        });
-        await admin.from("admin_logs").insert({
-          event: "pack_generation_failed",
-          metadata: { user_id: userId, session_id: sessionId, job_id: jobId, error: message },
-        });
-      }
-    };
-
-    // Run in background so the client returns quickly
-    // @ts-ignore EdgeRuntime
-    EdgeRuntime.waitUntil(generate());
+    // Fire-and-forget invoke of the worker function. We do NOT await the
+    // response — the worker runs in its own isolate and reports progress via
+    // the generation_jobs row. We also do NOT use EdgeRuntime.waitUntil here:
+    // the request to the worker is the trigger, and the worker's own
+    // isolate keeps itself alive for the duration of generation.
+    const workerUrl = `${SUPABASE_URL}/functions/v1/process-generation-job`;
+    fetch(workerUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${SERVICE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ job_id: jobId }),
+    }).catch((err) => {
+      // Best-effort log only — the worker may have started successfully even
+      // if the connection from this isolate dropped early.
+      console.error(`[generate-interview-pack] worker invoke error for job ${jobId}:`, err?.message ?? err);
+    });
 
     return new Response(
       JSON.stringify({ ok: true, status: "queued", session_id: sessionId, job_id: jobId }),

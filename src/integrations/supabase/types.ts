@@ -107,6 +107,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       candidate_inputs: {
         Row: {
           candidate_current_role: string | null
@@ -916,6 +934,33 @@ export type Database = {
         }
         Relationships: []
       }
+      testing_plan_overrides: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          override_plan: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          override_plan: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          override_plan?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       uploaded_files: {
         Row: {
           bucket: string
@@ -1253,6 +1298,7 @@ export type Database = {
           score: number
         }[]
       }
+      testing_mode_enabled: { Args: never; Returns: boolean }
       workspace_plan: { Args: { _workspace_id: string }; Returns: string }
       workspace_role_of: {
         Args: { _user_id: string; _workspace_id: string }

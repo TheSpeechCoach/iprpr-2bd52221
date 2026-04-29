@@ -83,6 +83,31 @@ export const usePlan = (): PlanState => {
       }
     }
 
+    // Honour testing-mode plan override (admin-set, server-enforced).
+    // We read both the flag and the override row; if either is missing we
+    // fall back silently to the real plan.
+    try {
+      const { data: setting } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "testing_mode")
+        .maybeSingle();
+      const testingOn = setting?.value === true || (setting?.value as any) === "true";
+      if (testingOn) {
+        const { data: override } = await supabase
+          .from("testing_plan_overrides")
+          .select("override_plan")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const op = override?.override_plan as Plan | undefined;
+        if (op === "free" || op === "pro" || op === "coach_plus") {
+          resolved = op;
+        }
+      }
+    } catch {
+      /* non-fatal — keep real plan */
+    }
+
     setPlan(resolved);
     setPastDue(pd);
     setCancelAtPeriodEnd(cape);

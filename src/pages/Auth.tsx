@@ -140,7 +140,11 @@ const Auth = () => {
             {mode === "signin" ? "Sign in to continue your prep." : "Start preparing in under a minute."}
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <div className="mt-4 rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+            Private beta testing is active. Email verification is temporarily disabled for trusted testers.
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {mode === "signup" && (
               <>
                 <div className="space-y-2">

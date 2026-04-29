@@ -22,6 +22,7 @@ export const SiteHeader = () => {
         <nav className="flex items-center gap-6 text-sm">
           {user ? (
             <>
+              <TestingPlanSwitcher />
               <WorkspaceSwitcher />
               <Link to="/dashboard" className="hover:text-accent transition-colors">Dashboard</Link>
               <Button variant="ghost" size="sm" onClick={async () => { await signOut(); nav("/"); }}>

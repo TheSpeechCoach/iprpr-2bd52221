@@ -153,6 +153,27 @@ Deno.serve(async (req) => {
 
     const numQuestions = Math.max(20, Math.min(120, session.num_questions ?? 100));
 
+    // ===== TESTING_MODE: fast beta generation =====
+    // In testing mode we generate a lean preview chunk first (no answer tiers,
+    // no coach insights, no answer_direction) using a faster model, so the
+    // first 10 questions are visible in seconds. Remaining questions are
+    // generated in the background with the same lean schema; enrichment is
+    // deferred to on-demand later.
+    let testingMode = false;
+    try {
+      const { data: tm } = await admin.rpc("testing_mode_enabled");
+      testingMode = tm === true;
+    } catch (_) { /* default off */ }
+
+    const FAST_MODEL = "google/gemini-2.5-flash";
+    const previewModel = testingMode ? FAST_MODEL : MODEL;
+    const restModel = testingMode ? FAST_MODEL : MODEL;
+    const leanPreview = testingMode;
+    const leanRest = testingMode;
+    if (testingMode) {
+      console.log(`[worker] job ${jobId} TESTING_MODE on — lean preview + flash model`);
+    }
+
     const updateJob = async (patch: Record<string, unknown>) => {
       await admin.from("generation_jobs").update(patch).eq("id", jobId);
     };

@@ -341,9 +341,16 @@ INTERVIEW PARAMETERS
         progress: Math.max(2, Math.round((ci / totalChunks) * 90) + 2),
       });
 
+      const useLeanForChunk = isFirst ? leanPreview : leanRest;
+      const modelForChunk = isFirst ? previewModel : restModel;
+
+      const leanNote = useLeanForChunk
+        ? ` Use the LEAN schema only — do NOT include answer_direction, example_answers, or coach_insight. Keep "why_this_question_matters" and "what_good_answers_should_cover" tight (one sentence each).`
+        : "";
+
       const chunkInstruction = isFirst
-        ? `This is CHUNK 1 of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. These are the high-stakes opening questions — apply the FIRST 10 rules strictly. Also return the overall candidate_summary, role_summary, top_themes, and red_flag_areas for the whole pack.`
-        : `This is CHUNK ${ci + 1} of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. Do NOT repeat earlier positions. Distribute categories naturally across the interview arc.`;
+        ? `This is CHUNK 1 of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. These are the high-stakes opening questions — apply the FIRST 10 rules strictly. Also return the overall candidate_summary, role_summary, top_themes, and red_flag_areas for the whole pack.${leanNote}`
+        : `This is CHUNK ${ci + 1} of ${totalChunks}. Generate ONLY positions ${range.start}–${range.end} of the full ${numQuestions}-question pack. Do NOT repeat earlier positions. Distribute categories naturally across the interview arc.${leanNote}`;
 
       const userPrompt = `${chunkInstruction}
 
@@ -358,7 +365,7 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: MODEL,
+          model: modelForChunk,
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
@@ -368,7 +375,7 @@ REMINDER: Return EXACTLY ${expectedCount} questions, each with the position fiel
             function: {
               name: "produce_interview_pack",
               description: "Return the structured interview pack chunk.",
-              parameters: buildChunkSchema(isFirst),
+              parameters: buildChunkSchema(isFirst, useLeanForChunk),
             },
           }],
           tool_choice: { type: "function", function: { name: "produce_interview_pack" } },

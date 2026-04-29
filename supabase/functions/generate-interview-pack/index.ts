@@ -263,7 +263,7 @@ Deno.serve(async (req) => {
     const userPlan: "free" | "pro" | "coach_plus" = (planData as any) ?? "free";
     const isPaid = userPlan === "pro" || userPlan === "coach_plus";
 
-    if (!isPaid) {
+    if (!isPaid && !testingMode) {
       // Count non-draft sessions excluding this one. If >=1, block.
       const { count: usedSessions } = await admin
         .from("prep_sessions")
@@ -283,7 +283,7 @@ Deno.serve(async (req) => {
     }
 
     // ===== Pro distinct-role cap (target_role + company_name) =====
-    if (userPlan === "pro") {
+    if (userPlan === "pro" && !testingMode) {
       const usage = await getProUsage(admin, userId);
       if (usage) {
         const sessRole = (session.target_role ?? "").trim().toLowerCase();

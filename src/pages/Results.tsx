@@ -830,9 +830,34 @@ const Results = () => {
   }
 
   // ----- Main view -----
+  const totalTarget = session?.num_questions ?? 100;
+  const showProgressStrip = isStillBuilding && session?.status !== "ready";
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
+      {showProgressStrip && (
+        <div className="sticky top-0 z-30 w-full border-b border-amber-200 bg-amber-50/95 backdrop-blur supports-[backdrop-filter]:bg-amber-50/80">
+          <div className="container-tight flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs text-amber-900">
+              <strong>Your first questions are ready.</strong>{" "}
+              We're building the rest of your interview pack.
+            </div>
+            <div className="flex items-center gap-3 sm:min-w-[260px]">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-amber-200">
+                <div
+                  className="h-full bg-amber-600 transition-all duration-500 ease-out"
+                  style={{
+                    width: `${Math.min(100, Math.round((questionsGenerated / totalTarget) * 100))}%`,
+                  }}
+                />
+              </div>
+              <div className="text-xs tabular-nums text-amber-900 whitespace-nowrap">
+                {questionsGenerated} of {totalTarget} generated
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <ResultsOnboardingOverlay ready={session?.status === "ready" && questions.length > 0} />
       <main className="container-tight flex-1 py-8 md:py-10">
         <Link

@@ -748,10 +748,10 @@ const Results = () => {
           <Loader2 className="h-10 w-10 animate-spin text-accent" strokeWidth={1.5} />
           <div className="mt-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Preparing your pack</div>
           <h1 className="mt-2 font-display text-3xl font-semibold max-w-xl">
-            Building your full interview pack ({totalQ} tailored questions). This usually takes 1–3 minutes.
+            Your first questions are being prepared.
           </h1>
           <p className="mt-3 text-sm text-muted-foreground max-w-md">
-            You can leave this page and return from your dashboard at any time.
+            We're tailoring your full interview pack ({totalQ} questions). The first 10 will appear here in under a minute. You can leave this page and return from your dashboard at any time.
           </p>
 
           <div className="mt-8 w-full max-w-md" role="status" aria-live="polite">

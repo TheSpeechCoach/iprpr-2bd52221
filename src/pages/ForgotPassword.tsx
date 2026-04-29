@@ -50,6 +50,10 @@ const ForgotPassword = () => {
           Enter the email address linked to your account and we'll send you a reset link.
         </p>
 
+        <div className="mt-4 rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+          Password reset emails may be unavailable during private beta. If you cannot access your account, create a new test account.
+        </div>
+
         {submitted ? (
           <div className="mt-8 space-y-4">
             <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm">

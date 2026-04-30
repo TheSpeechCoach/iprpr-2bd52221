@@ -764,7 +764,7 @@ const Results = () => {
             Your first questions are being prepared.
           </h1>
           <p className="mt-3 text-sm text-muted-foreground max-w-md">
-            We're tailoring your full interview pack ({totalQ} questions). The first 10 will appear here in under a minute. You can leave this page and return from your dashboard at any time.
+            Building your interview pack ({totalQ} tailored questions). Your first 10 appear in seconds — the rest build in the background. You can leave this page and return from your dashboard at any time.
           </p>
 
           <div className="mt-8 w-full max-w-md" role="status" aria-live="polite">

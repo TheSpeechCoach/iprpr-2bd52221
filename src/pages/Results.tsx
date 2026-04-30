@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePlan, FREE_QUESTION_LIMIT } from "@/hooks/usePlan";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
+import { BRAND } from "@/config/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

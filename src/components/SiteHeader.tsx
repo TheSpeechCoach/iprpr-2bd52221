@@ -32,7 +32,7 @@ export const SiteHeader = () => {
               <TestingPlanSwitcher />
               <ResetTestAccountsPanel />
               <WorkspaceSwitcher />
-              <Link to="/dashboard" className="hover:text-accent transition-colors">Dashboard</Link>
+              <Link to="/dashboard" className="hover:text-accent transition-colors">Training</Link>
               <Button variant="ghost" size="sm" onClick={async () => { await signOut(); nav("/"); }}>
                 Sign out
               </Button>

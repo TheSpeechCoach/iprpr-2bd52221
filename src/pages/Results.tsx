@@ -885,7 +885,7 @@ const Results = () => {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
           <div>
             <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
-              Interview pack
+              Training set
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight">
               {session?.title}
@@ -916,7 +916,7 @@ const Results = () => {
           </div>
           <div className="flex gap-2">
           <Link to={`/prep/${id}/practice`}>
-            <Button className="gap-2">Practice mode</Button>
+            <Button className="gap-2">Start training</Button>
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1391,7 +1391,7 @@ const Results = () => {
                             {locked.length} more {locked.length === 1 ? "question is" : "questions are"} waiting
                           </h3>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            You're seeing the first {questionLimit} of your tailored pack. Upgrade to Pro to unlock the full set, plus PDF and DOCX export.
+                            You're seeing the first {questionLimit} of your training set. Upgrade to Pro for full training and feedback, plus PDF and DOCX export.
                           </p>
                           <Link
                             to="/upgrade"
@@ -1399,7 +1399,7 @@ const Results = () => {
                             onClick={() => track("upgrade_clicked", { plan, sessionId: id ?? null, metadata: { surface: "results_locked_questions" } })}
                           >
                             <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground gap-2">
-                              <Sparkles className="h-4 w-4" /> Upgrade to unlock all {questions.length} questions
+                              <Sparkles className="h-4 w-4" /> Unlock full training and feedback
                             </Button>
                           </Link>
                           <SoftUrgencyNote

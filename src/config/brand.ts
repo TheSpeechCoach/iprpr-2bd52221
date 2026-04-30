@@ -9,10 +9,11 @@ export const BRAND = {
   fullName: "iPrpr-50 by The Speech Coach",
   shortName: "iPrpr-50",
   supportEmail: "support@thespeech.coach",
-  tagline: `Prepare for any interview.
+  line: "Aim. Prepare. Land.",
+  tagline: `Train your interview performance.
 Upload your CV. Add the job spec.
-Practice real questions.
-Get clear, structured feedback.`,
+Practise the questions you're most likely to face.
+Get clear, structured feedback on how you actually answer.`,
 } as const;
 
 export type Brand = typeof BRAND;

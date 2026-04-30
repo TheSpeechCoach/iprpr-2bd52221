@@ -68,8 +68,8 @@ const Landing = () => {
               {/* Centre dot */}
               <span className="absolute h-[6px] w-[6px] rounded-full bg-accent" />
             </div>
-            <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/80 text-center">
-              Aim. Prepare. Land.
+            <div className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground/70 text-center font-medium">
+              Aim <span className="mx-2 text-muted-foreground/40">·</span> Prepare <span className="mx-2 text-muted-foreground/40">·</span> Land
             </div>
           </div>
         </div>

@@ -137,22 +137,59 @@ const Upgrade = () => {
           <Sparkles className="h-3.5 w-3.5 text-accent" /> Pricing
         </div>
         <h1 className="font-display text-4xl font-semibold leading-tight">
-          Choose how seriously you want to prepare
+          Upgrade to Pro
         </h1>
         <p className="mt-3 text-muted-foreground max-w-xl">
-          Plain pricing. Cancel anytime. Your access continues until the end of the period you've
-          paid for.
+          Unlock the full interview pack and practise properly.
         </p>
+
+        {!isPaid && (
+          <div className="mt-8 max-w-xl border border-accent/40 bg-accent/5 p-6">
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <span className="font-display text-3xl font-semibold">First month $19</span>
+              <span className="text-sm text-muted-foreground">Then $29/month</span>
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Button
+                size="lg"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                onClick={() => {
+                  if (!user) {
+                    nav("/auth?next=/upgrade");
+                    return;
+                  }
+                  const useIntro = introEligible;
+                  void track("upgrade_clicked", {
+                    plan,
+                    metadata: {
+                      surface: "upgrade_page_hero",
+                      target_plan: "pro",
+                      price_id: "pro_monthly",
+                      intro_offer: useIntro,
+                    },
+                  });
+                  setCheckoutWithIntro(useIntro);
+                  setCheckoutPriceId("pro_monthly");
+                }}
+              >
+                Unlock Pro for $19
+              </Button>
+              <Link
+                to="/dashboard"
+                className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+              >
+                Continue with Free (limited to 10 questions)
+              </Link>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {copy.upgrade.intro.smallPrint}
+            </p>
+          </div>
+        )}
 
         {plan === "free" && (
           <div className="mt-6 border-l-2 border-accent/40 pl-4 max-w-xl">
             <SoftUrgencyNote />
-          </div>
-        )}
-
-        {showIntroOffer && (
-          <div className="mt-8 max-w-2xl">
-            <IntroOfferCallout variant="wall" ctaHref="#pricing" />
           </div>
         )}
 

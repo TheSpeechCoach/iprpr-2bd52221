@@ -12,7 +12,7 @@ export const PLAN_LIMITS = {
   },
   pro: {
     maxPrepSessions: Infinity,
-    visibleQuestions: 100,
+    visibleQuestions: 50,
     answerTiers: true,
     savedAnswers: true,
     exports: true,
@@ -21,7 +21,7 @@ export const PLAN_LIMITS = {
   },
   coach_plus: {
     maxPrepSessions: Infinity,
-    visibleQuestions: 100,
+    visibleQuestions: 50,
     answerTiers: true,
     savedAnswers: true,
     exports: true,

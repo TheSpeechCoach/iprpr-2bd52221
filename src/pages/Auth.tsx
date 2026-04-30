@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { track } from "@/lib/analytics";
 import { copy } from "@/lib/copy";
+import { BRAND } from "@/config/brand";
 
 const signupSchema = z.object({
   fullName: z.string().trim().min(1, "Your name is required").max(120),
@@ -125,7 +126,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen grid md:grid-cols-2">
       <div className="hidden md:flex flex-col justify-between bg-foreground text-background p-12">
-        <Link to="/" className="font-display font-semibold">Interview Prep Pal</Link>
+        <Link to="/" className="font-display font-semibold">{BRAND.appName}</Link>
         <div>
           <h1 className="font-display text-5xl font-semibold leading-tight">Prepare with intention.</h1>
           <p className="mt-4 text-background/70 max-w-sm">Tailored interview questions, practice mode, and answer angles — all from your CV and the role.</p>

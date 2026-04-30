@@ -17,7 +17,7 @@ const Landing = () => {
               From The Speech Coach
             </div>
             <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance">
-              {BRAND.appName}.
+              {BRAND.line}
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
               {BRAND.tagline}

@@ -5,9 +5,9 @@
  * Do NOT hardcode the app name elsewhere.
  */
 export const BRAND = {
-  appName: "iPrpr-50",
-  fullName: "iPrpr-50 by The Speech Coach",
-  shortName: "iPrpr-50",
+  appName: "iPrpr",
+  fullName: "iPrpr by The Speech Coach",
+  shortName: "iPrpr",
   supportEmail: "support@thespeech.coach",
   line: "Aim. Prepare. Land.",
   tagline: `Train your interview performance.

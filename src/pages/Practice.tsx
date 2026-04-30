@@ -768,9 +768,14 @@ const Practice = () => {
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
                     <Sparkles className="h-3 w-3" /> Coach feedback
                   </div>
-                  <div className="font-display text-3xl font-semibold tabular-nums">
-                    {currentScore.overall_score ?? "—"}
-                    <span className="text-base text-muted-foreground">/10</span>
+                  <div className="text-right">
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">
+                      Performance score
+                    </div>
+                    <div className="font-display text-3xl font-semibold tabular-nums">
+                      {currentScore.overall_score ?? "—"}
+                      <span className="text-base text-muted-foreground">/10</span>
+                    </div>
                   </div>
                 </div>
 

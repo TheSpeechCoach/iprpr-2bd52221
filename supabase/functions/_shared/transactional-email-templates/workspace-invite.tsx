@@ -84,3 +84,4 @@ const button = {
 const link = { fontSize: "12px", color: "#0f172a", wordBreak: "break-all" as const };
 const hr = { borderColor: "#e2e8f0", margin: "28px 0 16px" };
 const footer = { fontSize: "12px", color: "#94a3b8", margin: 0 };
+const footerBrand = { fontSize: "12px", color: "#0f172a", fontWeight: "600" as const, margin: "0 0 4px", letterSpacing: "0.04em" };

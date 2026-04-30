@@ -11,8 +11,8 @@ const Landing = () => {
 
       {/* Hero */}
       <section className="border-b border-border">
-        <div className="container-tight py-24 md:py-32 grid md:grid-cols-5 gap-12 md:gap-16 items-center">
-          <div className="md:col-span-3">
+        <div className="container-tight py-16 md:py-32 grid grid-cols-5 gap-6 md:gap-16 items-center">
+          <div className="col-span-3">
             <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-6">
               From The Speech Coach
             </div>
@@ -35,9 +35,9 @@ const Landing = () => {
           </div>
 
           {/* Right symbol panel */}
-          <div className="md:col-span-2 flex flex-col items-center justify-center gap-3 py-8 md:py-0 md:pl-8">
+          <div className="col-span-2 flex flex-col items-center justify-center gap-3 md:pl-8">
             <div
-              className="relative aspect-square w-full max-w-[260px] flex items-center justify-center opacity-90"
+              className="relative aspect-square w-full max-w-[140px] md:max-w-[260px] flex items-center justify-center opacity-90"
               aria-hidden="true"
             >
               <svg

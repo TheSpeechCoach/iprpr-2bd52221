@@ -94,9 +94,9 @@ const Dashboard = () => {
       <main className="container-tight flex-1 py-12">
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Your prep</div>
-            <h1 className="font-display text-4xl font-semibold">Interview sessions</h1>
-            <p className="mt-2 text-sm text-muted-foreground">All your generated packs in one place. Pick up where you left off, or start a new one.</p>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Your training</div>
+            <h1 className="font-display text-4xl font-semibold">Training dashboard</h1>
+            <p className="mt-2 text-sm text-muted-foreground">All your training sets in one place. Pick up where you left off, or start a new one.</p>
           </div>
           {canCreateSession ? (
             <Link to="/prep/new">
@@ -175,10 +175,10 @@ const Dashboard = () => {
               <FileText className="h-8 w-8 mx-auto text-muted-foreground" strokeWidth={1.5} />
               <h3 className="mt-4 font-display text-xl">Nothing here yet</h3>
               <p className="mt-1 text-sm text-muted-foreground max-w-sm mx-auto">
-                Create your first session and we'll generate a tailored interview pack from your CV and the role.
+                Create your first session and we'll build a tailored training set from your CV and the role.
               </p>
               <Link to="/prep/new" className="inline-block mt-6">
-                <Button>Start your first session</Button>
+                <Button>Start training</Button>
               </Link>
             </div>
           ) : (

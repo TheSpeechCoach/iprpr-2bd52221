@@ -737,7 +737,7 @@ const Results = () => {
       generating_questions_1: "Generating questions (1–25)",
       generating_questions_2: "Generating questions (26–50)",
       generating_questions_3: "Generating questions (51–75)",
-      generating_questions_4: "Generating questions (76–100)",
+      generating_questions_4: "Generating questions (41–50)",
       generating_answers: "Adding answer guidance",
       saving: "Saving your interview pack",
       completed: "Ready",

@@ -1,0 +1,1 @@
+ALTER TABLE public.prep_sessions ALTER COLUMN num_questions SET DEFAULT 50;

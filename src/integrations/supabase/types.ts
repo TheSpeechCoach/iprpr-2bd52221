@@ -1200,6 +1200,7 @@ export type Database = {
       }
       workspaces: {
         Row: {
+          company_name: string | null
           created_at: string
           id: string
           is_personal: boolean
@@ -1208,9 +1209,12 @@ export type Database = {
           plan: string
           seat_tier: string | null
           stripe_customer_id: string | null
+          team_size: string | null
           updated_at: string
+          workspace_type: string
         }
         Insert: {
+          company_name?: string | null
           created_at?: string
           id?: string
           is_personal?: boolean
@@ -1219,9 +1223,12 @@ export type Database = {
           plan?: string
           seat_tier?: string | null
           stripe_customer_id?: string | null
+          team_size?: string | null
           updated_at?: string
+          workspace_type?: string
         }
         Update: {
+          company_name?: string | null
           created_at?: string
           id?: string
           is_personal?: boolean
@@ -1230,7 +1237,9 @@ export type Database = {
           plan?: string
           seat_tier?: string | null
           stripe_customer_id?: string | null
+          team_size?: string | null
           updated_at?: string
+          workspace_type?: string
         }
         Relationships: []
       }

@@ -107,6 +107,60 @@ export type Database = {
         }
         Relationships: []
       }
+      answer_scores: {
+        Row: {
+          authenticity_score: number | null
+          clarity_score: number | null
+          concision_score: number | null
+          created_at: string
+          evidence_score: number | null
+          feedback_json: Json | null
+          id: string
+          interview_impact_score: number | null
+          overall_score: number | null
+          prep_session_id: string
+          question_id: string
+          relevance_score: number | null
+          saved_answer_id: string
+          structure_score: number | null
+          user_id: string
+        }
+        Insert: {
+          authenticity_score?: number | null
+          clarity_score?: number | null
+          concision_score?: number | null
+          created_at?: string
+          evidence_score?: number | null
+          feedback_json?: Json | null
+          id?: string
+          interview_impact_score?: number | null
+          overall_score?: number | null
+          prep_session_id: string
+          question_id: string
+          relevance_score?: number | null
+          saved_answer_id: string
+          structure_score?: number | null
+          user_id: string
+        }
+        Update: {
+          authenticity_score?: number | null
+          clarity_score?: number | null
+          concision_score?: number | null
+          created_at?: string
+          evidence_score?: number | null
+          feedback_json?: Json | null
+          id?: string
+          interview_impact_score?: number | null
+          overall_score?: number | null
+          prep_session_id?: string
+          question_id?: string
+          relevance_score?: number | null
+          saved_answer_id?: string
+          structure_score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -674,6 +728,51 @@ export type Database = {
           },
         ]
       }
+      practice_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          mode: string
+          prep_session_id: string
+          question_order: Json
+          selected_category: string | null
+          started_at: string
+          timer_seconds: number | null
+          updated_at: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mode?: string
+          prep_session_id: string
+          question_order?: Json
+          selected_category?: string | null
+          started_at?: string
+          timer_seconds?: number | null
+          updated_at?: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mode?: string
+          prep_session_id?: string
+          question_order?: Json
+          selected_category?: string | null
+          started_at?: string
+          timer_seconds?: number | null
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       prep_sessions: {
         Row: {
           candidate_current_role: string | null
@@ -895,6 +994,39 @@ export type Database = {
           user_agent?: string | null
           user_id?: string
           workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      saved_answers: {
+        Row: {
+          answer_text: string
+          created_at: string
+          id: string
+          practice_session_id: string | null
+          prep_session_id: string
+          question_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer_text?: string
+          created_at?: string
+          id?: string
+          practice_session_id?: string | null
+          prep_session_id: string
+          question_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer_text?: string
+          created_at?: string
+          id?: string
+          practice_session_id?: string | null
+          prep_session_id?: string
+          question_id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

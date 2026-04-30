@@ -11,40 +11,17 @@ const Landing = () => {
 
       {/* Hero */}
       <section className="border-b border-border">
-        <div className="container-tight py-24 md:py-32 flex flex-col items-center text-center">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-10">
+        <div className="container-tight py-24 md:py-32">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-6">
             From The Speech Coach
           </div>
-
-          {/* Bullseye mark */}
-          <div className="relative" aria-hidden="true">
-            <svg
-              width="160"
-              height="160"
-              viewBox="0 0 160 160"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-foreground"
-            >
-              <circle cx="80" cy="80" r="78" stroke="currentColor" strokeWidth="1.25" />
-              <circle cx="80" cy="80" r="58" stroke="currentColor" strokeWidth="1.25" />
-              <circle cx="80" cy="80" r="38" stroke="currentColor" strokeWidth="1.25" />
-              <circle cx="80" cy="80" r="18" stroke="currentColor" strokeWidth="1.25" />
-              <line x1="80" y1="0" x2="80" y2="20" stroke="currentColor" strokeWidth="1" />
-              <line x1="80" y1="140" x2="80" y2="160" stroke="currentColor" strokeWidth="1" />
-              <line x1="0" y1="80" x2="20" y2="80" stroke="currentColor" strokeWidth="1" />
-              <line x1="140" y1="80" x2="160" y2="80" stroke="currentColor" strokeWidth="1" />
-              <circle cx="80" cy="80" r="5" fill="hsl(var(--accent))" />
-            </svg>
-          </div>
-
-          <h1 className="sr-only">{BRAND.appName}</h1>
-
-          <p className="mt-12 max-w-xl text-lg md:text-xl text-foreground whitespace-pre-line leading-relaxed">
+          <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance max-w-4xl">
+            {BRAND.appName}.
+          </h1>
+          <p className="mt-6 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
             {BRAND.tagline}
           </p>
-
-          <div className="mt-10 flex flex-wrap gap-3 justify-center">
+          <div className="mt-10 flex flex-wrap gap-3">
             <Link to="/auth">
               <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
                 Start preparing <ArrowRight className="ml-2 h-4 w-4" />

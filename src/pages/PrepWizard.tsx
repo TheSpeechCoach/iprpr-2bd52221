@@ -569,7 +569,7 @@ const PrepWizard = () => {
         {step === 4 && (
           <div className="space-y-6">
             <div className="border border-border p-6 bg-secondary/30">
-              <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">You're about to generate</div>
+              <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">You're about to build your training set</div>
               <ul className="text-sm space-y-1.5 text-muted-foreground">
                 <li>· <span className="text-foreground font-medium">{form.num_questions}</span> tailored questions</li>
                 <li>· Difficulty: <span className="text-foreground">{form.difficulty}</span> · Tone: <span className="text-foreground">{form.output_tone}</span> · Style: <span className="text-foreground">{form.interview_style}</span></li>
@@ -578,13 +578,13 @@ const PrepWizard = () => {
               </ul>
             </div>
             <p className="text-xs text-muted-foreground">
-              By generating, you agree your details will be processed by our AI provider only to prepare this pack.
-              You can return to it any time from your dashboard.
+              By continuing, you agree your details will be processed by our AI provider only to prepare this training set.
+              You can return to it any time from your training dashboard.
             </p>
             <Button onClick={handleGenerate} disabled={submitting} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
-              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Preparing your pack…</> : <>Generate my interview pack <ArrowRight className="h-4 w-4 ml-2" /></>}
+              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Building your training set…</> : <>Start training <ArrowRight className="h-4 w-4 ml-2" /></>}
             </Button>
-            <p className="text-[11px] text-muted-foreground text-center">Building your interview pack (50 tailored questions). Your first 10 appear in seconds.</p>
+            <p className="text-[11px] text-muted-foreground text-center">Building your training set (50 tailored questions). Your first 10 appear in seconds.</p>
           </div>
         )}
 

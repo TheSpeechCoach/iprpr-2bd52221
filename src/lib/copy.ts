@@ -16,7 +16,7 @@
 
 export const copy = {
   common: {
-    appName: "iPrpr-50",
+    appName: "iPrpr",
     cta: {
       continue: "Continue",
       back: "Back",

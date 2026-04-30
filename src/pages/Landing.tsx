@@ -19,10 +19,7 @@ const Landing = () => {
             {BRAND.appName}.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
-            {`Be prepared for any interview.
-Upload your CV. Add the job spec.
-Practise the questions you're most likely to face.
-Get clear, structured feedback.`}
+            {BRAND.tagline}
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link to="/auth">
@@ -150,7 +147,8 @@ Get clear, structured feedback.`}
         <div className="container-tight flex flex-col md:flex-row justify-between gap-6 text-sm text-muted-foreground">
           <div>
             <div className="font-display font-semibold text-foreground">{BRAND.appName}</div>
-            <div className="text-xs mt-1">© {new Date().getFullYear()} The Speech Coach. All rights reserved.</div>
+            <p className="mt-2 text-xs whitespace-pre-line max-w-xs">{BRAND.tagline}</p>
+            <div className="text-xs mt-3">© {new Date().getFullYear()} The Speech Coach. All rights reserved.</div>
           </div>
           <nav className="flex gap-6 text-xs">
             <a href="#" className="hover:text-foreground">Privacy</a>

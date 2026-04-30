@@ -19,7 +19,10 @@ const Landing = () => {
             <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance">
               {BRAND.appName}.
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
+            <p className="mt-6 max-w-xl text-2xl font-display font-medium text-foreground">
+              {BRAND.line}
+            </p>
+            <p className="mt-4 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
               {BRAND.tagline}
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
@@ -80,9 +83,9 @@ const Landing = () => {
         <div className="container-tight">
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
-              { icon: FileText, title: "50 tailored questions", body: "Generated against your CV and the exact job specification." },
-              { icon: Target, title: "Role-specific practice", body: "Behavioural, technical, leadership and commercial." },
-              { icon: Compass, title: "In-Depth Guidance", body: "What good answers cover, why each question matters, and probing follow-ups." },
+              { icon: FileText, title: "50 tailored questions", body: "Train with real interview questions, generated against your CV and the exact job spec." },
+              { icon: Target, title: "Training across key interview areas", body: "Behavioural, technical, leadership and commercial." },
+              { icon: Compass, title: "In-Depth Guidance", body: "What strong answers cover, why each question matters, and probing follow-ups." },
             ].map((f) => (
               <div key={f.title} className="bg-background p-10">
                 <f.icon className="h-6 w-6" strokeWidth={1.5} />
@@ -99,15 +102,15 @@ const Landing = () => {
         <div className="container-tight">
           <div className="max-w-2xl">
             <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-4">How it works</div>
-            <h2 className="font-display text-4xl font-semibold">Five steps to a sharper interview.</h2>
+            <h2 className="font-display text-4xl font-semibold">Five steps to stronger interview performance.</h2>
           </div>
           <div className="mt-16 grid md:grid-cols-5 gap-12">
             {[
               ["01", "Upload", "Drop your CV in PDF or DOCX. We extract it securely."],
-              ["02", "Add", "Paste the job spec, link to a public posting, or describe it."],
+              ["02", "Add the role", "Paste the job spec, link to a public posting, or describe it."],
               ["03", "Analyse", "We identify what matters most — your strengths, gaps, and likely focus areas."],
-              ["04", "Generate", "Receive 50 tailored questions based on you and the role."],
-              ["05", "Practise", "Time yourself, refine your answers, and improve with clear guidance."],
+              ["04", "Train", "Work through 50 tailored questions, structured for the role and your level."],
+              ["05", "Improve", "Refine your answers with clear, structured feedback on how you actually deliver."],
             ].map(([num, title, body]) => (
               <div key={num}>
                 <div className="font-display text-3xl text-accent">{num}</div>
@@ -164,8 +167,8 @@ const Landing = () => {
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
               { name: "Free", price: "$0", desc: "Try it once.", features: ["1 prep session", "10 questions", "Read in-app"] },
-              { name: "Pro", price: "$29", desc: "For serious candidates.", features: ["Unlimited sessions", "50 questions per role", "Practice mode", "PDF & DOCX export", "Saved history"], featured: true },
-              { name: "Coach+", price: "$79", desc: "For executives & coaches.", features: ["Everything in Pro", "AI answer guidance", "Practice analytics", "Premium templates", "Priority support"] },
+              { name: "Pro", price: "$29", desc: "For serious candidates.", features: ["Unlimited sessions", "50 questions per role", "Training mode", "PDF & DOCX export", "Saved history"], featured: true },
+              { name: "Coach+", price: "$79", desc: "For executives & coaches.", features: ["Everything in Pro", "AI answer guidance", "Training analytics", "Premium templates", "Priority support"] },
             ].map((p) => (
               <div key={p.name} className={`bg-background p-8 ${p.featured ? "ring-1 ring-foreground" : ""}`}>
                 {p.featured && <div className="text-[10px] uppercase tracking-widest text-accent mb-3">Most popular</div>}

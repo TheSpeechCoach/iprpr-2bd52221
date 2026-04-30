@@ -80,9 +80,9 @@ const Landing = () => {
         <div className="container-tight">
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
-              { icon: FileText, title: "50 tailored questions", body: "Generated against your CV and the exact job specification — never generic." },
-              { icon: Target, title: "Role-specific practice", body: "Behavioural, technical, leadership and commercial — weighted to your level." },
-              { icon: Compass, title: "Answer angle guidance", body: "What good answers cover, why each question matters, and probing follow-ups." },
+              { icon: FileText, title: "50 tailored questions", body: "Generated against your CV and the exact job specification." },
+              { icon: Target, title: "Role-specific practice", body: "Behavioural, technical, leadership and commercial." },
+              { icon: Compass, title: "In-Depth Guidance", body: "What good answers cover, why each question matters, and probing follow-ups." },
             ].map((f) => (
               <div key={f.title} className="bg-background p-10">
                 <f.icon className="h-6 w-6" strokeWidth={1.5} />

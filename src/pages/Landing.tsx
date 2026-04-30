@@ -35,38 +35,41 @@ const Landing = () => {
           </div>
 
           {/* Right symbol panel */}
-          <div className="md:col-span-2 flex items-center justify-center py-8 md:py-0">
+          <div className="md:col-span-2 flex flex-col items-center justify-center gap-6 py-8 md:py-0 md:pl-8">
             <div
-              className="relative aspect-square w-full max-w-[340px] flex items-center justify-center"
+              className="relative aspect-square w-full max-w-[280px] flex items-center justify-center opacity-90"
               aria-hidden="true"
             >
               <svg
                 viewBox="0 0 200 200"
-                className="w-full h-full text-foreground/70"
+                className="w-full h-full text-foreground/60"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="0.6"
                 strokeLinecap="round"
               >
-                <circle cx="100" cy="100" r="94" strokeOpacity="0.35" />
-                <circle cx="100" cy="100" r="72" strokeOpacity="0.5" />
-                <circle cx="100" cy="100" r="50" strokeOpacity="0.7" />
-                <circle cx="100" cy="100" r="28" strokeOpacity="0.9" />
-                <line x1="100" y1="6" x2="100" y2="22" strokeOpacity="0.45" />
-                <line x1="100" y1="178" x2="100" y2="194" strokeOpacity="0.45" />
-                <line x1="6" y1="100" x2="22" y2="100" strokeOpacity="0.45" />
-                <line x1="178" y1="100" x2="194" y2="100" strokeOpacity="0.45" />
+                <circle cx="100" cy="100" r="94" strokeOpacity="0.25" />
+                <circle cx="100" cy="100" r="72" strokeOpacity="0.4" />
+                <circle cx="100" cy="100" r="50" strokeOpacity="0.6" />
+                <circle cx="100" cy="100" r="28" strokeOpacity="0.8" />
+                <line x1="100" y1="6" x2="100" y2="22" strokeOpacity="0.35" />
+                <line x1="100" y1="178" x2="100" y2="194" strokeOpacity="0.35" />
+                <line x1="6" y1="100" x2="22" y2="100" strokeOpacity="0.35" />
+                <line x1="178" y1="100" x2="194" y2="100" strokeOpacity="0.35" />
               </svg>
               {/* Soft halo */}
               <span
                 className="absolute h-6 w-6 rounded-full animate-halo-pulse will-change-transform"
                 style={{
                   background:
-                    "radial-gradient(circle, hsl(var(--accent) / 0.5) 0%, hsl(var(--accent) / 0) 70%)",
+                    "radial-gradient(circle, hsl(var(--accent) / 0.45) 0%, hsl(var(--accent) / 0) 70%)",
                 }}
               />
               {/* Centre dot */}
-              <span className="absolute h-[7px] w-[7px] rounded-full bg-accent" />
+              <span className="absolute h-[6px] w-[6px] rounded-full bg-accent" />
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/80 text-center">
+              Aim. Prepare. Land it.
             </div>
           </div>
         </div>

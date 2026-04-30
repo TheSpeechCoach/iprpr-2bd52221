@@ -69,7 +69,7 @@ const Landing = () => {
               <span className="absolute h-[6px] w-[6px] rounded-full bg-accent" />
             </div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/80 text-center">
-              Aim. Prepare. Land it.
+              Aim. Prepare. Land.
             </div>
           </div>
         </div>

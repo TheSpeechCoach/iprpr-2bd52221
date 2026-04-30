@@ -165,11 +165,6 @@ const Dashboard = () => {
                 </Button>
               </Link>
             </div>
-            {introEligible && (
-              <div className="mt-4">
-                <IntroOfferCallout variant="dashboard" />
-              </div>
-            )}
           </>
         )}
 

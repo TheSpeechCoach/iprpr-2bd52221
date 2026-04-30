@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { BRAND } from "@/config/brand";
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 
@@ -46,7 +45,6 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-background">
       <div className="w-full max-w-sm">
-        <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">{BRAND.line}</div>
         <h1 className="font-display text-3xl font-semibold">Reset your password</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Enter the email address linked to your account and we'll send you a reset link.

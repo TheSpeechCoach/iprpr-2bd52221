@@ -17,7 +17,7 @@ const Landing = () => {
               From The Speech Coach
             </div>
             <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance">
-              {BRAND.line}
+              {BRAND.appName}.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
               {BRAND.tagline}
@@ -67,6 +67,9 @@ const Landing = () => {
               />
               {/* Centre dot */}
               <span className="absolute h-[6px] w-[6px] rounded-full bg-accent" />
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground/70 text-center font-medium leading-none pl-[0.35em]">
+              Aim<span className="mx-[0.6em] text-muted-foreground/30">·</span>Prepare<span className="mx-[0.6em] text-muted-foreground/30">·</span>Land
             </div>
           </div>
         </div>
@@ -186,8 +189,7 @@ const Landing = () => {
         <div className="container-tight flex flex-col md:flex-row justify-between gap-6 text-sm text-muted-foreground">
           <div>
             <div className="font-display font-semibold text-foreground">{BRAND.appName}</div>
-            <p className="mt-2 text-xs text-foreground/80 font-medium">{BRAND.line}</p>
-            <p className="mt-1 text-xs whitespace-pre-line max-w-xs">{BRAND.tagline}</p>
+            <p className="mt-2 text-xs whitespace-pre-line max-w-xs">{BRAND.tagline}</p>
             <div className="text-xs mt-3">© {new Date().getFullYear()} The Speech Coach. All rights reserved.</div>
           </div>
           <nav className="flex gap-6 text-xs">

@@ -104,7 +104,7 @@ const Auth = () => {
       <div className="hidden md:flex flex-col justify-between bg-foreground text-background p-12">
         <Link to="/" className="font-display font-semibold">{BRAND.appName}</Link>
         <div>
-          <h1 className="font-display text-5xl font-semibold leading-tight">{BRAND.line}</h1>
+          <h1 className="font-display text-5xl font-semibold leading-tight">{BRAND.appName}.</h1>
           <p className="mt-4 text-background/70 max-w-sm whitespace-pre-line">{BRAND.tagline}</p>
           <p className="mt-12 text-xs uppercase tracking-widest text-background/40">From The Speech Coach</p>
         </div>

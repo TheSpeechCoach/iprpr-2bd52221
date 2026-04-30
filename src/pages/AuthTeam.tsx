@@ -112,7 +112,7 @@ const AuthTeam = () => {
       <div className="hidden md:flex flex-col justify-between bg-foreground text-background p-12">
         <Link to="/" className="font-display font-semibold">{BRAND.appName}</Link>
         <div>
-          <h1 className="font-display text-5xl font-semibold leading-tight">{BRAND.line}</h1>
+          <h1 className="font-display text-5xl font-semibold leading-tight">For teams.</h1>
           <p className="mt-4 text-background/70 max-w-sm">
             Set up a shared workspace for your team. Invite members, manage candidates, and prep together.
           </p>

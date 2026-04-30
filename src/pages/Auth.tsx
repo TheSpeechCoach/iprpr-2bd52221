@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { track } from "@/lib/analytics";
 import { copy } from "@/lib/copy";
+import { BRAND } from "@/config/brand";
 
 const signupSchema = z.object({
   fullName: z.string().trim().min(1, "Your name is required").max(120),

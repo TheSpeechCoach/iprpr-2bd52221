@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ArrowRight, FileText, Target, Compass, Check } from "lucide-react";
+import { BRAND } from "@/config/brand";
 
 const Landing = () => {
   return (
@@ -15,7 +16,7 @@ const Landing = () => {
             From The Speech Coach
           </div>
           <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance max-w-4xl">
-            Interview Prep Pal.
+            {BRAND.appName}.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
             Upload your CV. Add the role. Practise the questions that are most likely to come.
@@ -145,7 +146,7 @@ const Landing = () => {
       <footer className="py-12 mt-auto">
         <div className="container-tight flex flex-col md:flex-row justify-between gap-6 text-sm text-muted-foreground">
           <div>
-            <div className="font-display font-semibold text-foreground">Interview Prep Pal</div>
+            <div className="font-display font-semibold text-foreground">{BRAND.appName}</div>
             <div className="text-xs mt-1">© {new Date().getFullYear()} The Speech Coach. All rights reserved.</div>
           </div>
           <nav className="flex gap-6 text-xs">

@@ -59,11 +59,10 @@ const Landing = () => {
               </svg>
               {/* Soft halo */}
               <span
-                className="absolute h-5 w-5 rounded-full"
+                className="absolute h-6 w-6 rounded-full animate-halo-pulse will-change-transform"
                 style={{
                   background:
-                    "radial-gradient(circle, hsl(var(--accent) / 0.35) 0%, hsl(var(--accent) / 0) 70%)",
-                  animation: "pulse 4s ease-in-out infinite",
+                    "radial-gradient(circle, hsl(var(--accent) / 0.5) 0%, hsl(var(--accent) / 0) 70%)",
                 }}
               />
               {/* Centre dot */}

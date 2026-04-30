@@ -11,7 +11,7 @@ export const BRAND = {
   supportEmail: "support@thespeech.coach",
   tagline: `Prepare for any interview.
 Upload your CV. Add the job spec.
-Practise the questions you're most likely to face.
+Practice real questions.
 Get clear, structured feedback.`,
 } as const;
 

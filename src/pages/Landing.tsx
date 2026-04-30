@@ -104,7 +104,7 @@ const Landing = () => {
           <div className="mt-16 grid md:grid-cols-5 gap-12">
             {[
               ["01", "Upload", "Drop your CV in PDF or DOCX. We extract it securely."],
-              ["02", "Add the role", "Paste the job spec, link to a public posting, or describe it."],
+              ["02", "Add", "Paste the job spec, link to a public posting, or describe it."],
               ["03", "Analyse", "We identify what matters most — your strengths, gaps, and likely focus areas."],
               ["04", "Generate", "Receive 50 tailored questions based on you and the role."],
               ["05", "Practise", "Time yourself, refine your answers, and improve with clear guidance."],

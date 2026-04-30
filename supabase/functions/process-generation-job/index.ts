@@ -223,7 +223,7 @@ Deno.serve(async (req) => {
       cursor = end + 1;
     }
 
-    const systemPrompt = `You are a senior UK-based interview coach for iPrpr-50 by The Speech Coach. You write in British English (en-GB).
+    const systemPrompt = `You are a senior UK-based interview coach for iPrpr by The Speech Coach. You write in British English (en-GB).
 Your job: generate sharp, realistic, interview-grade questions tailored to a specific candidate and role.
 
 LANGUAGE — UK ENGLISH ONLY (non-negotiable):

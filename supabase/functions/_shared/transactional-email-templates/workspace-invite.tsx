@@ -47,7 +47,7 @@ const WorkspaceInviteEmail = ({
           This invite is single-use and expires in 72 hours. If you weren't
           expecting it, you can safely ignore this email.
         </Text>
-        <Text style={footer}>iPrpr-50 by The Speech Coach</Text>
+        <Text style={footer}>iPrpr by The Speech Coach</Text>
       </Container>
     </Body>
   </Html>
@@ -56,7 +56,7 @@ const WorkspaceInviteEmail = ({
 export const template = {
   component: WorkspaceInviteEmail,
   subject: (data: Record<string, any>) =>
-    `You've been invited to join ${data?.workspaceName ?? "a workspace"} on iPrpr-50`,
+    `You've been invited to join ${data?.workspaceName ?? "a workspace"} on iPrpr`,
   displayName: "Workspace invite",
   previewData: {
     workspaceName: "Acme Recruiting",

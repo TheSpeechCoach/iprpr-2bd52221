@@ -96,7 +96,7 @@ const Dashboard = () => {
       <main className="container-tight flex-1 py-12">
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Your prep</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">{BRAND.line}</div>
             <h1 className="font-display text-4xl font-semibold">Interview sessions</h1>
             <p className="mt-2 text-sm text-muted-foreground">All your generated packs in one place. Pick up where you left off, or start a new one.</p>
           </div>

@@ -6,6 +6,7 @@ import { TestingPlanSwitcher } from "@/components/TestingPlanSwitcher";
 import { TestingModeBanner } from "@/components/TestingModeBanner";
 import { ResetTestAccountsPanel } from "@/components/ResetTestAccountsPanel";
 import { ReportIssueButton } from "@/components/ReportIssueButton";
+import { BRAND } from "@/config/brand";
 
 export const SiteHeader = () => {
   const { user, signOut } = useAuth();
@@ -20,8 +21,8 @@ export const SiteHeader = () => {
             <span className="text-background font-display font-bold text-sm">I</span>
           </div>
           <div className="leading-none">
-            <div className="font-display font-semibold text-base">Interview Prep Pal</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">The Speech Coach</div>
+            <div className="font-display font-semibold text-base">{BRAND.appName}</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">by The Speech Coach</div>
           </div>
         </Link>
         <nav className="flex items-center gap-6 text-sm">

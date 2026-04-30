@@ -72,7 +72,6 @@ const Landing = () => {
               Aim<span className="mx-[0.6em] text-muted-foreground/30">·</span>Prepare<span className="mx-[0.6em] text-muted-foreground/30">·</span>Land
             </div>
           </div>
-          </div>
         </div>
       </section>
 

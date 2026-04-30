@@ -192,7 +192,7 @@ const Landing = () => {
         <div className="container-tight flex flex-col md:flex-row justify-between gap-6 text-sm text-muted-foreground">
           <div>
             <div className="font-display font-semibold text-foreground">{BRAND.appName}</div>
-            <p className="mt-2 text-xs max-w-xs">Aim. Prepare. Land.</p>
+            <p className="mt-2 text-xs max-w-xs">{BRAND.line}</p>
             <div className="text-xs mt-3">© {new Date().getFullYear()} The Speech Coach. All rights reserved.</div>
           </div>
           <nav className="flex gap-6 text-xs">

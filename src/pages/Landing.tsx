@@ -18,8 +18,11 @@ const Landing = () => {
           <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance max-w-4xl">
             {BRAND.appName}.
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            Upload your CV. Add the role. Practise the questions that are most likely to come.
+          <p className="mt-6 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
+            {`Be prepared for any interview.
+Upload your CV. Add the job spec.
+Practise the questions you're most likely to face.
+Get clear, structured feedback.`}
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link to="/auth">

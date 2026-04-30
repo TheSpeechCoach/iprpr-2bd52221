@@ -15,6 +15,7 @@ import { IntroOfferCallout } from "@/components/IntroOfferCallout";
 import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
 import { ProUsageBanner } from "@/components/ProUsageBanner";
 import { AccountFlagBanner } from "@/components/AccountFlagBanner";
+import { BRAND } from "@/config/brand";
 
 interface Session {
   id: string;

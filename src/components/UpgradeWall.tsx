@@ -26,10 +26,10 @@ export function UpgradeWall({
         Free preview limit reached
       </p>
       <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground">
-        You’ve seen the first 10 questions.
+        You've reached your free limit.
       </h2>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        The next 90 are where the real preparation happens.
+        Upgrade to Pro to unlock full training and feedback across the complete 50-question set.
       </p>
 
       {eligibleForIntroOffer ? (
@@ -47,13 +47,13 @@ export function UpgradeWall({
       ) : (
         <>
           <p className="mt-4 text-lg font-medium text-foreground">
-            Upgrade to Pro to unlock the full 50-question interview pack.
+            Train with the full 50-question set and get clear feedback on every answer.
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             $29/month. Cancel anytime.
           </p>
           <Button onClick={onUpgrade} size="lg" className="mt-5">
-            Upgrade to Pro
+            Unlock full training and feedback
           </Button>
         </>
       )}

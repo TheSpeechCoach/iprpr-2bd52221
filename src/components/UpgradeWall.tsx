@@ -47,7 +47,7 @@ export function UpgradeWall({
       ) : (
         <>
           <p className="mt-4 text-lg font-medium text-foreground">
-            Upgrade to Pro to unlock the full 100-question interview pack.
+            Upgrade to Pro to unlock the full 50-question interview pack.
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             $29/month. Cancel anytime.

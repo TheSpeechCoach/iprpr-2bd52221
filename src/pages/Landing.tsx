@@ -38,7 +38,7 @@ const Landing = () => {
         <div className="container-tight">
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
-              { icon: FileText, title: "100 tailored questions", body: "Generated against your CV and the exact job specification — never generic." },
+              { icon: FileText, title: "50 tailored questions", body: "Generated against your CV and the exact job specification — never generic." },
               { icon: Target, title: "Role-specific practice", body: "Behavioural, technical, leadership and commercial — weighted to your level." },
               { icon: Compass, title: "Answer angle guidance", body: "What good answers cover, why each question matters, and probing follow-ups." },
             ].map((f) => (

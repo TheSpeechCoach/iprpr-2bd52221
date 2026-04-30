@@ -37,26 +37,37 @@ const Landing = () => {
           {/* Right symbol panel */}
           <div className="md:col-span-2 flex items-center justify-center py-8 md:py-0">
             <div
-              className="relative aspect-square w-full max-w-[360px] flex items-center justify-center"
+              className="relative aspect-square w-full max-w-[340px] flex items-center justify-center"
               aria-hidden="true"
             >
               <svg
                 viewBox="0 0 200 200"
-                className="w-full h-full text-foreground"
+                className="w-full h-full text-foreground/70"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1"
+                strokeWidth="0.6"
+                strokeLinecap="round"
               >
-                <circle cx="100" cy="100" r="92" />
-                <circle cx="100" cy="100" r="68" />
-                <circle cx="100" cy="100" r="44" />
-                <circle cx="100" cy="100" r="22" />
-                <line x1="100" y1="2" x2="100" y2="30" />
-                <line x1="100" y1="170" x2="100" y2="198" />
-                <line x1="2" y1="100" x2="30" y2="100" />
-                <line x1="170" y1="100" x2="198" y2="100" />
+                <circle cx="100" cy="100" r="94" strokeOpacity="0.35" />
+                <circle cx="100" cy="100" r="72" strokeOpacity="0.5" />
+                <circle cx="100" cy="100" r="50" strokeOpacity="0.7" />
+                <circle cx="100" cy="100" r="28" strokeOpacity="0.9" />
+                <line x1="100" y1="6" x2="100" y2="22" strokeOpacity="0.45" />
+                <line x1="100" y1="178" x2="100" y2="194" strokeOpacity="0.45" />
+                <line x1="6" y1="100" x2="22" y2="100" strokeOpacity="0.45" />
+                <line x1="178" y1="100" x2="194" y2="100" strokeOpacity="0.45" />
               </svg>
-              <span className="absolute h-3 w-3 rounded-full bg-accent animate-[pulse_3s_ease-in-out_infinite]" />
+              {/* Soft halo */}
+              <span
+                className="absolute h-5 w-5 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle, hsl(var(--accent) / 0.35) 0%, hsl(var(--accent) / 0) 70%)",
+                  animation: "pulse 4s ease-in-out infinite",
+                }}
+              />
+              {/* Centre dot */}
+              <span className="absolute h-[7px] w-[7px] rounded-full bg-accent" />
             </div>
           </div>
         </div>

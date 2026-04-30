@@ -99,14 +99,15 @@ const Landing = () => {
         <div className="container-tight">
           <div className="max-w-2xl">
             <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-4">How it works</div>
-            <h2 className="font-display text-4xl font-semibold">Four steps to a sharper interview.</h2>
+            <h2 className="font-display text-4xl font-semibold">Five steps to a sharper interview.</h2>
           </div>
-          <div className="mt-16 grid md:grid-cols-4 gap-12">
+          <div className="mt-16 grid md:grid-cols-5 gap-12">
             {[
               ["01", "Upload", "Drop your CV in PDF or DOCX. We extract it securely."],
               ["02", "Add the role", "Paste the job spec, link to a public posting, or describe it."],
-              ["03", "Generate", "Receive 100 questions tailored to you and the role."],
-              ["04", "Practise", "Time yourself, save notes, and refine your answers."],
+              ["03", "Analyse", "We identify what matters most — your strengths, gaps, and likely focus areas."],
+              ["04", "Generate", "Receive 50 tailored questions based on you and the role."],
+              ["05", "Practise", "Time yourself, refine your answers, and improve with clear guidance."],
             ].map(([num, title, body]) => (
               <div key={num}>
                 <div className="font-display text-3xl text-accent">{num}</div>

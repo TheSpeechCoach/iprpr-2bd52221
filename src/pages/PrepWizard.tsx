@@ -308,7 +308,7 @@ const PrepWizard = () => {
               ) : (
                 <>
                   <span className="font-medium">You've used your free session.</span>
-                  <span className="text-muted-foreground"> Upgrade to Pro to generate unlimited packs and unlock the full {">"}100 questions.</span>
+                  <span className="text-muted-foreground"> Upgrade to Pro to generate unlimited packs and unlock the full set of 50 questions.</span>
                 </>
               )}
             </div>

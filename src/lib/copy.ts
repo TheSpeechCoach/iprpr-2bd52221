@@ -118,15 +118,15 @@ export const copy = {
       "Take your time — your progress is safe. Upgrade whenever you're ready.",
     upgradeCta: "Upgrade now",
     intro: {
-      wallTitle: "You've seen the first 10 questions.",
+      wallTitle: "You've reached your free limit.",
       wallBody:
-        "The next 90 are where the real preparation happens.\nUnlock Pro today for $19 for your first month.\nThen $29/month.",
+        "Upgrade to Pro to unlock the full set of 50 questions.\nFirst month $19. Then $29/month.",
       buttonCta: "Unlock Pro for $19",
       smallPrint: "First month only. Renews at $29/month. Cancel anytime.",
       dashboardPrompt:
         "Continue preparing with Pro. First month $19, then $29/month.",
       resultsLine:
-        "Unlock Pro today for $19 for your first month. Then $29/month.",
+        "Upgrade to Pro to unlock the full set of 50 questions. First month $19, then $29/month.",
     },
   },
 

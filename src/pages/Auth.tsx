@@ -10,26 +10,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { track } from "@/lib/analytics";
 import { copy } from "@/lib/copy";
 import { BRAND } from "@/config/brand";
+import { Users } from "lucide-react";
 
 const signupSchema = z.object({
-  fullName: z.string().trim().min(1, "Your name is required").max(120),
-  candidateFullName: z
-    .string()
-    .trim()
-    .min(2, "Candidate full name is required")
-    .max(120),
-  candidateEmail: z.string().trim().email("Enter a valid email").max(255),
-  candidateLinkedinUrl: z
-    .string()
-    .trim()
-    .max(300)
-    .optional()
-    .refine(
-      (v) => !v || /^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(v),
-      "Enter a valid LinkedIn URL or leave blank",
-    ),
-  email: z.string().trim().email().max(255),
-  password: z.string().min(6).max(200),
+  fullName: z.string().trim().min(1, "Your full name is required").max(120),
+  email: z.string().trim().email("Enter a valid email").max(255),
+  password: z.string().min(6, "Password must be at least 6 characters").max(200),
 });
 
 const Auth = () => {
@@ -37,9 +23,6 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [candidateFullName, setCandidateFullName] = useState("");
-  const [candidateEmail, setCandidateEmail] = useState("");
-  const [candidateLinkedinUrl, setCandidateLinkedinUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
   const [searchParams] = useSearchParams();
@@ -53,14 +36,7 @@ const Auth = () => {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const parsed = signupSchema.safeParse({
-          fullName,
-          candidateFullName,
-          candidateEmail,
-          candidateLinkedinUrl: candidateLinkedinUrl || undefined,
-          email,
-          password,
-        });
+        const parsed = signupSchema.safeParse({ fullName, email, password });
         if (!parsed.success) {
           const first = parsed.error.issues[0]?.message ?? "Please check the form.";
           toast({ title: "Check your details", description: first, variant: "destructive" });
@@ -74,9 +50,7 @@ const Auth = () => {
             emailRedirectTo: `${window.location.origin}${redirectTo}`,
             data: {
               full_name: fullName.trim(),
-              candidate_full_name: candidateFullName.trim(),
-              candidate_email: candidateEmail.trim(),
-              candidate_linkedin_url: candidateLinkedinUrl.trim() || null,
+              signup_type: "individual",
             },
           },
         });
@@ -84,7 +58,7 @@ const Auth = () => {
         void track("user_signed_up", {
           userId: data.user?.id ?? null,
           plan: "free",
-          metadata: { confirmation_required: !data.session },
+          metadata: { confirmation_required: !data.session, signup_type: "individual" },
         });
         if (!data.session) {
           toast({
@@ -113,7 +87,7 @@ const Auth = () => {
         : /already registered|already been registered|user already/i.test(msg)
         ? "An account with this email already exists. Try signing in, or use \"Forgotten password?\" to reset it."
         : /email not confirmed/i.test(msg)
-        ? "We couldn't complete sign-in. Please check your email verification link or request a new one. If no email arrives, check spam or try again in a few minutes."
+        ? "We couldn't complete sign-in. Please check your email verification link or request a new one."
         : /rate limit|too many/i.test(msg)
         ? "Too many attempts. Please wait a moment and try again."
         : "We couldn't complete sign-in. Please check your details or request a new link.";
@@ -122,6 +96,8 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const isSignup = mode === "signup";
 
   return (
     <div className="min-h-screen grid md:grid-cols-2">
@@ -136,75 +112,28 @@ const Auth = () => {
 
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
-          <h2 className="font-display text-3xl font-semibold">{mode === "signin" ? copy.auth.signInTitle : copy.auth.signUpTitle}</h2>
+          <h2 className="font-display text-3xl font-semibold">
+            {isSignup ? "Create your account" : copy.auth.signInTitle}
+          </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {mode === "signin" ? "Sign in to continue your prep." : "Start preparing in under a minute."}
+            {isSignup ? "Start preparing for your interviews." : "Sign in to continue your prep."}
           </p>
 
-          <div className="mt-4 rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-            Private beta testing is active. Email verification is temporarily disabled for trusted testers.
-          </div>
-
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            {mode === "signup" && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="name">{copy.auth.fullNameLabel}</Label>
-                  <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={120} />
-                </div>
-
-                <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-3">
-                  <p className="text-xs text-muted-foreground">{copy.auth.candidateLockNotice}</p>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="candidateName">{copy.auth.candidateNameLabel}</Label>
-                    <Input
-                      id="candidateName"
-                      value={candidateFullName}
-                      onChange={(e) => setCandidateFullName(e.target.value)}
-                      required
-                      maxLength={120}
-                      placeholder="e.g. Alex Morgan"
-                    />
-                    <p className="text-xs text-muted-foreground">{copy.auth.candidateNameHelp}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="candidateEmail">{copy.auth.candidateEmailLabel}</Label>
-                    <Input
-                      id="candidateEmail"
-                      type="email"
-                      value={candidateEmail}
-                      onChange={(e) => setCandidateEmail(e.target.value)}
-                      required
-                      maxLength={255}
-                    />
-                    <p className="text-xs text-muted-foreground">{copy.auth.candidateEmailHelp}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="candidateLinkedin">{copy.auth.candidateLinkedinLabel}</Label>
-                    <Input
-                      id="candidateLinkedin"
-                      type="url"
-                      value={candidateLinkedinUrl}
-                      onChange={(e) => setCandidateLinkedinUrl(e.target.value)}
-                      maxLength={300}
-                      placeholder="https://www.linkedin.com/in/…"
-                    />
-                    <p className="text-xs text-muted-foreground">{copy.auth.candidateLinkedinHelp}</p>
-                  </div>
-                </div>
-              </>
+            {isSignup && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Full name</Label>
+                <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={120} />
+              </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">{copy.auth.emailLabel}</Label>
+              <Label htmlFor="email">Email address</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">{copy.auth.passwordLabel}</Label>
-                {mode === "signin" && (
+                <Label htmlFor="password">Password</Label>
+                {!isSignup && (
                   <Link
                     to="/forgot-password"
                     className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
@@ -216,15 +145,32 @@ const Auth = () => {
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={200} />
             </div>
             <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={loading}>
-              {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+              {loading ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
             </Button>
           </form>
 
+          {isSignup && (
+            <div className="mt-6 rounded-lg border border-border bg-muted/40 p-4">
+              <div className="flex items-start gap-3">
+                <Users className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                <div className="text-sm">
+                  <p className="font-medium">Setting up for a team?</p>
+                  <Link
+                    to="/signup/team"
+                    className="text-muted-foreground hover:text-foreground underline underline-offset-4"
+                  >
+                    Create a team workspace →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 text-sm text-center text-muted-foreground">
-            {mode === "signin" ? (
-              <>New here? <button onClick={() => setMode("signup")} className="text-foreground underline underline-offset-4">Create an account</button></>
-            ) : (
+            {isSignup ? (
               <>Already have an account? <button onClick={() => setMode("signin")} className="text-foreground underline underline-offset-4">Sign in</button></>
+            ) : (
+              <>New here? <button onClick={() => setMode("signup")} className="text-foreground underline underline-offset-4">Create an account</button></>
             )}
           </div>
         </div>

@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
     if (sErr) throw sErr;
     if (!session) throw new Error(`prep_session ${sessionId} not found`);
 
-    const numQuestions = Math.max(20, Math.min(120, session.num_questions ?? 100));
+    const numQuestions = Math.max(10, Math.min(120, session.num_questions ?? 50));
 
     // ===== TESTING_MODE: fast beta generation =====
     // In testing mode we generate a lean preview chunk first (no answer tiers,
@@ -188,25 +188,37 @@ Deno.serve(async (req) => {
 
     // Plan chunks. In testing mode we use a smaller chunk size for the
     // background tail too, so progress updates flow more frequently.
+    // Private-beta chunking: 1–10 (fast), 11–25, 26–40, 41–50.
+    // Falls back gracefully if numQuestions != 50.
     const PREVIEW_SIZE = Math.min(10, numQuestions);
-    const CHUNK_SIZE = testingMode ? 20 : 30;
     const chunkRanges: Array<{ start: number; end: number; label: string }> = [];
     if (PREVIEW_SIZE > 0) {
       chunkRanges.push({
         start: 1,
         end: PREVIEW_SIZE,
-        label: testingMode ? "Preparing your first questions" : `Writing the high-stakes opening (1–${PREVIEW_SIZE})`,
+        label: "Preparing your first questions",
       });
     }
+    const tailBoundaries = [25, 40, 50];
     let cursor = PREVIEW_SIZE + 1;
-    while (cursor <= numQuestions) {
-      const end = Math.min(numQuestions, cursor + CHUNK_SIZE - 1);
+    for (const boundary of tailBoundaries) {
+      if (cursor > numQuestions) break;
+      const end = Math.min(numQuestions, boundary);
+      if (end < cursor) continue;
       chunkRanges.push({
         start: cursor,
         end,
-        label: testingMode
-          ? `Building the rest in the background (${cursor}–${end})`
-          : `Writing questions ${cursor}–${end}`,
+        label: `Building the rest in the background (${cursor}–${end})`,
+      });
+      cursor = end + 1;
+    }
+    // Safety: if numQuestions exceeds 50, chunk the remainder in 15s.
+    while (cursor <= numQuestions) {
+      const end = Math.min(numQuestions, cursor + 14);
+      chunkRanges.push({
+        start: cursor,
+        end,
+        label: `Building the rest in the background (${cursor}–${end})`,
       });
       cursor = end + 1;
     }

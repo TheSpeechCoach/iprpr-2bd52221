@@ -354,7 +354,7 @@ const Results = () => {
         body: { session_id: id },
       });
       if (error) throw error;
-      toast({ title: "Retrying generation", description: "Building your full interview pack (100 tailored questions). This usually takes 1–3 minutes." });
+      toast({ title: "Retrying generation", description: "Building your interview pack (50 tailored questions). Your first 10 appear in seconds." });
       await loadAll();
     } catch (e: any) {
       toast({ title: "Retry failed", description: e?.message ?? "Please try again.", variant: "destructive" });
@@ -723,7 +723,7 @@ const Results = () => {
     questions.length === 0;
   const isGenerating = isBlockingGenerating;
   if (isGenerating) {
-    const totalQ = session?.num_questions ?? 100;
+    const totalQ = session?.num_questions ?? 50;
     const pct = Math.max(2, Math.min(99, job?.progress ?? 5));
 
     // Map machine stage keys → human-readable labels. Falls back to whatever
@@ -764,7 +764,7 @@ const Results = () => {
             Your first questions are being prepared.
           </h1>
           <p className="mt-3 text-sm text-muted-foreground max-w-md">
-            We're tailoring your full interview pack ({totalQ} questions). The first 10 will appear here in under a minute. You can leave this page and return from your dashboard at any time.
+            Building your interview pack ({totalQ} tailored questions). Your first 10 appear in seconds — the rest build in the background. You can leave this page and return from your dashboard at any time.
           </p>
 
           <div className="mt-8 w-full max-w-md" role="status" aria-live="polite">
@@ -843,7 +843,7 @@ const Results = () => {
   }
 
   // ----- Main view -----
-  const totalTarget = session?.num_questions ?? 100;
+  const totalTarget = session?.num_questions ?? 50;
   const showProgressStrip = isStillBuilding && session?.status !== "ready";
   return (
     <div className="min-h-screen flex flex-col bg-background">

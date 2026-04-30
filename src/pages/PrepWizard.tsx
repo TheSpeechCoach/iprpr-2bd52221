@@ -73,7 +73,7 @@ const PrepWizard = () => {
     company_name: "",
     job_description: "",
     job_spec_url: "",
-    num_questions: 100,
+    num_questions: 50,
     difficulty: "standard",
     focus_mix: { technical: 30, behavioural: 30, leadership: 20, commercial: 10, culture_fit: 10 },
     include_followups: true,
@@ -231,7 +231,7 @@ const PrepWizard = () => {
         title: `${form.target_role.trim()}${form.company_name ? ` · ${form.company_name.trim()}` : ""}`,
         status: "generating",
         ...form,
-        num_questions: Math.max(20, Math.min(120, Number(form.num_questions) || 100)),
+        num_questions: Math.max(10, Math.min(120, Number(form.num_questions) || 50)),
         cv_text: extracted_cv_text,
         cv_file_path,
       }).select().single();
@@ -514,7 +514,7 @@ const PrepWizard = () => {
                 </Select>
               </Field>
               <Field label="Number of questions" hint="Between 20 and 120.">
-                <Input type="number" min={20} max={120} value={form.num_questions} onChange={(e) => update("num_questions", Number(e.target.value))} />
+                <Input type="number" min={10} max={120} value={form.num_questions} onChange={(e) => update("num_questions", Number(e.target.value))} />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -584,7 +584,7 @@ const PrepWizard = () => {
             <Button onClick={handleGenerate} disabled={submitting} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
               {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Preparing your pack…</> : <>Generate my interview pack <ArrowRight className="h-4 w-4 ml-2" /></>}
             </Button>
-            <p className="text-[11px] text-muted-foreground text-center">Building your full interview pack (100 tailored questions). This usually takes 1–3 minutes.</p>
+            <p className="text-[11px] text-muted-foreground text-center">Building your interview pack (50 tailored questions). Your first 10 appear in seconds.</p>
           </div>
         )}
 

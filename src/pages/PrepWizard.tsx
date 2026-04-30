@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { track } from "@/lib/analytics";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, Lock } from "lucide-react";
 
-const STEPS = ["Candidate", "Career", "Job", "Parameters", "Generate"] as const;
+const STEPS = ["Candidate", "Career", "Job", "Parameters", "Train"] as const;
 
 const PrepWizard = () => {
   const { user } = useAuth();
@@ -338,7 +338,7 @@ const PrepWizard = () => {
             {step === 1 && "Add your career evidence"}
             {step === 2 && "Describe the role"}
             {step === 3 && "Shape the questions"}
-            {step === 4 && "Ready to generate"}
+            {step === 4 && "Ready to train"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-xl">
             {step === 0 && "A few details so we can tailor the questions to your level and the role you're going for."}

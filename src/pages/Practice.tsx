@@ -507,12 +507,12 @@ const Practice = () => {
 
           <div className="max-w-2xl">
             <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
-              Practice mode
+              Training mode
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-semibold mb-2 truncate">
               {session?.title}
             </h1>
-            <p className="text-muted-foreground mb-10">Choose how you want to practise.</p>
+            <p className="text-muted-foreground mb-10">Choose how you want to train.</p>
 
             <div className="space-y-8">
               <SetupGroup label="Practice order">
@@ -578,7 +578,7 @@ const Practice = () => {
                 onClick={startPractice}
                 disabled={requiresCategory && setupCategory === "all"}
               >
-                Start practice
+                Start training
               </Button>
               <span className="text-xs text-muted-foreground">
                 {requiresCategory && setupCategory === "all"
@@ -611,14 +611,14 @@ const Practice = () => {
           onClick={exitPractice}
           className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-6"
         >
-          <ArrowLeft className="h-3 w-3" /> End practice
+          <ArrowLeft className="h-3 w-3" /> End training
         </button>
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
           <div className="min-w-0">
             <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
-              Practice mode · {modeLabel(mode)}
+              Training mode · {modeLabel(mode)}
               {setupCategory !== "all" && ` · ${setupCategory}`}
             </div>
             <h1 className="font-display text-2xl md:text-3xl font-semibold truncate">
@@ -712,6 +712,9 @@ const Practice = () => {
                   {savingAnswer ? "Saving…" : savedAnswerExists ? "Saved" : "Autosaves as you type"}
                 </div>
               </div>
+              <p className="text-[11px] text-muted-foreground mb-2">
+                This is how you train your real delivery.
+              </p>
               <Textarea
                 value={answer}
                 onChange={(e) => onAnswerChange(e.target.value)}
@@ -740,19 +743,19 @@ const Practice = () => {
                     ) : (
                       <Sparkles className="h-3.5 w-3.5" />
                     )}
-                    Score my answer
+                    Evaluate my answer
                   </Button>
                 ) : (
                   <Link to="/upgrade">
                     <Button size="sm" variant="outline" className="gap-1.5">
                       <Lock className="h-3.5 w-3.5" />
-                      Score my answer
+                      Evaluate my answer
                     </Button>
                   </Link>
                 )}
                 {!isCoachPlus && (
                   <span className="text-[11px] text-muted-foreground">
-                    Answer scoring is available on Coach+.
+                    Answer evaluation is available on Coach+.
                   </span>
                 )}
               </div>

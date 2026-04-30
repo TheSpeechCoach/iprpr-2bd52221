@@ -56,7 +56,7 @@ const TIERS: Tier[] = [
     highlight: true,
     features: [
       "Unlimited prep sessions",
-      "Full 100 questions per pack",
+      "Full 50 questions per pack",
       "All three answer tiers",
       "Save written answers",
       "Progress tracking",

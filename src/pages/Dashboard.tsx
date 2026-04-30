@@ -11,7 +11,6 @@ import { Plus, FileText, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { track } from "@/lib/analytics";
 import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
-import { IntroOfferCallout } from "@/components/IntroOfferCallout";
 import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
 import { ProUsageBanner } from "@/components/ProUsageBanner";
 import { AccountFlagBanner } from "@/components/AccountFlagBanner";
@@ -165,11 +164,6 @@ const Dashboard = () => {
                 </Button>
               </Link>
             </div>
-            {introEligible && (
-              <div className="mt-4">
-                <IntroOfferCallout variant="dashboard" />
-              </div>
-            )}
           </>
         )}
 

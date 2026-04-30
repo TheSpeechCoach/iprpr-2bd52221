@@ -71,25 +71,25 @@ export const copy = {
   },
 
   dashboard: {
-    title: "Your prep sessions",
-    empty: "No sessions yet. Start your first prep to see it here.",
-    newSession: "New prep session",
+    title: "Training dashboard",
+    empty: "No training sets yet. Start your first session to see it here.",
+    newSession: "New training session",
     planLabel: (plan: string) => `Current plan: ${plan}`,
   },
 
   wizard: {
     stepCv: "Upload your CV",
     stepRole: "Add the role",
-    stepGenerate: "Generate questions",
+    stepGenerate: "Train",
     cvHelp: "PDF or DOCX, up to 10 MB.",
     jobUrlLabel: "Job advert URL",
     jobUrlHelp: "We'll fetch the job specification automatically.",
     pasteJobLabel: "Or paste the job description",
-    generateCta: "Generate interview pack",
+    generateCta: "Build training set",
   },
 
   results: {
-    title: "Your interview pack",
+    title: "Your training set",
     coachInsightLabel: "Coach Insight",
     answerTiers: {
       foundation: "Foundation",
@@ -103,7 +103,7 @@ export const copy = {
 
   upgrade: {
     title: "Upgrade to Pro",
-    subtitle: "Unlock the full prep experience.",
+    subtitle: "Unlock full training and feedback.",
     proName: "Pro",
     coachPlusName: "Coach+",
     proPrice: "$29",
@@ -113,10 +113,10 @@ export const copy = {
     sessionSavedNote:
       "This session will remain saved, but full access is limited until you upgrade.",
     socialProof:
-      "Most users upgrade at this stage to complete their preparation properly.",
+      "Most users upgrade at this stage to train properly.",
     softReminder:
       "Take your time — your progress is safe. Upgrade whenever you're ready.",
-    upgradeCta: "Upgrade now",
+    upgradeCta: "Unlock full training and feedback",
     intro: {
       wallTitle: "You've reached your free limit.",
       wallBody:
@@ -124,7 +124,7 @@ export const copy = {
       buttonCta: "Unlock Pro for $19",
       smallPrint: "First month only. Renews at $29/month. Cancel anytime.",
       dashboardPrompt:
-        "Continue preparing with Pro. First month $19, then $29/month.",
+        "Continue training with Pro. First month $19, then $29/month.",
       resultsLine:
         "Upgrade to Pro to unlock the full set of 50 questions. First month $19, then $29/month.",
     },

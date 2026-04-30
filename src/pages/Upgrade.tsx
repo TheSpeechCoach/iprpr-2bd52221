@@ -140,7 +140,7 @@ const Upgrade = () => {
           Upgrade to Pro
         </h1>
         <p className="mt-3 text-muted-foreground max-w-xl">
-          Unlock the full interview pack and practise properly.
+          Unlock full training and feedback. Train with the complete 50-question set and refine how you actually deliver.
         </p>
 
         {!isPaid && (

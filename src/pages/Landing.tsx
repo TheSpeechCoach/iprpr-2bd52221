@@ -68,9 +68,6 @@ const Landing = () => {
               {/* Centre dot */}
               <span className="absolute h-[6px] w-[6px] rounded-full bg-accent" />
             </div>
-            <div className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground/70 text-center font-medium leading-none pl-[0.35em]">
-              Aim<span className="mx-[0.6em] text-muted-foreground/30">·</span>Prepare<span className="mx-[0.6em] text-muted-foreground/30">·</span>Land
-            </div>
           </div>
         </div>
       </section>

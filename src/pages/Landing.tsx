@@ -125,7 +125,7 @@ const Landing = () => {
           <div className="grid md:grid-cols-2 gap-16">
             <div>
               <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-4">Built for</div>
-              <h2 className="font-display text-4xl font-semibold">Anyone who treats the interview as a craft.</h2>
+              <h2 className="font-display text-4xl font-semibold">Built for people who prepare to perform.</h2>
             </div>
             <div className="grid grid-cols-2 gap-y-4 text-sm">
               {["Executives", "Senior professionals", "Hiring managers", "Career changers", "Graduates", "Returners", "Consultants", "Founders"].map((x) => (

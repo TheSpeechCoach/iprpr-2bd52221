@@ -16,7 +16,7 @@ export const SiteHeader = () => {
     <header className="border-b border-border bg-background">
       <TestingModeBanner />
       <div className="container-tight flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-3">
           <div className="h-7 w-7 bg-foreground rounded-sm flex items-center justify-center">
             <span className="text-background font-display font-bold text-sm">I</span>
           </div>
@@ -24,6 +24,9 @@ export const SiteHeader = () => {
             <div className="font-display font-semibold text-base">{BRAND.appName}</div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">by The Speech Coach</div>
           </div>
+          <span className="hidden md:inline-block ml-2 pl-3 border-l border-border text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            {BRAND.line}
+          </span>
         </Link>
         <nav className="flex items-center gap-6 text-sm">
           {user ? (

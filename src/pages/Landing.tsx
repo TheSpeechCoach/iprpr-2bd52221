@@ -11,25 +11,53 @@ const Landing = () => {
 
       {/* Hero */}
       <section className="border-b border-border">
-        <div className="container-tight py-24 md:py-32">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-6">
-            From The Speech Coach
+        <div className="container-tight py-24 md:py-32 grid md:grid-cols-5 gap-12 md:gap-16 items-center">
+          <div className="md:col-span-3">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-6">
+              From The Speech Coach
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance">
+              {BRAND.appName}.
+            </h1>
+            <p className="mt-6 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
+              {BRAND.tagline}
+            </p>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link to="/auth">
+                <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                  Start preparing <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <a href="#how">
+                <Button size="lg" variant="outline">See how it works</Button>
+              </a>
+            </div>
           </div>
-          <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance max-w-4xl">
-            {BRAND.appName}.
-          </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
-            {BRAND.tagline}
-          </p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link to="/auth">
-              <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                Start preparing <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <a href="#how">
-              <Button size="lg" variant="outline">See how it works</Button>
-            </a>
+
+          {/* Right symbol panel */}
+          <div className="md:col-span-2 flex items-center justify-center py-8 md:py-0">
+            <div
+              className="relative aspect-square w-full max-w-[360px] flex items-center justify-center"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 200 200"
+                className="w-full h-full text-foreground"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+              >
+                <circle cx="100" cy="100" r="92" />
+                <circle cx="100" cy="100" r="68" />
+                <circle cx="100" cy="100" r="44" />
+                <circle cx="100" cy="100" r="22" />
+                <line x1="100" y1="2" x2="100" y2="30" />
+                <line x1="100" y1="170" x2="100" y2="198" />
+                <line x1="2" y1="100" x2="30" y2="100" />
+                <line x1="170" y1="100" x2="198" y2="100" />
+              </svg>
+              <span className="absolute h-3 w-3 rounded-full bg-accent animate-[pulse_3s_ease-in-out_infinite]" />
+            </div>
           </div>
         </div>
       </section>

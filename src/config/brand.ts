@@ -12,8 +12,8 @@ export const BRAND = {
   line: "Aim. Prepare. Land.",
   tagline: `Train your interview performance.
 Upload your CV. Add the job spec.
-Practise the questions you're most likely to face.
-Get clear, structured feedback on how you actually answer.`,
+Practise real interview questions.
+Get clear, structured feedback.`,
 } as const;
 
 export type Brand = typeof BRAND;

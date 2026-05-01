@@ -115,10 +115,16 @@ export const usePlan = (): PlanState => {
     setCancelAtPeriodEnd(cape);
     setCurrentPeriodEnd(cpe);
 
+    // Count Free's monthly session usage by calendar month (UTC).
+    const today = new Date();
+    const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1)).toISOString();
+    const monthEnd = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1)).toISOString();
     const { count } = await supabase
       .from("prep_sessions")
       .select("id", { count: "exact", head: true })
-      .neq("status", "draft");
+      .neq("status", "draft")
+      .gte("created_at", monthStart)
+      .lt("created_at", monthEnd);
     setSessionsUsed(count ?? 0);
     setLoading(false);
   };

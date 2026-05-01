@@ -151,7 +151,7 @@ const Dashboard = () => {
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Free plan</div>
                 <div className="text-sm">
                   <span className="font-medium">{Math.min(sessionsUsed, FREE_SESSION_LIMIT)} of {FREE_SESSION_LIMIT}</span>
-                  <span className="text-muted-foreground"> session used · 10 questions visible per pack</span>
+                  <span className="text-muted-foreground"> session used this month · 10 questions visible per pack</span>
                 </div>
                 <SoftUrgencyNote className="mt-3" showSocialProof={false} />
               </div>

@@ -167,8 +167,24 @@ const PrepWizard = () => {
       setStep(2);
       return;
     }
-    if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim()) {
-      toast({ title: "Add some career evidence", description: "Upload your CV, paste it as text, or add a LinkedIn summary.", variant: "destructive" });
+    const hasLinkedinUrl = /^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(form.linkedin_url.trim());
+    if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim() && !hasLinkedinUrl) {
+      toast({
+        title: "Add your details",
+        description: "Add your LinkedIn profile, upload your CV, or paste your CV text.",
+        variant: "destructive",
+      });
+      setStep(1);
+      return;
+    }
+    // If only a LinkedIn URL is provided, we can't read it server-side yet.
+    // Ask the user to add CV evidence so generation has something to tailor against.
+    if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim() && hasLinkedinUrl) {
+      toast({
+        title: "We couldn't read that profile",
+        description: "Please upload your CV or paste your details so we can tailor your questions.",
+        variant: "destructive",
+      });
       setStep(1);
       return;
     }

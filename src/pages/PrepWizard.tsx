@@ -231,7 +231,7 @@ const PrepWizard = () => {
         title: `${form.target_role.trim()}${form.company_name ? ` · ${form.company_name.trim()}` : ""}`,
         status: "generating",
         ...form,
-        num_questions: Math.max(10, Math.min(120, Number(form.num_questions) || 50)),
+        num_questions: 50,
         cv_text: extracted_cv_text,
         cv_file_path,
       }).select().single();
@@ -513,8 +513,8 @@ const PrepWizard = () => {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Number of questions" hint="Between 20 and 120.">
-                <Input type="number" min={10} max={120} value={form.num_questions} onChange={(e) => update("num_questions", Number(e.target.value))} />
+              <Field label="Number of questions" hint="Every pack contains 50 questions.">
+                <Input type="number" min={50} max={50} value={50} disabled readOnly />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-4">

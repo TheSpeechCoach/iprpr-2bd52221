@@ -352,24 +352,74 @@ Deno.serve(async (req) => {
     const jobId: string = jobRow.id;
     console.log(`[generate-interview-pack] queued job ${jobId} for session ${sessionId} (n=${numQuestions})`);
 
-    // Fire-and-forget invoke of the worker function. We do NOT await the
-    // response — the worker runs in its own isolate and reports progress via
-    // the generation_jobs row. We also do NOT use EdgeRuntime.waitUntil here:
-    // the request to the worker is the trigger, and the worker's own
-    // isolate keeps itself alive for the duration of generation.
+    // Invoke the worker. We don't await the full response (the worker holds
+    // its connection open for the whole generation), but we DO race the
+    // initial connection against a short timeout so a hard failure to start
+    // the worker (network refusal, deploy issue) is surfaced immediately
+    // rather than leaving the job stuck at `queued`.
     const workerUrl = `${SUPABASE_URL}/functions/v1/process-generation-job`;
-    fetch(workerUrl, {
+    const workerFetch = fetch(workerUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${SERVICE_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ job_id: jobId }),
-    }).catch((err) => {
-      // Best-effort log only — the worker may have started successfully even
-      // if the connection from this isolate dropped early.
-      console.error(`[generate-interview-pack] worker invoke error for job ${jobId}:`, err?.message ?? err);
     });
+
+    // Attach a permanent catch so an eventual rejection doesn't become an
+    // unhandled rejection after we return.
+    workerFetch.catch((err) => {
+      console.error(`[generate-interview-pack] worker fetch rejected for job ${jobId}:`, err?.message ?? err);
+    });
+
+    let workerStartFailed = false;
+    let workerStartError: string | null = null;
+    try {
+      // Wait up to 3s. If the worker fails to start (rejects) within that
+      // window, we treat the job as failed. If the timer wins, the worker
+      // is presumed to be running and reporting via generation_jobs.
+      await Promise.race([
+        workerFetch.then(
+          (res) => {
+            if (!res.ok && res.status >= 500) {
+              workerStartFailed = true;
+              workerStartError = `Worker returned ${res.status}`;
+            }
+          },
+          (err) => {
+            workerStartFailed = true;
+            workerStartError = err?.message ?? "fetch rejected";
+          },
+        ),
+        new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+      ]);
+    } catch (err: any) {
+      workerStartFailed = true;
+      workerStartError = err?.message ?? String(err);
+    }
+
+    if (workerStartFailed) {
+      console.error(`[generate-interview-pack] worker failed to start for job ${jobId}: ${workerStartError}`);
+      await admin.from("generation_jobs").update({
+        status: "failed",
+        error_message: "Worker failed to start",
+        failed_at: new Date().toISOString(),
+      }).eq("id", jobId);
+      await admin.from("prep_sessions").update({ status: "failed" }).eq("id", sessionId);
+      await admin.from("admin_logs").insert({
+        event: "worker_start_failed",
+        metadata: { user_id: userId, session_id: sessionId, job_id: jobId, error: workerStartError },
+      }).then(() => null, () => null);
+      return new Response(
+        JSON.stringify({
+          error: "WORKER_START_FAILED",
+          message: "Generation could not be started. Please retry.",
+          job_id: jobId,
+        }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     return new Response(
       JSON.stringify({ ok: true, status: "queued", session_id: sessionId, job_id: jobId }),

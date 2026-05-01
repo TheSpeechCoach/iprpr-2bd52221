@@ -122,6 +122,7 @@ export const usePlan = (): PlanState => {
     const { count } = await supabase
       .from("prep_sessions")
       .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
       .neq("status", "draft")
       .gte("created_at", monthStart)
       .lt("created_at", monthEnd);

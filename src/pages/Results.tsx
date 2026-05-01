@@ -792,6 +792,38 @@ const Results = () => {
     );
   }
 
+  // ----- Stuck-queued state -----
+  // If the worker never moved the job from `queued` to `processing`, the
+  // fire-and-forget invoke from `generate-interview-pack` likely failed.
+  // Detect this when the job has been queued for >2 minutes and offer a
+  // manual retry instead of leaving the user waiting indefinitely.
+  const stuckQueued =
+    job?.status === "queued" &&
+    processingStartedAt !== null &&
+    nowTs - processingStartedAt > 120_000;
+  if (stuckQueued) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <SiteHeader />
+        <main className="container-tight flex-1 flex flex-col items-center justify-center py-24 text-center">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Generation stalled</div>
+          <h1 className="mt-2 font-display text-3xl font-semibold">Generation has not started</h1>
+          <p className="mt-3 text-muted-foreground max-w-md">
+            Generation has not started. Please retry.
+          </p>
+          <div className="mt-8 flex gap-3">
+            <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              {retrying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Retrying…</> : "Retry generation"}
+            </Button>
+            <Link to="/dashboard">
+              <Button variant="outline">Back to dashboard</Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // ----- Failed state -----
   const hasFailed = session?.status === "failed" || job?.status === "failed";
   if (hasFailed) {

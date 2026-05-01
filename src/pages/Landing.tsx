@@ -38,9 +38,9 @@ const Landing = () => {
           </div>
 
           {/* Right symbol panel */}
-          <div className="col-span-2 flex flex-col items-center justify-center gap-3 md:pl-8">
+          <div className="col-span-2 flex flex-col items-center justify-center gap-3 md:pl-8 -ml-2 md:ml-0">
             <div
-              className="relative aspect-square w-full max-w-[140px] md:max-w-[260px] flex items-center justify-center opacity-90"
+              className="relative aspect-square w-full max-w-[120px] md:max-w-[260px] flex items-center justify-center opacity-90"
               aria-hidden="true"
             >
               <svg
@@ -71,7 +71,7 @@ const Landing = () => {
               {/* Centre dot */}
               <span className="absolute h-[6px] w-[6px] rounded-full bg-accent" />
             </div>
-            <div className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground/70 text-center font-medium leading-none pl-[0.35em]">
+            <div className="hidden lg:block text-[10px] uppercase tracking-[0.35em] text-muted-foreground/70 text-center font-medium leading-none pl-[0.35em]">
               Aim<span className="mx-[0.6em] text-muted-foreground/30">·</span>Prepare<span className="mx-[0.6em] text-muted-foreground/30">·</span>Land
             </div>
           </div>

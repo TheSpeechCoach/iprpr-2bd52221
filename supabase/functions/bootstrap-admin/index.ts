@@ -21,7 +21,9 @@ Deno.serve(async (req) => {
   const TESTING_MODE = (Deno.env.get("TESTING_MODE") ?? "false").toLowerCase() === "true";
   const OWNER_ADMIN_EMAIL = (Deno.env.get("OWNER_ADMIN_EMAIL") ?? "").trim().toLowerCase();
 
-  if (!TESTING_MODE) return json({ error: "Bootstrap is disabled" }, 403);
+  if (!TESTING_MODE) {
+    return json({ error: "Bootstrap is disabled (TESTING_MODE is not 'true' on the edge function secrets)" }, 403);
+  }
   if (!OWNER_ADMIN_EMAIL) return json({ error: "OWNER_ADMIN_EMAIL is not configured" }, 500);
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;

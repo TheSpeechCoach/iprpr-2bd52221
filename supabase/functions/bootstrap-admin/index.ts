@@ -18,8 +18,13 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const TESTING_MODE = (Deno.env.get("TESTING_MODE") ?? "false").toLowerCase() === "true";
-  const OWNER_ADMIN_EMAIL = (Deno.env.get("OWNER_ADMIN_EMAIL") ?? "").trim().toLowerCase();
+  const TESTING_MODE_RAW = Deno.env.get("TESTING_MODE") ?? "false";
+  const TESTING_MODE = TESTING_MODE_RAW.trim().toLowerCase() === "true";
+  const OWNER_ADMIN_EMAIL_RAW = Deno.env.get("OWNER_ADMIN_EMAIL") ?? "";
+  const OWNER_ADMIN_EMAIL = OWNER_ADMIN_EMAIL_RAW.trim().toLowerCase();
+
+  console.log("[bootstrap-admin] TESTING_MODE raw:", JSON.stringify(TESTING_MODE_RAW), "parsed:", TESTING_MODE);
+  console.log("[bootstrap-admin] OWNER_ADMIN_EMAIL raw:", JSON.stringify(OWNER_ADMIN_EMAIL_RAW), "normalized:", JSON.stringify(OWNER_ADMIN_EMAIL));
 
   if (!TESTING_MODE) {
     return json({ error: "Bootstrap is disabled (TESTING_MODE is not 'true' on the edge function secrets)" }, 403);
@@ -42,7 +47,11 @@ Deno.serve(async (req) => {
   if (userErr || !userData?.user?.id) return json({ error: "Unauthorized" }, 401);
 
   const userId = userData.user.id;
-  const userEmail = (userData.user.email ?? "").trim().toLowerCase();
+  const userEmailRaw = userData.user.email ?? "";
+  const userEmail = userEmailRaw.trim().toLowerCase();
+
+  console.log("[bootstrap-admin] user.email raw:", JSON.stringify(userEmailRaw), "normalized:", JSON.stringify(userEmail));
+  console.log("[bootstrap-admin] comparing:", JSON.stringify(userEmail), "===", JSON.stringify(OWNER_ADMIN_EMAIL), "→", userEmail === OWNER_ADMIN_EMAIL);
 
   if (!userEmail || userEmail !== OWNER_ADMIN_EMAIL) {
     await admin.from("admin_logs").insert({
@@ -53,6 +62,16 @@ Deno.serve(async (req) => {
     });
     return json({
       error: `Forbidden: signed-in email (${userEmail || "none"}) does not match OWNER_ADMIN_EMAIL secret.`,
+      debug: {
+        testing_mode: TESTING_MODE,
+        user_email_raw: userEmailRaw,
+        user_email_normalized: userEmail,
+        owner_email_raw: OWNER_ADMIN_EMAIL_RAW,
+        owner_email_normalized: OWNER_ADMIN_EMAIL,
+        user_email_length: userEmail.length,
+        owner_email_length: OWNER_ADMIN_EMAIL.length,
+        match: userEmail === OWNER_ADMIN_EMAIL,
+      },
     }, 403);
   }
 

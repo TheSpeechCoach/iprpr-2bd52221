@@ -38,9 +38,9 @@ const Landing = () => {
           </div>
 
           {/* Right symbol panel */}
-          <div className="col-span-2 flex flex-col items-center justify-start lg:justify-center gap-3 md:pl-8 -ml-2 md:ml-0 lg:pt-0">
+          <div className="col-span-2 flex flex-col items-center justify-start lg:justify-center gap-3 md:pl-8 -ml-2 md:ml-0 pt-7 md:pt-9 lg:pt-0">
             <div
-              className="relative aspect-square w-full max-w-[80px] md:max-w-[110px] lg:max-w-[260px] flex items-center justify-center opacity-90 translate-y-[28px] md:translate-y-[40px] lg:translate-y-0"
+              className="relative aspect-square w-full max-w-[110px] md:max-w-[140px] lg:max-w-[260px] flex items-center justify-center opacity-90"
               aria-hidden="true"
             >
               <svg

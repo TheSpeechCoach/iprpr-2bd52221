@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import AuthTeam from "./pages/AuthTeam";
@@ -52,13 +53,13 @@ const App = () => (
               <Route path="/prep/:id/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
               <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
               <Route path="/practise-delivery" element={<ProtectedRoute><PractiseDelivery /></ProtectedRoute>} />
-              <Route path="/admin" element={<AdminOverview />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/sessions" element={<AdminSessions />} />
-              <Route path="/admin/sessions/:id" element={<AdminSessionDetail />} />
-              <Route path="/admin/generation-jobs" element={<AdminGenerationJobs />} />
-              <Route path="/admin/feedback" element={<AdminFeedback />} />
-              <Route path="/admin/testing" element={<AdminTesting />} />
+              <Route path="/admin" element={<AdminRoute><AdminOverview /></AdminRoute>} />
+              <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+              <Route path="/admin/sessions" element={<AdminRoute><AdminSessions /></AdminRoute>} />
+              <Route path="/admin/sessions/:id" element={<AdminRoute><AdminSessionDetail /></AdminRoute>} />
+              <Route path="/admin/generation-jobs" element={<AdminRoute><AdminGenerationJobs /></AdminRoute>} />
+              <Route path="/admin/feedback" element={<AdminRoute><AdminFeedback /></AdminRoute>} />
+              <Route path="/admin/testing" element={<AdminRoute><AdminTesting /></AdminRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </WorkspaceProvider>

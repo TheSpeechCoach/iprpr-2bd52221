@@ -254,7 +254,7 @@ Deno.serve(async (req) => {
     // ===== Server-side plan enforcement =====
 
     // Resolve the user's effective plan via the security-definer helper.
-    // Free users: max 1 non-draft session ever.
+    // Free users: max 1 non-draft session per CALENDAR MONTH.
     const env = (req.headers.get("x-stripe-env") === "live") ? "live" : "sandbox";
     const { data: planData } = await admin.rpc("get_user_plan", {
       _user_id: userId,
@@ -264,18 +264,23 @@ Deno.serve(async (req) => {
     const isPaid = userPlan === "pro" || userPlan === "coach_plus";
 
     if (!isPaid && !testingMode) {
-      // Count non-draft sessions excluding this one. If >=1, block.
+      // Calendar-month window in UTC.
+      const now = new Date();
+      const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+      const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
       const { count: usedSessions } = await admin
         .from("prep_sessions")
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
         .neq("status", "draft")
-        .neq("id", sessionId);
+        .neq("id", sessionId)
+        .gte("created_at", monthStart)
+        .lt("created_at", monthEnd);
       if ((usedSessions ?? 0) >= 1) {
         return new Response(
           JSON.stringify({
             error: "FREE_SESSION_LIMIT",
-            message: "You've used your free session. Upgrade to Pro for unlimited prep.",
+            message: "You've reached your free limit for this month. Upgrade to Pro for unlimited prep.",
           }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );

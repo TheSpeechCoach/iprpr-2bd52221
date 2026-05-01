@@ -151,7 +151,7 @@ const PrepWizard = () => {
     if (!canCreateSession) {
       toast({
         title: "Free limit reached",
-        description: "You've used your free session. Upgrade to Pro to generate more.",
+        description: "You've reached your free limit for this month. Upgrade to Pro to generate more.",
         variant: "destructive",
       });
       nav("/upgrade");
@@ -302,13 +302,13 @@ const PrepWizard = () => {
             <div className="flex-1 text-sm">
               {canCreateSession ? (
                 <>
-                  <span className="font-medium">Free plan</span>
-                  <span className="text-muted-foreground"> · This is your one free session. You'll see the first {FREE_QUESTION_LIMIT} of your generated questions.</span>
+                  <span className="font-medium">Free plan includes 10 questions per month.</span>
+                  <span className="text-muted-foreground"> You'll see the first {FREE_QUESTION_LIMIT} of your generated questions.</span>
                 </>
               ) : (
                 <>
-                  <span className="font-medium">You've used your free session.</span>
-                  <span className="text-muted-foreground"> Upgrade to Pro to generate unlimited packs and unlock the full set of 50 questions.</span>
+                  <span className="font-medium">You've reached your free limit for this month.</span>
+                  <span className="text-muted-foreground"> Upgrade to Pro to unlock the full set of 50 questions.</span>
                 </>
               )}
             </div>

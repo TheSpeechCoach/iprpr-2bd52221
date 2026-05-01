@@ -84,7 +84,7 @@ const Landing = () => {
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
               { icon: FileText, title: "50 tailored questions", body: "Train with real interview questions, generated against your CV and the exact job spec." },
-              { icon: Target, title: "Training across key interview areas", body: "Behavioural, technical, leadership and commercial." },
+              { icon: Target, title: "Train across key areas", body: "Behavioural, technical, leadership and commercial." },
               { icon: Compass, title: "In-Depth Guidance", body: "What strong answers cover, why each question matters, and probing follow-ups." },
             ].map((f) => (
               <div key={f.title} className="bg-background p-10">

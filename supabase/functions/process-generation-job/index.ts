@@ -151,7 +151,8 @@ Deno.serve(async (req) => {
     if (sErr) throw sErr;
     if (!session) throw new Error(`prep_session ${sessionId} not found`);
 
-    const numQuestions = Math.max(10, Math.min(120, session.num_questions ?? 50));
+    // Hard product constraint: packs are exactly 50 questions. Never generate more.
+    const numQuestions = 50;
 
     // ===== TESTING_MODE: fast beta generation =====
     // In testing mode we generate a lean preview chunk first (no answer tiers,
@@ -186,42 +187,13 @@ Deno.serve(async (req) => {
     });
     console.log(`[worker] job ${jobId} marked processing`);
 
-    // Plan chunks. In testing mode we use a smaller chunk size for the
-    // background tail too, so progress updates flow more frequently.
-    // Private-beta chunking: 1–10 (fast), 11–25, 26–40, 41–50.
-    // Falls back gracefully if numQuestions != 50.
-    const PREVIEW_SIZE = Math.min(10, numQuestions);
-    const chunkRanges: Array<{ start: number; end: number; label: string }> = [];
-    if (PREVIEW_SIZE > 0) {
-      chunkRanges.push({
-        start: 1,
-        end: PREVIEW_SIZE,
-        label: "Preparing your first questions",
-      });
-    }
-    const tailBoundaries = [25, 40, 50];
-    let cursor = PREVIEW_SIZE + 1;
-    for (const boundary of tailBoundaries) {
-      if (cursor > numQuestions) break;
-      const end = Math.min(numQuestions, boundary);
-      if (end < cursor) continue;
-      chunkRanges.push({
-        start: cursor,
-        end,
-        label: `Building the rest in the background (${cursor}–${end})`,
-      });
-      cursor = end + 1;
-    }
-    // Safety: if numQuestions exceeds 50, chunk the remainder in 15s.
-    while (cursor <= numQuestions) {
-      const end = Math.min(numQuestions, cursor + 14);
-      chunkRanges.push({
-        start: cursor,
-        end,
-        label: `Building the rest in the background (${cursor}–${end})`,
-      });
-      cursor = end + 1;
-    }
+    // Fixed chunking for the 50-question pack: 1–10 (fast preview), 11–25, 26–40, 41–50.
+    const chunkRanges: Array<{ start: number; end: number; label: string }> = [
+      { start: 1,  end: 10, label: "Preparing your first questions" },
+      { start: 11, end: 25, label: "Building the rest in the background (11–25)" },
+      { start: 26, end: 40, label: "Building the rest in the background (26–40)" },
+      { start: 41, end: 50, label: "Building the rest in the background (41–50)" },
+    ];
 
     const systemPrompt = `You are a senior UK-based interview coach for iPrpr by The Speech Coach. You write in British English (en-GB).
 Your job: generate sharp, realistic, interview-grade questions tailored to a specific candidate and role.

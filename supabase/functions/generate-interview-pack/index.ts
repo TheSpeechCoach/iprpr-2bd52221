@@ -320,7 +320,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    const numQuestions = Math.max(10, Math.min(120, session.num_questions ?? 50));
+    // Hard product constraint: every pack is exactly 50 questions.
+    const numQuestions = 50;
 
     // Mark the session generating and wipe any prior artefacts so retries
     // don't duplicate questions.

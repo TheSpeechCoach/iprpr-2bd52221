@@ -52,6 +52,13 @@ const App = () => (
               <Route path="/prep/:id/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
               <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
               <Route path="/practise-delivery" element={<ProtectedRoute><PractiseDelivery /></ProtectedRoute>} />
+              <Route path="/admin" element={<AdminOverview />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/sessions" element={<AdminSessions />} />
+              <Route path="/admin/sessions/:id" element={<AdminSessionDetail />} />
+              <Route path="/admin/generation-jobs" element={<AdminGenerationJobs />} />
+              <Route path="/admin/feedback" element={<AdminFeedback />} />
+              <Route path="/admin/testing" element={<AdminTesting />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </WorkspaceProvider>

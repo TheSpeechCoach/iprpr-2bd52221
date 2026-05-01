@@ -19,6 +19,13 @@ import Upgrade from "./pages/Upgrade";
 import PractiseDelivery from "./pages/PractiseDelivery";
 import WorkspacePage from "./pages/Workspace";
 import AcceptInvite from "./pages/AcceptInvite";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSessions from "./pages/admin/AdminSessions";
+import AdminSessionDetail from "./pages/admin/AdminSessionDetail";
+import AdminGenerationJobs from "./pages/admin/AdminGenerationJobs";
+import AdminFeedback from "./pages/admin/AdminFeedback";
+import AdminTesting from "./pages/admin/AdminTesting";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -45,6 +52,13 @@ const App = () => (
               <Route path="/prep/:id/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
               <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
               <Route path="/practise-delivery" element={<ProtectedRoute><PractiseDelivery /></ProtectedRoute>} />
+              <Route path="/admin" element={<AdminOverview />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/sessions" element={<AdminSessions />} />
+              <Route path="/admin/sessions/:id" element={<AdminSessionDetail />} />
+              <Route path="/admin/generation-jobs" element={<AdminGenerationJobs />} />
+              <Route path="/admin/feedback" element={<AdminFeedback />} />
+              <Route path="/admin/testing" element={<AdminTesting />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </WorkspaceProvider>

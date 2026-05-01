@@ -181,29 +181,38 @@ export type Database = {
       }
       beta_feedback: {
         Row: {
+          admin_notes: string | null
           created_at: string
           id: string
           issue_type: string
           message: string
           page_url: string | null
+          status: string
+          updated_at: string
           user_email: string | null
           user_id: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           id?: string
           issue_type: string
           message: string
           page_url?: string | null
+          status?: string
+          updated_at?: string
           user_email?: string | null
           user_id: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           id?: string
           issue_type?: string
           message?: string
           page_url?: string | null
+          status?: string
+          updated_at?: string
           user_email?: string | null
           user_id?: string
         }
@@ -1400,6 +1409,39 @@ export type Database = {
     }
     Functions: {
       accept_workspace_invite: { Args: { _token: string }; Returns: Json }
+      admin_list_sessions: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          candidate_name: string
+          company_name: string
+          created_at: string
+          generation_progress: number
+          generation_status: string
+          question_count: number
+          session_id: string
+          status: string
+          target_role: string
+          title: string
+          user_email: string
+          user_id: string
+        }[]
+      }
+      admin_list_users: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          email: string
+          full_name: string
+          last_activity: string
+          override_plan: string
+          plan_live: string
+          plan_sandbox: string
+          saved_answers_count: number
+          sessions_count: number
+          signup_date: string
+          user_id: string
+        }[]
+      }
+      admin_overview_metrics: { Args: never; Returns: Json }
       current_user_workspaces: { Args: { _user_id: string }; Returns: string[] }
       get_user_plan: {
         Args: { _env?: string; _user_id: string }

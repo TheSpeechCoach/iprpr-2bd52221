@@ -167,8 +167,24 @@ const PrepWizard = () => {
       setStep(2);
       return;
     }
-    if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim()) {
-      toast({ title: "Add some career evidence", description: "Upload your CV, paste it as text, or add a LinkedIn summary.", variant: "destructive" });
+    const hasLinkedinUrl = /^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(form.linkedin_url.trim());
+    if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim() && !hasLinkedinUrl) {
+      toast({
+        title: "Add your details",
+        description: "Add your LinkedIn profile, upload your CV, or paste your CV text.",
+        variant: "destructive",
+      });
+      setStep(1);
+      return;
+    }
+    // If only a LinkedIn URL is provided, we can't read it server-side yet.
+    // Ask the user to add CV evidence so generation has something to tailor against.
+    if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim() && hasLinkedinUrl) {
+      toast({
+        title: "We couldn't read that profile",
+        description: "Please upload your CV or paste your details so we can tailor your questions.",
+        variant: "destructive",
+      });
       setStep(1);
       return;
     }
@@ -342,7 +358,7 @@ const PrepWizard = () => {
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-xl">
             {step === 0 && "A few details so we can tailor the questions to your level and the role you're going for."}
-            {step === 1 && "Upload a CV, paste it, or share a LinkedIn summary. The more we know, the sharper the questions."}
+            {step === 1 && "Add your LinkedIn profile, upload your CV, or paste your CV text. The more we know, the sharper the questions."}
             {step === 2 && "Paste the job description, share a link, or describe the role in your own words."}
             {step === 3 && "Optional. Adjust difficulty, balance, and the style of the interview you expect."}
             {step === 4 && "Have a quick look. You can come back and create more sessions any time."}
@@ -442,21 +458,42 @@ const PrepWizard = () => {
         )}
 
         {step === 1 && (
-          <div className="space-y-5">
-            <Field label="Upload your CV" hint="PDF or DOCX, up to 10 MB. We'll extract the text on our server.">
-              <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
-              {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
-            </Field>
-            <div className="text-[11px] uppercase tracking-widest text-muted-foreground text-center">or</div>
-            <Field label="Paste CV text" hint="Use this if you don't have a file handy.">
-              <Textarea value={form.cv_text} onChange={(e) => update("cv_text", e.target.value)} rows={8} placeholder="Paste the contents of your CV here…" />
-            </Field>
-            <Field label="LinkedIn summary" hint="Optional. Paste your About section or recent role summaries.">
-              <Textarea value={form.linkedin_text} onChange={(e) => update("linkedin_text", e.target.value)} rows={4} placeholder="Optional — adds extra context the CV may not capture…" />
-            </Field>
-            <Field label="LinkedIn URL" hint="Stored for your reference only — we don't scrape LinkedIn.">
-              <Input value={form.linkedin_url} onChange={(e) => update("linkedin_url", e.target.value)} placeholder="https://linkedin.com/in/your-profile" />
-            </Field>
+          <div className="space-y-6">
+            <div className="border border-border p-5 space-y-4">
+              <div>
+                <h2 className="font-display text-lg font-semibold">Add your LinkedIn profile</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use your LinkedIn profile for the fastest setup.
+                </p>
+              </div>
+              <Field label="LinkedIn URL">
+                <Input
+                  type="url"
+                  value={form.linkedin_url}
+                  onChange={(e) => update("linkedin_url", e.target.value)}
+                  placeholder="https://www.linkedin.com/in/your-profile"
+                />
+              </Field>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h2 className="font-display text-base font-semibold">Or add your CV</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Either option works. Use whichever you have to hand.
+                </p>
+              </div>
+              <Field label="Upload CV" hint="PDF or DOCX, up to 10 MB.">
+                <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
+                {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
+              </Field>
+              <Field label="Paste CV text" hint="Use this if you don't have a file handy.">
+                <Textarea value={form.cv_text} onChange={(e) => update("cv_text", e.target.value)} rows={8} placeholder="Paste the contents of your CV here…" />
+              </Field>
+              <Field label="LinkedIn summary (optional)" hint="Paste your About section if you want to add extra context.">
+                <Textarea value={form.linkedin_text} onChange={(e) => update("linkedin_text", e.target.value)} rows={3} placeholder="Optional — adds extra context the CV may not capture…" />
+              </Field>
+            </div>
           </div>
         )}
 
@@ -574,7 +611,7 @@ const PrepWizard = () => {
                 <li>· <span className="text-foreground font-medium">{form.num_questions}</span> tailored questions</li>
                 <li>· Difficulty: <span className="text-foreground">{form.difficulty}</span> · Tone: <span className="text-foreground">{form.output_tone}</span> · Style: <span className="text-foreground">{form.interview_style}</span></li>
                 <li>· For: <span className="text-foreground">{form.target_role || "—"}</span>{form.company_name ? <> at <span className="text-foreground">{form.company_name}</span></> : null}</li>
-                <li>· CV: <span className="text-foreground">{cvFile ? cvFile.name : (form.cv_text.trim() ? "pasted text" : (form.linkedin_text.trim() ? "LinkedIn summary" : "—"))}</span></li>
+                <li>· Profile: <span className="text-foreground">{form.linkedin_url.trim() ? "LinkedIn profile" : (cvFile ? cvFile.name : (form.cv_text.trim() ? "pasted CV text" : (form.linkedin_text.trim() ? "LinkedIn summary" : "—")))}</span></li>
               </ul>
             </div>
             <p className="text-xs text-muted-foreground">

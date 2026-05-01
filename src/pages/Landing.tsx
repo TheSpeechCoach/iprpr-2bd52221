@@ -25,6 +25,9 @@ const Landing = () => {
             <p className="mt-3 md:mt-4 max-w-xl text-base md:text-lg text-muted-foreground whitespace-pre-line">
               {BRAND.tagline}
             </p>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground/80">
+              Link your LinkedIn profile or upload your CV to get started.
+            </p>
             <div className="mt-6 md:mt-10 flex flex-wrap gap-3">
               <Link to="/auth">
                 <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
@@ -106,7 +109,7 @@ const Landing = () => {
           </div>
           <div className="mt-16 grid md:grid-cols-5 gap-12">
             {[
-              ["01", "Upload", "Drop your CV in PDF or DOCX. We extract it securely."],
+              ["01", "Add your details", "Link your LinkedIn profile, or upload your CV in PDF or DOCX."],
               ["02", "Add the role", "Paste the job spec, link to a public posting, or describe it."],
               ["03", "Analyse", "We identify what matters most — your strengths, gaps, and likely focus areas."],
               ["04", "Train", "Work through 50 tailored questions, structured for the role and your level."],

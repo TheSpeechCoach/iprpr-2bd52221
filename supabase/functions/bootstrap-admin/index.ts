@@ -18,8 +18,13 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const TESTING_MODE = (Deno.env.get("TESTING_MODE") ?? "false").toLowerCase() === "true";
-  const OWNER_ADMIN_EMAIL = (Deno.env.get("OWNER_ADMIN_EMAIL") ?? "").trim().toLowerCase();
+  const TESTING_MODE_RAW = Deno.env.get("TESTING_MODE") ?? "false";
+  const TESTING_MODE = TESTING_MODE_RAW.trim().toLowerCase() === "true";
+  const OWNER_ADMIN_EMAIL_RAW = Deno.env.get("OWNER_ADMIN_EMAIL") ?? "";
+  const OWNER_ADMIN_EMAIL = OWNER_ADMIN_EMAIL_RAW.trim().toLowerCase();
+
+  console.log("[bootstrap-admin] TESTING_MODE raw:", JSON.stringify(TESTING_MODE_RAW), "parsed:", TESTING_MODE);
+  console.log("[bootstrap-admin] OWNER_ADMIN_EMAIL raw:", JSON.stringify(OWNER_ADMIN_EMAIL_RAW), "normalized:", JSON.stringify(OWNER_ADMIN_EMAIL));
 
   if (!TESTING_MODE) {
     return json({ error: "Bootstrap is disabled (TESTING_MODE is not 'true' on the edge function secrets)" }, 403);

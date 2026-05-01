@@ -11,7 +11,8 @@ export const BRAND = {
   supportEmail: "support@thespeech.coach",
   line: "Aim. Prepare. Land.",
   tagline: `Train your interview performance.
-Upload your CV. Add the job spec.
+Link your LinkedIn profile or upload your CV.
+Add the job spec.
 Practise real interview questions.
 Get clear, structured feedback.`,
 } as const;

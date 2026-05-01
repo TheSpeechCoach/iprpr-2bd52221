@@ -55,22 +55,28 @@ export type Database = {
       }
       admin_logs: {
         Row: {
+          action: string
           created_at: string
           event: string
           id: string
           metadata: Json | null
+          user_id: string | null
         }
         Insert: {
+          action: string
           created_at?: string
           event: string
           id?: string
           metadata?: Json | null
+          user_id?: string | null
         }
         Update: {
+          action?: string
           created_at?: string
           event?: string
           id?: string
           metadata?: Json | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -915,6 +921,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          role: string | null
           updated_at: string
         }
         Insert: {
@@ -926,6 +933,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          role?: string | null
           updated_at?: string
         }
         Update: {
@@ -937,6 +945,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          role?: string | null
           updated_at?: string
         }
         Relationships: []

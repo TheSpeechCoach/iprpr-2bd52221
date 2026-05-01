@@ -611,7 +611,7 @@ const PrepWizard = () => {
                 <li>· <span className="text-foreground font-medium">{form.num_questions}</span> tailored questions</li>
                 <li>· Difficulty: <span className="text-foreground">{form.difficulty}</span> · Tone: <span className="text-foreground">{form.output_tone}</span> · Style: <span className="text-foreground">{form.interview_style}</span></li>
                 <li>· For: <span className="text-foreground">{form.target_role || "—"}</span>{form.company_name ? <> at <span className="text-foreground">{form.company_name}</span></> : null}</li>
-                <li>· CV: <span className="text-foreground">{cvFile ? cvFile.name : (form.cv_text.trim() ? "pasted text" : (form.linkedin_text.trim() ? "LinkedIn summary" : "—"))}</span></li>
+                <li>· Profile: <span className="text-foreground">{form.linkedin_url.trim() ? "LinkedIn profile" : (cvFile ? cvFile.name : (form.cv_text.trim() ? "pasted CV text" : (form.linkedin_text.trim() ? "LinkedIn summary" : "—")))}</span></li>
               </ul>
             </div>
             <p className="text-xs text-muted-foreground">

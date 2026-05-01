@@ -358,7 +358,7 @@ const PrepWizard = () => {
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-xl">
             {step === 0 && "A few details so we can tailor the questions to your level and the role you're going for."}
-            {step === 1 && "Upload a CV, paste it, or share a LinkedIn summary. The more we know, the sharper the questions."}
+            {step === 1 && "Add your LinkedIn profile, upload your CV, or paste your CV text. The more we know, the sharper the questions."}
             {step === 2 && "Paste the job description, share a link, or describe the role in your own words."}
             {step === 3 && "Optional. Adjust difficulty, balance, and the style of the interview you expect."}
             {step === 4 && "Have a quick look. You can come back and create more sessions any time."}

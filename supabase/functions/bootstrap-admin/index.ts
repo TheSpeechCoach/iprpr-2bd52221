@@ -49,9 +49,11 @@ Deno.serve(async (req) => {
       user_id: userId,
       action: "admin_bootstrap_denied",
       event: "admin_bootstrap_denied",
-      metadata: { actor: userId, email: userEmail || null },
+      metadata: { actor: userId, email: userEmail || null, expected: OWNER_ADMIN_EMAIL },
     });
-    return json({ error: "Forbidden" }, 403);
+    return json({
+      error: `Forbidden: signed-in email (${userEmail || "none"}) does not match OWNER_ADMIN_EMAIL secret.`,
+    }, 403);
   }
 
   const { error: profileErr } = await admin

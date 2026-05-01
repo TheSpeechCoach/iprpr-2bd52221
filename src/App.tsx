@@ -19,6 +19,13 @@ import Upgrade from "./pages/Upgrade";
 import PractiseDelivery from "./pages/PractiseDelivery";
 import WorkspacePage from "./pages/Workspace";
 import AcceptInvite from "./pages/AcceptInvite";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSessions from "./pages/admin/AdminSessions";
+import AdminSessionDetail from "./pages/admin/AdminSessionDetail";
+import AdminGenerationJobs from "./pages/admin/AdminGenerationJobs";
+import AdminFeedback from "./pages/admin/AdminFeedback";
+import AdminTesting from "./pages/admin/AdminTesting";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();

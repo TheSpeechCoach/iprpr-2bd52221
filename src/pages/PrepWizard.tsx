@@ -458,21 +458,42 @@ const PrepWizard = () => {
         )}
 
         {step === 1 && (
-          <div className="space-y-5">
-            <Field label="Upload your CV" hint="PDF or DOCX, up to 10 MB. We'll extract the text on our server.">
-              <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
-              {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
-            </Field>
-            <div className="text-[11px] uppercase tracking-widest text-muted-foreground text-center">or</div>
-            <Field label="Paste CV text" hint="Use this if you don't have a file handy.">
-              <Textarea value={form.cv_text} onChange={(e) => update("cv_text", e.target.value)} rows={8} placeholder="Paste the contents of your CV here…" />
-            </Field>
-            <Field label="LinkedIn summary" hint="Optional. Paste your About section or recent role summaries.">
-              <Textarea value={form.linkedin_text} onChange={(e) => update("linkedin_text", e.target.value)} rows={4} placeholder="Optional — adds extra context the CV may not capture…" />
-            </Field>
-            <Field label="LinkedIn URL" hint="Stored for your reference only — we don't scrape LinkedIn.">
-              <Input value={form.linkedin_url} onChange={(e) => update("linkedin_url", e.target.value)} placeholder="https://linkedin.com/in/your-profile" />
-            </Field>
+          <div className="space-y-6">
+            <div className="border border-border p-5 space-y-4">
+              <div>
+                <h2 className="font-display text-lg font-semibold">Add your LinkedIn profile</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use your LinkedIn profile for the fastest setup.
+                </p>
+              </div>
+              <Field label="LinkedIn URL">
+                <Input
+                  type="url"
+                  value={form.linkedin_url}
+                  onChange={(e) => update("linkedin_url", e.target.value)}
+                  placeholder="https://www.linkedin.com/in/your-profile"
+                />
+              </Field>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h2 className="font-display text-base font-semibold">Or add your CV</h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Either option works. Use whichever you have to hand.
+                </p>
+              </div>
+              <Field label="Upload CV" hint="PDF or DOCX, up to 10 MB.">
+                <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
+                {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
+              </Field>
+              <Field label="Paste CV text" hint="Use this if you don't have a file handy.">
+                <Textarea value={form.cv_text} onChange={(e) => update("cv_text", e.target.value)} rows={8} placeholder="Paste the contents of your CV here…" />
+              </Field>
+              <Field label="LinkedIn summary (optional)" hint="Paste your About section if you want to add extra context.">
+                <Textarea value={form.linkedin_text} onChange={(e) => update("linkedin_text", e.target.value)} rows={3} placeholder="Optional — adds extra context the CV may not capture…" />
+              </Field>
+            </div>
           </div>
         )}
 

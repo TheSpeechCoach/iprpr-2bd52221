@@ -11,21 +11,21 @@ const Landing = () => {
 
       {/* Hero */}
       <section className="border-b border-border">
-        <div className="container-tight py-16 md:py-32 grid grid-cols-5 gap-6 md:gap-16 items-start lg:items-center">
+        <div className="container-tight py-10 md:py-20 lg:py-32 grid grid-cols-5 gap-4 md:gap-10 lg:gap-16 items-start lg:items-center">
           <div className="col-span-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-6">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-4 md:mb-6">
               From The Speech Coach
             </div>
-            <h1 className="font-display text-5xl md:text-7xl font-semibold leading-[0.95] text-balance">
+            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-semibold leading-[0.95] text-balance">
               {BRAND.appName}.
             </h1>
-            <p className="mt-6 max-w-xl text-2xl font-display font-medium text-foreground">
+            <p className="mt-4 md:mt-6 max-w-xl text-xl md:text-2xl font-display font-medium text-foreground">
               {BRAND.line}
             </p>
-            <p className="mt-4 max-w-xl text-lg text-muted-foreground whitespace-pre-line">
+            <p className="mt-3 md:mt-4 max-w-xl text-base md:text-lg text-muted-foreground whitespace-pre-line">
               {BRAND.tagline}
             </p>
-            <div className="mt-10 flex flex-wrap gap-3">
+            <div className="mt-6 md:mt-10 flex flex-wrap gap-3">
               <Link to="/auth">
                 <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
                   Start preparing <ArrowRight className="ml-2 h-4 w-4" />
@@ -38,7 +38,7 @@ const Landing = () => {
           </div>
 
           {/* Right symbol panel */}
-          <div className="col-span-2 flex flex-col items-center justify-start lg:justify-center gap-3 md:pl-8 -ml-2 md:ml-0 pt-2 lg:pt-0">
+          <div className="col-span-2 flex flex-col items-center justify-start lg:justify-center gap-3 md:pl-8 -ml-2 md:ml-0 pt-7 md:pt-9 lg:pt-0">
             <div
               className="relative aspect-square w-full max-w-[110px] md:max-w-[140px] lg:max-w-[260px] flex items-center justify-center opacity-90"
               aria-hidden="true"

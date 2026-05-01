@@ -47,7 +47,11 @@ Deno.serve(async (req) => {
   if (userErr || !userData?.user?.id) return json({ error: "Unauthorized" }, 401);
 
   const userId = userData.user.id;
-  const userEmail = (userData.user.email ?? "").trim().toLowerCase();
+  const userEmailRaw = userData.user.email ?? "";
+  const userEmail = userEmailRaw.trim().toLowerCase();
+
+  console.log("[bootstrap-admin] user.email raw:", JSON.stringify(userEmailRaw), "normalized:", JSON.stringify(userEmail));
+  console.log("[bootstrap-admin] comparing:", JSON.stringify(userEmail), "===", JSON.stringify(OWNER_ADMIN_EMAIL), "→", userEmail === OWNER_ADMIN_EMAIL);
 
   if (!userEmail || userEmail !== OWNER_ADMIN_EMAIL) {
     await admin.from("admin_logs").insert({
@@ -58,6 +62,16 @@ Deno.serve(async (req) => {
     });
     return json({
       error: `Forbidden: signed-in email (${userEmail || "none"}) does not match OWNER_ADMIN_EMAIL secret.`,
+      debug: {
+        testing_mode: TESTING_MODE,
+        user_email_raw: userEmailRaw,
+        user_email_normalized: userEmail,
+        owner_email_raw: OWNER_ADMIN_EMAIL_RAW,
+        owner_email_normalized: OWNER_ADMIN_EMAIL,
+        user_email_length: userEmail.length,
+        owner_email_length: OWNER_ADMIN_EMAIL.length,
+        match: userEmail === OWNER_ADMIN_EMAIL,
+      },
     }, 403);
   }
 

@@ -127,7 +127,7 @@ export const InvitesManager = ({ workspaceId, userId, inviterRole }: Props) => {
       const { data: res } = await supabase.functions.invoke("send-workspace-invite", {
         body: { inviteId: data.id },
       });
-      emailed = !!(res && (res as any).sent);
+      emailed = !!(res && (res as { sent?: boolean }).sent);
     } catch {
       emailed = false;
     }

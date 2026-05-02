@@ -16,8 +16,9 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { track } from "@/lib/analytics";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, Lock } from "lucide-react";
+import { INTERVIEW_TRACKS, type InterviewTrack } from "@/config/tracks";
 
-const STEPS = ["Candidate", "Career", "Job", "Parameters", "Train"] as const;
+const STEPS = ["Track", "Candidate", "Career", "Job", "Parameters", "Train"] as const;
 
 const PrepWizard = () => {
   const { user } = useAuth();
@@ -57,6 +58,7 @@ const PrepWizard = () => {
   );
 
   const [form, setForm] = useState({
+    interview_track: "professional" as InterviewTrack,
     full_name: "",
     candidate_current_role: "",
     years_experience: "",

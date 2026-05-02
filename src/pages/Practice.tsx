@@ -33,6 +33,10 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import {
+  AnswerSupportCascade,
+  type CascadeStep,
+} from "@/components/practice/AnswerSupportCascade";
 
 interface Question {
   id: string;

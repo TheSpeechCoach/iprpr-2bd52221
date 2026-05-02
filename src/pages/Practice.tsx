@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -123,7 +124,8 @@ const Practice = () => {
   const [mode, setMode] = useState<PracticeMode>("category");
   const [setupCategory, setSetupCategory] = useState<string>("all");
   const [setupCount, setSetupCount] = useState<number>(10);
-  const [setupTimer, setSetupTimer] = useState<number>(60);
+  // Target answer length used when Timed mode is on (default 90s).
+  const [setupTimer, setSetupTimer] = useState<number>(90);
 
   // Practice run state
   const [orderedIds, setOrderedIds] = useState<string[]>([]);
@@ -138,13 +140,21 @@ const Practice = () => {
   const autosaveTimerRef = useRef<number | null>(null);
 
   // Timer
-  const [duration, setDuration] = useState(60);
-  const [remaining, setRemaining] = useState(60);
+  const [timedMode, setTimedMode] = useState(false);
+  const [duration, setDuration] = useState(90);
+  const [remaining, setRemaining] = useState(90);
   const [running, setRunning] = useState(false);
   const startedAtRef = useRef<number | null>(null);
   const elapsedRef = useRef(0);
 
+  // Free evaluation allowance (server is the source of truth — this is for UI only).
+  const FREE_EVALUATION_LIMIT = 3;
+  const [freeEvalsUsed, setFreeEvalsUsed] = useState<number>(0);
+
   const isCoachPlus = plan === "coach_plus";
+  const isPaid = plan === "pro" || plan === "coach_plus";
+  const freeEvalsRemaining = Math.max(0, FREE_EVALUATION_LIMIT - freeEvalsUsed);
+  const canEvaluate = isPaid || freeEvalsRemaining > 0;
 
   useEffect(() => {
     if (!id || !user) return;
@@ -185,6 +195,22 @@ const Practice = () => {
         if (!cm[row.question_id]) cm[row.question_id] = row;
       });
       setScoresMap(cm);
+
+      // Free monthly evaluation usage (per calendar month, UTC).
+      const today = new Date();
+      const periodStart = new Date(
+        Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1)
+      )
+        .toISOString()
+        .slice(0, 10);
+      const { data: usageRow } = await supabase
+        .from("answer_evaluation_usage")
+        .select("evaluations_used")
+        .eq("user_id", user.id)
+        .eq("period_start", periodStart)
+        .maybeSingle();
+      if (!cancelled) setFreeEvalsUsed(usageRow?.evaluations_used ?? 0);
+
       setLoading(false);
 
       // If URL has ?run=1, allow auto-start with current settings
@@ -229,9 +255,9 @@ const Practice = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.id]);
 
-  // Timer tick (only when timer is enabled, duration > 0)
+  // Timer tick (only when Timed mode is on, timer enabled, and running)
   useEffect(() => {
-    if (!running || duration === 0) return;
+    if (!timedMode || !running || duration === 0) return;
     const t = setInterval(() => {
       setRemaining((r) => {
         if (r <= 1) {
@@ -244,10 +270,20 @@ const Practice = () => {
       elapsedRef.current += 1;
     }, 1000);
     return () => clearInterval(t);
-  }, [running, duration]);
+  }, [running, duration, timedMode]);
+
+  // When Timed mode is toggled off, stop and reset countdown.
+  useEffect(() => {
+    if (!timedMode) {
+      setRunning(false);
+      setRemaining(duration);
+      elapsedRef.current = 0;
+      startedAtRef.current = null;
+    }
+  }, [timedMode, duration]);
 
   const startTimer = () => {
-    if (duration === 0) return;
+    if (duration === 0 || !timedMode) return;
     if (!running) {
       if (startedAtRef.current === null) startedAtRef.current = Date.now();
       setRunning(true);
@@ -414,15 +450,18 @@ const Practice = () => {
     toast({ title: "Attempt saved" });
   };
 
-  // ---------- Coach+ scoring ----------
+  // ---------- Answer evaluation (Free: 3/month, Paid: existing access) ----------
   const scoreAnswer = async () => {
     if (!current || !id) return;
-    if (!isCoachPlus) {
-      toast({ title: "Answer scoring is available on Coach+." });
+    if (!isPaid && freeEvalsRemaining <= 0) {
+      toast({
+        title: "You've used your 3 free evaluations this month.",
+        description: "Upgrade to continue receiving AI feedback.",
+      });
       return;
     }
     if (!answer || answer.trim().length < 10) {
-      toast({ title: "Write a longer answer before scoring." });
+      toast({ title: "Write a longer answer before getting feedback." });
       return;
     }
     setScoring(true);
@@ -440,7 +479,7 @@ const Practice = () => {
         },
       });
       if (error) {
-        const msg = (error as any)?.context?.error || error.message || "Scoring failed";
+        const msg = (error as any)?.context?.error || error.message || "Couldn't get feedback";
         toast({ title: msg, variant: "destructive" });
         return;
       }
@@ -450,7 +489,10 @@ const Practice = () => {
       }
       if (data?.score) {
         setScoresMap((m) => ({ ...m, [current.id]: data.score as AnswerScore }));
-        toast({ title: "Coach feedback ready" });
+        if (typeof data.evaluations_remaining === "number") {
+          setFreeEvalsUsed(FREE_EVALUATION_LIMIT - data.evaluations_remaining);
+        }
+        toast({ title: "Feedback ready" });
       }
     } finally {
       setScoring(false);
@@ -625,11 +667,6 @@ const Practice = () => {
               {session?.title}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={restartShuffled} className="gap-1.5">
-              <RotateCcw className="h-3.5 w-3.5" /> Restart shuffled
-            </Button>
-          </div>
         </div>
 
         {/* Overall progress */}
@@ -721,9 +758,9 @@ const Practice = () => {
                 placeholder="Don't copy the model answer. Write what you would actually say…"
                 rows={7}
               />
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {/* Primary action */}
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={() => persistAnswer(answer)}
                   disabled={savingAnswer || !answer.trim()}
@@ -731,9 +768,11 @@ const Practice = () => {
                   Save answer
                 </Button>
 
-                {isCoachPlus ? (
+                {/* Feedback CTA — clearer wording, gated by allowance, not by plan */}
+                {canEvaluate ? (
                   <Button
                     size="sm"
+                    variant="outline"
                     onClick={scoreAnswer}
                     disabled={scoring || !answer.trim()}
                     className="gap-1.5"
@@ -743,22 +782,30 @@ const Practice = () => {
                     ) : (
                       <Sparkles className="h-3.5 w-3.5" />
                     )}
-                    Evaluate my answer
+                    {isPaid ? "Get feedback on this answer" : "Get free feedback"}
                   </Button>
                 ) : (
                   <Link to="/upgrade">
                     <Button size="sm" variant="outline" className="gap-1.5">
                       <Lock className="h-3.5 w-3.5" />
-                      Evaluate my answer
+                      Upgrade for more feedback
                     </Button>
                   </Link>
                 )}
-                {!isCoachPlus && (
-                  <span className="text-[11px] text-muted-foreground">
-                    Answer evaluation is available on Coach+.
-                  </span>
-                )}
               </div>
+              <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+                We'll assess structure, clarity, relevance and delivery strength.
+                {!isPaid && (
+                  <>
+                    {" "}
+                    {freeEvalsRemaining > 0
+                      ? freeEvalsUsed === 0
+                        ? "You have 3 free answer evaluations each month."
+                        : `You have ${freeEvalsRemaining} free evaluation${freeEvalsRemaining === 1 ? "" : "s"} left this month.`
+                      : "You've used your 3 free evaluations this month. Upgrade to continue receiving AI feedback."}
+                  </>
+                )}
+              </p>
             </div>
 
             {/* Coach feedback */}
@@ -835,87 +882,126 @@ const Practice = () => {
               />
             </div>
 
-            {/* Navigation */}
+            {/* Navigation — minimal: only Next question is primary */}
             <div className="flex flex-wrap items-center gap-2 pt-2">
+              <Button onClick={next} className="gap-1.5">
+                Next question <ArrowRight className="h-4 w-4" />
+              </Button>
               <Button variant="outline" onClick={prev} className="gap-1.5">
                 <ArrowLeft className="h-4 w-4" /> Previous
               </Button>
-              <Button variant="outline" onClick={() => goTo(Math.floor(Math.random() * queue.length))} className="gap-1.5">
-                <Shuffle className="h-4 w-4" /> Random
-              </Button>
-              <Button variant="outline" onClick={next} className="gap-1.5">
-                Next <ArrowRight className="h-4 w-4" />
-              </Button>
+
               <div className="flex-1" />
-              <Button
-                variant="ghost"
-                onClick={saveAttempt}
-                disabled={!answer && selfRating === null && confidence === null}
-              >
-                Save attempt
-              </Button>
-              <Button
-                onClick={async () => {
-                  await saveAttempt();
-                  next();
-                }}
-              >
-                Save & next
-              </Button>
+
+              {/* All other actions live behind "More options" to reduce clutter */}
+              <details className="ml-auto group">
+                <summary className="list-none cursor-pointer text-xs text-muted-foreground hover:text-foreground select-none">
+                  More options
+                </summary>
+                <div className="mt-3 flex flex-wrap items-center gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goTo(Math.floor(Math.random() * queue.length))}
+                    className="gap-1.5"
+                  >
+                    <Shuffle className="h-3.5 w-3.5" /> Random question
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={restartShuffled}
+                    className="gap-1.5"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" /> Restart shuffled
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={saveAttempt}
+                    disabled={!answer && selfRating === null && confidence === null}
+                  >
+                    Save attempt
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      await saveAttempt();
+                      next();
+                    }}
+                  >
+                    Save &amp; next
+                  </Button>
+                </div>
+              </details>
             </div>
           </div>
 
-          {/* Timer sidebar */}
+          {/* Timer sidebar — optional, off by default */}
           <aside className="lg:sticky lg:top-6 self-start">
-            {duration > 0 ? (
-              <div className="border border-border bg-card p-6">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-1.5">
-                  <TimerIcon className="h-3 w-3" /> Timer
+            <div className="border border-border bg-card p-6">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-1.5">
+                    <TimerIcon className="h-3 w-3" /> Timed answer practice
+                  </div>
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    Use this when you want to practise concise answers under
+                    interview pressure.
+                  </p>
                 </div>
-                <div
-                  className={cn(
-                    "font-display text-5xl font-semibold tabular-nums text-center my-2 transition-colors",
-                    remaining === 0 && "text-destructive"
-                  )}
-                >
-                  {formatTime(remaining)}
-                </div>
-                <Progress value={timerProgress} className="h-1 mb-5" />
+                <label className="flex items-center gap-2 shrink-0 pt-0.5">
+                  <span className="text-[11px] text-muted-foreground">Timed mode</span>
+                  <Switch
+                    checked={timedMode}
+                    onCheckedChange={setTimedMode}
+                    aria-label="Toggle timed mode"
+                  />
+                </label>
+              </div>
 
-                <div className="flex justify-center gap-2 mb-2">
-                  {!running ? (
-                    <Button onClick={startTimer} size="sm" className="gap-1.5">
-                      <Play className="h-3.5 w-3.5" /> Start
-                    </Button>
-                  ) : (
+              {timedMode && duration > 0 && (
+                <>
+                  <div className="text-[11px] text-muted-foreground mt-4 mb-1 text-center">
+                    Target: {duration} seconds
+                  </div>
+                  <div
+                    className={cn(
+                      "font-display text-5xl font-semibold tabular-nums text-center my-1 transition-colors",
+                      remaining === 0 && "text-destructive"
+                    )}
+                  >
+                    {formatTime(remaining)}
+                  </div>
+                  <Progress value={timerProgress} className="h-1 mb-5" />
+
+                  <div className="flex justify-center gap-2 mb-1">
+                    {!running ? (
+                      <Button onClick={startTimer} size="sm" className="gap-1.5">
+                        <Play className="h-3.5 w-3.5" /> Start
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={pauseTimer}
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                      >
+                        <Pause className="h-3.5 w-3.5" /> Pause
+                      </Button>
+                    )}
                     <Button
-                      onClick={pauseTimer}
+                      onClick={resetTimer}
                       size="sm"
-                      variant="outline"
+                      variant="ghost"
                       className="gap-1.5"
                     >
-                      <Pause className="h-3.5 w-3.5" /> Pause
+                      <RotateCcw className="h-3.5 w-3.5" /> Reset
                     </Button>
-                  )}
-                  <Button
-                    onClick={resetTimer}
-                    size="sm"
-                    variant="ghost"
-                    className="gap-1.5"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" /> Reset
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="border border-border bg-card p-6 text-sm text-muted-foreground">
-                Timer is off for this run.
-              </div>
-            )}
-
-            <div className="mt-4 text-[11px] text-muted-foreground leading-relaxed">
-              Practise out loud. Use the timer like a real interview, then capture
-              what you'd refine.
+                  </div>
+                </>
+              )}
             </div>
           </aside>
         </div>

@@ -113,6 +113,33 @@ export type Database = {
         }
         Relationships: []
       }
+      answer_evaluation_usage: {
+        Row: {
+          created_at: string
+          evaluations_used: number
+          id: string
+          period_start: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          evaluations_used?: number
+          id?: string
+          period_start: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          evaluations_used?: number
+          id?: string
+          period_start?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       answer_scores: {
         Row: {
           authenticity_score: number | null

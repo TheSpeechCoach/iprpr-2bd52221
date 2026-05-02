@@ -193,6 +193,7 @@ const Results = () => {
     progress: number;
     stage: string | null;
     error_message: string | null;
+    created_at: string | null;
   } | null>(null);
   const [questionsGenerated, setQuestionsGenerated] = useState(0);
   const [processingStartedAt, setProcessingStartedAt] = useState<number | null>(null);
@@ -264,7 +265,7 @@ const Results = () => {
       // Poll the latest generation_jobs row for this session.
       const { data: j } = await supabase
         .from("generation_jobs")
-        .select("status, progress, stage, error_message")
+        .select("status, progress, stage, error_message, created_at")
         .eq("prep_session_id", id)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -793,15 +794,15 @@ const Results = () => {
   }
 
   // ----- Stuck-queued state -----
-  // If the worker never moved the job from `queued` to `processing`, the
-  // fire-and-forget invoke from `generate-interview-pack` likely failed.
-  // Detect this when the job has been queued for >2 minutes and offer a
-  // manual retry instead of leaving the user waiting indefinitely.
-  const stuckQueued =
+  // If the worker never moved the job from `queued` to `processing` within
+  // 2 minutes of the job's created_at, the fire-and-forget invoke from
+  // `generate-interview-pack` likely failed. Offer a manual retry instead
+  // of leaving the user waiting indefinitely. Do not auto-retry.
+  const isQueuedTooLong =
     job?.status === "queued" &&
-    processingStartedAt !== null &&
-    nowTs - processingStartedAt > 120_000;
-  if (stuckQueued) {
+    !!job?.created_at &&
+    Date.now() - new Date(job.created_at as string).getTime() > 120000;
+  if (isQueuedTooLong) {
     return (
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
@@ -809,7 +810,7 @@ const Results = () => {
           <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Generation stalled</div>
           <h1 className="mt-2 font-display text-3xl font-semibold">Generation has not started</h1>
           <p className="mt-3 text-muted-foreground max-w-md">
-            Generation has not started. Please retry.
+            This has taken longer than expected. Retry generation to start again.
           </p>
           <div className="mt-8 flex gap-3">
             <Button onClick={retryGeneration} disabled={retrying} className="bg-accent hover:bg-accent/90 text-accent-foreground">

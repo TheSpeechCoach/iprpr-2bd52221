@@ -27,55 +27,68 @@ interface Tier {
   key: Plan;
   name: string;
   price: string;
-  tagline: string;
+  positioning: string;
+  ctaLabel: string;
   priceId?: string;
   features: string[];
+  footnote?: string;
   highlight?: boolean;
+  premium?: boolean;
 }
+
+const TIER_BENEFITS = {
+  free: [
+    "10 interview questions per month",
+    "2 answer evaluations per month",
+    "Understand why each question is asked",
+    "What strong answers should cover",
+  ],
+  pro: [
+    "50 interview questions",
+    "Unlimited answer evaluations",
+    "Clear answer structures and guidance",
+    "Saved answers and progress tracking",
+    "Timed practice mode",
+    "Structured feedback on clarity, relevance and strength",
+  ],
+  coach: [
+    "Everything in Pro",
+    "Deeper coaching insights",
+    "Feedback on tone, presence and delivery",
+    "Strategic positioning for senior roles",
+    "Sharper critique and ‘coach’s notes’",
+  ],
+} as const;
 
 const TIERS: Tier[] = [
   {
     key: "free",
     name: PRICING.free.name,
     price: `$${PRICING.free.price}`,
-    tagline: "Start preparing",
-    features: [
-      "1 prep session",
-      "First 10 questions visible",
-      "No answer tiers",
-      "No saved answers",
-      "No exports",
-    ],
+    positioning: "Understand the question. Try it. Get a taste of feedback.",
+    ctaLabel: "Start free",
+    features: [...TIER_BENEFITS.free],
+    footnote: "You have 2 free feedback sessions each month.",
   },
   {
     key: "pro",
     name: PRICING.pro.name,
     price: `$${PRICING.pro.price}`,
-    tagline: "Prepare properly",
+    positioning: "Build strong answers with structure and consistent feedback.",
+    ctaLabel: "Unlock Pro",
     priceId: "pro_monthly",
     highlight: true,
-    features: [
-      "Unlimited prep sessions",
-      "Full 50 questions per pack",
-      "All three answer tiers",
-      "Save written answers",
-      "Progress tracking",
-      "PDF & DOCX exports",
-    ],
+    features: [...TIER_BENEFITS.pro],
   },
   {
     key: "coach_plus",
-    name: PRICING.coach_plus.name,
+    name: "Coach+",
     price: `$${PRICING.coach_plus.price}`,
-    tagline: "Prepare like it matters",
+    positioning: "Refine how your answers land — tone, judgement and presence.",
+    ctaLabel: "Unlock Coach+",
     priceId: "coach_plus_monthly",
-    features: [
-      "Everything in Pro",
-      "Enhanced answer guidance",
-      "Reality Check on every answer",
-      "Priority AI generation",
-      "Live coaching integration (coming soon)",
-    ],
+    premium: true,
+    features: [...TIER_BENEFITS.coach],
   },
 ];
 

@@ -940,55 +940,68 @@ const Practice = () => {
 
           {/* Timer sidebar — optional, off by default */}
           <aside className="lg:sticky lg:top-6 self-start">
-            {duration > 0 ? (
-              <div className="border border-border bg-card p-6">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-1.5">
-                  <TimerIcon className="h-3 w-3" /> Timer
+            <div className="border border-border bg-card p-6">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-1.5">
+                    <TimerIcon className="h-3 w-3" /> Timed answer practice
+                  </div>
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    Use this when you want to practise concise answers under
+                    interview pressure.
+                  </p>
                 </div>
-                <div
-                  className={cn(
-                    "font-display text-5xl font-semibold tabular-nums text-center my-2 transition-colors",
-                    remaining === 0 && "text-destructive"
-                  )}
-                >
-                  {formatTime(remaining)}
-                </div>
-                <Progress value={timerProgress} className="h-1 mb-5" />
+                <label className="flex items-center gap-2 shrink-0 pt-0.5">
+                  <span className="text-[11px] text-muted-foreground">Timed mode</span>
+                  <Switch
+                    checked={timedMode}
+                    onCheckedChange={setTimedMode}
+                    aria-label="Toggle timed mode"
+                  />
+                </label>
+              </div>
 
-                <div className="flex justify-center gap-2 mb-2">
-                  {!running ? (
-                    <Button onClick={startTimer} size="sm" className="gap-1.5">
-                      <Play className="h-3.5 w-3.5" /> Start
-                    </Button>
-                  ) : (
+              {timedMode && duration > 0 && (
+                <>
+                  <div className="text-[11px] text-muted-foreground mt-4 mb-1 text-center">
+                    Target: {duration} seconds
+                  </div>
+                  <div
+                    className={cn(
+                      "font-display text-5xl font-semibold tabular-nums text-center my-1 transition-colors",
+                      remaining === 0 && "text-destructive"
+                    )}
+                  >
+                    {formatTime(remaining)}
+                  </div>
+                  <Progress value={timerProgress} className="h-1 mb-5" />
+
+                  <div className="flex justify-center gap-2 mb-1">
+                    {!running ? (
+                      <Button onClick={startTimer} size="sm" className="gap-1.5">
+                        <Play className="h-3.5 w-3.5" /> Start
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={pauseTimer}
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                      >
+                        <Pause className="h-3.5 w-3.5" /> Pause
+                      </Button>
+                    )}
                     <Button
-                      onClick={pauseTimer}
+                      onClick={resetTimer}
                       size="sm"
-                      variant="outline"
+                      variant="ghost"
                       className="gap-1.5"
                     >
-                      <Pause className="h-3.5 w-3.5" /> Pause
+                      <RotateCcw className="h-3.5 w-3.5" /> Reset
                     </Button>
-                  )}
-                  <Button
-                    onClick={resetTimer}
-                    size="sm"
-                    variant="ghost"
-                    className="gap-1.5"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" /> Reset
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="border border-border bg-card p-6 text-sm text-muted-foreground">
-                Timer is off for this run.
-              </div>
-            )}
-
-            <div className="mt-4 text-[11px] text-muted-foreground leading-relaxed">
-              Practise out loud. Use the timer like a real interview, then capture
-              what you'd refine.
+                  </div>
+                </>
+              )}
             </div>
           </aside>
         </div>

@@ -152,7 +152,7 @@ const Practice = () => {
   const elapsedRef = useRef(0);
 
   // Free evaluation allowance (server is the source of truth — this is for UI only).
-  const FREE_EVALUATION_LIMIT = 3;
+  const FREE_EVALUATION_LIMIT = 2;
   const [freeEvalsUsed, setFreeEvalsUsed] = useState<number>(0);
 
   const isCoachPlus = plan === "coach_plus";

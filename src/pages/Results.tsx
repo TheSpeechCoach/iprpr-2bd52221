@@ -193,6 +193,7 @@ const Results = () => {
     progress: number;
     stage: string | null;
     error_message: string | null;
+    created_at: string | null;
   } | null>(null);
   const [questionsGenerated, setQuestionsGenerated] = useState(0);
   const [processingStartedAt, setProcessingStartedAt] = useState<number | null>(null);

@@ -758,9 +758,9 @@ const Practice = () => {
                 placeholder="Don't copy the model answer. Write what you would actually say…"
                 rows={7}
               />
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {/* Primary action */}
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={() => persistAnswer(answer)}
                   disabled={savingAnswer || !answer.trim()}
@@ -768,9 +768,11 @@ const Practice = () => {
                   Save answer
                 </Button>
 
-                {isCoachPlus ? (
+                {/* Feedback CTA — clearer wording, gated by allowance, not by plan */}
+                {canEvaluate ? (
                   <Button
                     size="sm"
+                    variant="outline"
                     onClick={scoreAnswer}
                     disabled={scoring || !answer.trim()}
                     className="gap-1.5"
@@ -780,22 +782,30 @@ const Practice = () => {
                     ) : (
                       <Sparkles className="h-3.5 w-3.5" />
                     )}
-                    Evaluate my answer
+                    {isPaid ? "Get feedback on this answer" : "Get free feedback"}
                   </Button>
                 ) : (
                   <Link to="/upgrade">
                     <Button size="sm" variant="outline" className="gap-1.5">
                       <Lock className="h-3.5 w-3.5" />
-                      Evaluate my answer
+                      Upgrade for more feedback
                     </Button>
                   </Link>
                 )}
-                {!isCoachPlus && (
-                  <span className="text-[11px] text-muted-foreground">
-                    Answer evaluation is available on Coach+.
-                  </span>
-                )}
               </div>
+              <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+                We'll assess structure, clarity, relevance and delivery strength.
+                {!isPaid && (
+                  <>
+                    {" "}
+                    {freeEvalsRemaining > 0
+                      ? freeEvalsUsed === 0
+                        ? "You have 3 free answer evaluations each month."
+                        : `You have ${freeEvalsRemaining} free evaluation${freeEvalsRemaining === 1 ? "" : "s"} left this month.`
+                      : "You've used your 3 free evaluations this month. Upgrade to continue receiving AI feedback."}
+                  </>
+                )}
+              </p>
             </div>
 
             {/* Coach feedback */}

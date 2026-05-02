@@ -30,7 +30,7 @@ export function useAccountFlag(): AccountFlagState {
       if (!cancelled) setState({ flagged: !!data?.id, loading: false });
     })();
     return () => { cancelled = true; };
-  }, [user?.id, authLoading]);
+  }, [user, authLoading]);
 
   return state;
 }

@@ -72,9 +72,10 @@ export const AdminRoute = ({ children }: { children: ReactNode }) => {
                     setErrorMessage(error.message || "Could not enable admin access. Please try again.");
                     return;
                   }
-                  if ((data as any)?.ok !== true) {
+                  const result = data as { ok?: boolean; error?: string } | null;
+                  if (result?.ok !== true) {
                     setBootstrapping(false);
-                    setErrorMessage((data as any)?.error || "Admin access was not enabled.");
+                    setErrorMessage(result?.error || "Admin access was not enabled.");
                     return;
                   }
                   // Refresh session so JWT/profile/admin state reflect the new role,

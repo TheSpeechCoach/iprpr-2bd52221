@@ -756,28 +756,32 @@ const Practice = () => {
                   lockedCta: "",
                   lockedHref: "/upgrade",
                   unlockedBody: (
-                    <div className="space-y-4 pb-2 text-sm text-muted-foreground">
+                    <div className="space-y-3 pb-2 text-sm">
                       <p className="text-xs italic text-muted-foreground/80">
                         Understand the question before you answer it.
                       </p>
                       {current?.why_matters ? (
-                        <div>
-                          <div className="text-[10px] uppercase tracking-widest mb-1 text-foreground/70">
-                            Why this question matters
+                        <div className="rounded-sm border border-accent/20 border-l-2 border-l-accent/60 bg-accent/[0.04] px-4 py-3">
+                          <div className="text-[10px] uppercase tracking-widest mb-1 text-accent flex items-center gap-1.5">
+                            <Sparkles className="h-3 w-3" /> Coach insight
                           </div>
-                          <p>{current.why_matters}</p>
+                          <p className="text-sm text-foreground/85 leading-relaxed">
+                            {current.why_matters}
+                          </p>
                         </div>
                       ) : null}
                       {current?.what_good_covers ? (
-                        <div>
+                        <div className="rounded-sm border border-border bg-muted/30 px-4 py-3">
                           <div className="text-[10px] uppercase tracking-widest mb-1 text-foreground/70">
-                            What a strong answer should cover
+                            Strategy
                           </div>
-                          <p>{current.what_good_covers}</p>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {current.what_good_covers}
+                          </p>
                         </div>
                       ) : null}
                       {!current?.why_matters && !current?.what_good_covers && (
-                        <p className="italic">
+                        <p className="italic text-sm text-muted-foreground">
                           Take a moment to think about what the interviewer is
                           really looking for here.
                         </p>
@@ -796,11 +800,10 @@ const Practice = () => {
                   lockedCta: "Unlock Pro",
                   lockedHref: "/upgrade",
                   unlockedBody: (
-                    <div className="space-y-3 pb-2 text-sm text-muted-foreground">
-                      <p className="text-xs italic text-muted-foreground/80">
-                        Build stronger answers with structure, examples and
-                        targeted feedback.
-                      </p>
+                    <div className="rounded-sm border border-accent/20 bg-accent/[0.03] px-4 py-3 text-sm text-muted-foreground space-y-2">
+                      <div className="text-[10px] uppercase tracking-widest text-accent">
+                        Build your answer
+                      </div>
                       <p>
                         Use the answer tiers and suggested structure on the{" "}
                         <Link

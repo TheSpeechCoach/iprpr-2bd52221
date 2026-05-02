@@ -265,7 +265,7 @@ const Results = () => {
       // Poll the latest generation_jobs row for this session.
       const { data: j } = await supabase
         .from("generation_jobs")
-        .select("status, progress, stage, error_message")
+        .select("status, progress, stage, error_message, created_at")
         .eq("prep_session_id", id)
         .order("created_at", { ascending: false })
         .limit(1)

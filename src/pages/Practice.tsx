@@ -1126,7 +1126,7 @@ const Practice = () => {
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-1.5">
-                    <TimerIcon className="h-3 w-3" /> Timed answer practice
+                    <TimerIcon className="h-3 w-3" /> Timed practice
                   </div>
                   <p className="text-[12px] text-muted-foreground leading-relaxed">
                     Use this when you want to practise concise answers under

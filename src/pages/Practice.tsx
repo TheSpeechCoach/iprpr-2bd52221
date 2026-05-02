@@ -938,7 +938,7 @@ const Practice = () => {
             </div>
           </div>
 
-          {/* Timer sidebar */}
+          {/* Timer sidebar — optional, off by default */}
           <aside className="lg:sticky lg:top-6 self-start">
             {duration > 0 ? (
               <div className="border border-border bg-card p-6">

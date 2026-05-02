@@ -690,36 +690,55 @@ const Practice = () => {
           {/* Question card */}
           <div className="space-y-6">
             <div className="border border-border bg-card p-6 md:p-8">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" className="text-[10px]">
+              <div className="grid grid-cols-1 md:grid-cols-[88px_1fr] gap-5 md:gap-6">
+                {/* Left meta column: number + badges */}
+                <div className="flex md:flex-col flex-wrap items-start gap-2 md:gap-2.5 md:border-r md:border-border md:pr-5">
+                  <span className="font-display text-2xl md:text-3xl tabular-nums text-foreground/80 leading-none">
+                    {String(current?.position ?? 0).padStart(3, "0")}
+                  </span>
+                  {current?.difficulty && (
+                    <DifficultyBadge value={current.difficulty} />
+                  )}
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] uppercase tracking-wider border-border text-muted-foreground bg-transparent font-normal"
+                  >
                     {current?.category}
                   </Badge>
-                  {current?.difficulty && (
-                    <Badge variant="outline" className="text-[10px]">
-                      {current.difficulty}
+                  {current?.why_matters && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] uppercase tracking-wider border-accent/30 text-accent bg-accent/5 gap-1 font-normal"
+                    >
+                      <Sparkles className="h-3 w-3" /> Coach insight
                     </Badge>
                   )}
                   {current?.practised && (
-                    <Badge className="text-[10px] gap-1">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] uppercase tracking-wider border-foreground/30 text-foreground bg-foreground/5 gap-1 font-normal"
+                    >
                       <CheckCircle2 className="h-3 w-3" /> Practised
                     </Badge>
                   )}
                   {current?.starred && (
-                    <Badge variant="outline" className="text-[10px] gap-1">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] uppercase tracking-wider border-border text-muted-foreground gap-1 font-normal"
+                    >
                       <Star className="h-3 w-3 fill-accent text-accent" />
                       Starred
                     </Badge>
                   )}
                 </div>
-                <span className="font-display text-xs text-muted-foreground shrink-0">
-                  {String(current?.position ?? 0).padStart(3, "0")}
-                </span>
-              </div>
 
-              <p className="font-display text-xl md:text-2xl leading-snug">
-                {current?.question}
-              </p>
+                {/* Right: question text only */}
+                <div className="min-w-0">
+                  <p className="font-display text-xl md:text-2xl leading-snug">
+                    {current?.question}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* ── Answer support cascade ─────────────────────────────── */}

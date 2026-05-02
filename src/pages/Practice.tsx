@@ -450,15 +450,18 @@ const Practice = () => {
     toast({ title: "Attempt saved" });
   };
 
-  // ---------- Coach+ scoring ----------
+  // ---------- Answer evaluation (Free: 3/month, Paid: existing access) ----------
   const scoreAnswer = async () => {
     if (!current || !id) return;
-    if (!isCoachPlus) {
-      toast({ title: "Answer scoring is available on Coach+." });
+    if (!isPaid && freeEvalsRemaining <= 0) {
+      toast({
+        title: "You've used your 3 free evaluations this month.",
+        description: "Upgrade to continue receiving AI feedback.",
+      });
       return;
     }
     if (!answer || answer.trim().length < 10) {
-      toast({ title: "Write a longer answer before scoring." });
+      toast({ title: "Write a longer answer before getting feedback." });
       return;
     }
     setScoring(true);
@@ -476,7 +479,7 @@ const Practice = () => {
         },
       });
       if (error) {
-        const msg = (error as any)?.context?.error || error.message || "Scoring failed";
+        const msg = (error as any)?.context?.error || error.message || "Couldn't get feedback";
         toast({ title: msg, variant: "destructive" });
         return;
       }
@@ -486,7 +489,10 @@ const Practice = () => {
       }
       if (data?.score) {
         setScoresMap((m) => ({ ...m, [current.id]: data.score as AnswerScore }));
-        toast({ title: "Coach feedback ready" });
+        if (typeof data.evaluations_remaining === "number") {
+          setFreeEvalsUsed(FREE_EVALUATION_LIMIT - data.evaluations_remaining);
+        }
+        toast({ title: "Feedback ready" });
       }
     } finally {
       setScoring(false);

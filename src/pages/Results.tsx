@@ -1130,36 +1130,36 @@ const Results = () => {
                   )}
                   {has && r.summary && <p className="text-foreground/90">{r.summary}</p>}
                   {has && Array.isArray(r.mission_values) && r.mission_values.length > 0 && (
-                    <Field2 label="Values">{r.mission_values.join(" · ")}</Field2>
+                    <div><div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Values</div><div>{r.mission_values.join(" · ")}</div></div>
                   )}
                   {has && r.preferred_interview_style && (
-                    <Field2 label="Likely interview style">{r.preferred_interview_style}</Field2>
+                    <div><div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Likely interview style</div><div>{r.preferred_interview_style}</div></div>
                   )}
                   {has && Array.isArray(r.likely_assessment_criteria) && r.likely_assessment_criteria.length > 0 && (
-                    <Field2 label="What they may be assessing">
+                    <div><div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">What they may be assessing</div><div>
                       <ul className="list-disc pl-5 space-y-1">
                         {r.likely_assessment_criteria.map((x: string, i: number) => <li key={i}>{x}</li>)}
                       </ul>
-                    </Field2>
+                    </div></div>
                   )}
                   {has && Array.isArray(r.known_interview_methods) && r.known_interview_methods.length > 0 && (
-                    <Field2 label="Known interview methods">{r.known_interview_methods.join(" · ")}</Field2>
+                    <div><div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Known interview methods</div><div>{r.known_interview_methods.join(" · ")}</div></div>
                   )}
                   {has && Array.isArray(r.track_specific_notes) && r.track_specific_notes.length > 0 && (
-                    <Field2 label="Useful preparation notes">
+                    <div><div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Useful preparation notes</div><div>
                       <ul className="list-disc pl-5 space-y-1">
                         {r.track_specific_notes.map((x: string, i: number) => <li key={i}>{x}</li>)}
                       </ul>
-                    </Field2>
+                    </div></div>
                   )}
                   {has && Array.isArray(r.sources) && r.sources.length > 0 && (
-                    <Field2 label="Sources">
+                    <div><div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Sources</div><div>
                       <ul className="space-y-1">
                         {r.sources.slice(0, 8).map((u: string, i: number) => (
                           <li key={i}><a className="underline break-all" href={u} target="_blank" rel="noreferrer">{u}</a></li>
                         ))}
                       </ul>
-                    </Field2>
+                    </div></div>
                   )}
                   {has && r.note && (
                     <p className="text-xs text-muted-foreground italic">{r.note}</p>

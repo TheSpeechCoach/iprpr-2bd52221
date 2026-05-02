@@ -152,6 +152,8 @@ interface Session {
   full_name: string | null;
   candidate_current_role: string | null;
   num_questions: number | null;
+  organisation_research?: any;
+  interview_track?: string | null;
 }
 
 const Results = () => {

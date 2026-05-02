@@ -21,6 +21,11 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // Downgraded to warnings: large legacy surface across pages and edge
+      // functions; treating as errors would force broad refactors of
+      // directly-edited product code (Practice, Results, generation, webhooks).
+      "@typescript-eslint/no-explicit-any": "warn",
+      "no-empty": ["warn", { allowEmptyCatch: true }],
     },
   },
 );

@@ -94,7 +94,7 @@ export const ReportIssueButton = () => {
     } catch (err: unknown) {
       toast({
         title: "Couldn't send feedback",
-        description: err?.message ?? "Please try again in a moment.",
+        description: err instanceof Error ? err.message : "Please try again in a moment.",
         variant: "destructive",
       });
     } finally {

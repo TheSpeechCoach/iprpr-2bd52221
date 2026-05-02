@@ -195,6 +195,22 @@ const Practice = () => {
         if (!cm[row.question_id]) cm[row.question_id] = row;
       });
       setScoresMap(cm);
+
+      // Free monthly evaluation usage (per calendar month, UTC).
+      const today = new Date();
+      const periodStart = new Date(
+        Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1)
+      )
+        .toISOString()
+        .slice(0, 10);
+      const { data: usageRow } = await supabase
+        .from("answer_evaluation_usage")
+        .select("evaluations_used")
+        .eq("user_id", user.id)
+        .eq("period_start", periodStart)
+        .maybeSingle();
+      if (!cancelled) setFreeEvalsUsed(usageRow?.evaluations_used ?? 0);
+
       setLoading(false);
 
       // If URL has ?run=1, allow auto-start with current settings

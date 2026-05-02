@@ -228,7 +228,11 @@ const Upgrade = () => {
               <div
                 key={tier.key}
                 className={`bg-background p-8 relative ${
-                  tier.highlight ? "border-l border-r border-accent/40 md:border-l-0" : ""
+                  tier.premium
+                    ? "border-l-2 border-r-2 border-foreground/60 md:border-l-2 ring-1 ring-foreground/10"
+                    : tier.highlight
+                      ? "border-l border-r border-accent/40 md:border-l-0"
+                      : ""
                 }`}
               >
                 {tier.highlight && (
@@ -236,9 +240,18 @@ const Upgrade = () => {
                     Most popular
                   </div>
                 )}
+                {tier.premium && (
+                  <div className="absolute top-0 right-0 bg-foreground text-background text-[10px] uppercase tracking-[0.2em] px-2 py-1">
+                    Premium
+                  </div>
+                )}
                 <div
                   className={`text-[10px] uppercase tracking-[0.22em] mb-2 ${
-                    tier.highlight ? "text-accent" : "text-muted-foreground"
+                    tier.highlight
+                      ? "text-accent"
+                      : tier.premium
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {tier.name}
@@ -262,18 +275,22 @@ const Upgrade = () => {
                     </>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                   {showIntroOffer && tier.key === "pro"
                     ? `Then ${copy.upgrade.proPrice}/month. Cancel anytime.`
-                    : tier.tagline}
-                </div>
+                    : tier.positioning}
+                </p>
 
                 <ul className="mt-6 space-y-2.5 text-sm">
                   {tier.features.map((f) => (
                     <li key={f} className="flex gap-2.5 items-start">
                       <Check
                         className={`h-4 w-4 mt-0.5 shrink-0 ${
-                          tier.highlight ? "text-accent" : "text-foreground"
+                          tier.highlight
+                            ? "text-accent"
+                            : tier.premium
+                              ? "text-foreground"
+                              : "text-foreground"
                         }`}
                         strokeWidth={2}
                       />
@@ -282,10 +299,16 @@ const Upgrade = () => {
                   ))}
                 </ul>
 
+                {tier.footnote && (
+                  <p className="mt-4 text-xs text-muted-foreground italic">
+                    {tier.footnote}
+                  </p>
+                )}
+
                 <div className="mt-7">
                   {tier.key === "free" ? (
                     <Button variant="outline" className="w-full" disabled>
-                      {plan === "free" ? "Current plan" : "Free tier"}
+                      {plan === "free" ? "Current plan" : tier.ctaLabel}
                     </Button>
                   ) : isCurrent ? (
                     <Button variant="outline" className="w-full" disabled>
@@ -314,15 +337,15 @@ const Upgrade = () => {
                       className={`w-full ${
                         tier.highlight
                           ? "bg-accent hover:bg-accent/90 text-accent-foreground"
-                          : ""
+                          : tier.premium
+                            ? "bg-foreground hover:bg-foreground/90 text-background"
+                            : ""
                       }`}
-                      variant={tier.highlight ? "default" : "secondary"}
+                      variant={tier.highlight || tier.premium ? "default" : "secondary"}
                     >
                       {showIntroOffer && tier.key === "pro"
                         ? copy.upgrade.intro.buttonCta
-                        : plan === "pro" && tier.key === "coach_plus"
-                          ? "Upgrade to Coach+"
-                          : `Get ${tier.name}`}
+                        : tier.ctaLabel}
                     </Button>
                   )}
                 </div>

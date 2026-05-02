@@ -77,7 +77,7 @@ serve(async (req: Request) => {
       if (used >= FREE_EVALUATION_LIMIT) {
         return json({
           error:
-            "You've used your 3 free evaluations this month. Upgrade to continue receiving AI feedback.",
+            "You've used your 2 free evaluations this month. Upgrade to continue receiving AI feedback.",
           code: "FREE_EVALUATION_LIMIT_REACHED",
           evaluations_used: used,
           evaluations_limit: FREE_EVALUATION_LIMIT,

@@ -843,6 +843,7 @@ export type Database = {
           linkedin_text: string | null
           linkedin_url: string | null
           num_questions: number
+          organisation_research: Json | null
           output_tone: string | null
           red_flags: Json | null
           role_summary: string | null
@@ -884,6 +885,7 @@ export type Database = {
           linkedin_text?: string | null
           linkedin_url?: string | null
           num_questions?: number
+          organisation_research?: Json | null
           output_tone?: string | null
           red_flags?: Json | null
           role_summary?: string | null
@@ -925,6 +927,7 @@ export type Database = {
           linkedin_text?: string | null
           linkedin_url?: string | null
           num_questions?: number
+          organisation_research?: Json | null
           output_tone?: string | null
           red_flags?: Json | null
           role_summary?: string | null

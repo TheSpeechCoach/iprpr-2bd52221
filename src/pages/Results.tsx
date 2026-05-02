@@ -199,6 +199,35 @@ const Results = () => {
   } | null>(null);
   const [questionsGenerated, setQuestionsGenerated] = useState(0);
   const [processingStartedAt, setProcessingStartedAt] = useState<number | null>(null);
+  const [researching, setResearching] = useState(false);
+
+  const runOrganisationResearch = async () => {
+    if (!session) return;
+    setResearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("research-organisation-context", {
+        body: {
+          prep_session_id: session.id,
+          track: session.interview_track || "professional",
+          organisation_name: session.company_name || "",
+          job_spec_text: (session as any).job_description || "",
+          job_spec_url: (session as any).job_spec_url || "",
+          role_title: session.target_role || "",
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.research) {
+        setSession({ ...session, organisation_research: (data as any).research });
+      } else {
+        await loadAll();
+      }
+    } catch (_e) {
+      // surface a soft toast via existing toast patterns is overkill here; just stop.
+    } finally {
+      setResearching(false);
+    }
+  };
+
   const [nowTs, setNowTs] = useState(() => Date.now());
 
   // Debounced autosave for user answers.

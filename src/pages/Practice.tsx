@@ -667,11 +667,6 @@ const Practice = () => {
               {session?.title}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={restartShuffled} className="gap-1.5">
-              <RotateCcw className="h-3.5 w-3.5" /> Restart shuffled
-            </Button>
-          </div>
         </div>
 
         {/* Overall progress */}

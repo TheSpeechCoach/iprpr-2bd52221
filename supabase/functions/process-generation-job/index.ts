@@ -268,6 +268,27 @@ ROLE
 - Description / spec:
 ${clip(session.job_description, 8000) || "Not provided"}
 
+ORGANISATION RESEARCH
+${(() => {
+  const r = (session as any).organisation_research;
+  if (!r || typeof r !== "object") return "Not provided.";
+  if (r.status === "failed") return "Automated research failed — rely only on the candidate profile and supplied job spec. Do not invent organisation facts.";
+  const limited = r.status === "limited";
+  const lines: string[] = [];
+  if (r.organisation_name) lines.push(`- Organisation: ${r.organisation_name}${r.organisation_type ? ` (${r.organisation_type})` : ""}`);
+  if (r.summary) lines.push(`- Summary: ${r.summary}`);
+  if (Array.isArray(r.mission_values) && r.mission_values.length) lines.push(`- Values: ${r.mission_values.slice(0, 6).join("; ")}`);
+  if (Array.isArray(r.recent_news) && r.recent_news.length) lines.push(`- Recent news: ${r.recent_news.slice(0, 4).join("; ")}`);
+  if (Array.isArray(r.products_services_programmes) && r.products_services_programmes.length) lines.push(`- Products / programmes: ${r.products_services_programmes.slice(0, 6).join("; ")}`);
+  if (Array.isArray(r.culture_signals) && r.culture_signals.length) lines.push(`- Culture signals: ${r.culture_signals.slice(0, 6).join("; ")}`);
+  if (r.preferred_interview_style) lines.push(`- Preferred interview style: ${r.preferred_interview_style}`);
+  if (Array.isArray(r.known_interview_methods) && r.known_interview_methods.length) lines.push(`- Known interview methods: ${r.known_interview_methods.slice(0, 6).join("; ")}`);
+  if (Array.isArray(r.likely_assessment_criteria) && r.likely_assessment_criteria.length) lines.push(`- Likely assessment criteria: ${r.likely_assessment_criteria.slice(0, 6).join("; ")}`);
+  if (Array.isArray(r.track_specific_notes) && r.track_specific_notes.length) lines.push(`- Track-specific notes: ${r.track_specific_notes.slice(0, 6).join("; ")}`);
+  if (limited) lines.push("- NOTE: Web research was not available. Base questions on the supplied brief; do not invent organisation facts.");
+  return lines.length ? lines.join("\n") : "Not provided.";
+})()}
+
 INTERVIEW PARAMETERS
 - Interview type: ${session.interview_type}
 - Difficulty: ${session.difficulty}

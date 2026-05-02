@@ -882,33 +882,59 @@ const Practice = () => {
               />
             </div>
 
-            {/* Navigation */}
+            {/* Navigation — minimal: only Next question is primary */}
             <div className="flex flex-wrap items-center gap-2 pt-2">
+              <Button onClick={next} className="gap-1.5">
+                Next question <ArrowRight className="h-4 w-4" />
+              </Button>
               <Button variant="outline" onClick={prev} className="gap-1.5">
                 <ArrowLeft className="h-4 w-4" /> Previous
               </Button>
-              <Button variant="outline" onClick={() => goTo(Math.floor(Math.random() * queue.length))} className="gap-1.5">
-                <Shuffle className="h-4 w-4" /> Random
-              </Button>
-              <Button variant="outline" onClick={next} className="gap-1.5">
-                Next <ArrowRight className="h-4 w-4" />
-              </Button>
+
               <div className="flex-1" />
-              <Button
-                variant="ghost"
-                onClick={saveAttempt}
-                disabled={!answer && selfRating === null && confidence === null}
-              >
-                Save attempt
-              </Button>
-              <Button
-                onClick={async () => {
-                  await saveAttempt();
-                  next();
-                }}
-              >
-                Save & next
-              </Button>
+
+              {/* All other actions live behind "More options" to reduce clutter */}
+              <details className="ml-auto group">
+                <summary className="list-none cursor-pointer text-xs text-muted-foreground hover:text-foreground select-none">
+                  More options
+                </summary>
+                <div className="mt-3 flex flex-wrap items-center gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goTo(Math.floor(Math.random() * queue.length))}
+                    className="gap-1.5"
+                  >
+                    <Shuffle className="h-3.5 w-3.5" /> Random question
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={restartShuffled}
+                    className="gap-1.5"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" /> Restart shuffled
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={saveAttempt}
+                    disabled={!answer && selfRating === null && confidence === null}
+                  >
+                    Save attempt
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      await saveAttempt();
+                      next();
+                    }}
+                  >
+                    Save &amp; next
+                  </Button>
+                </div>
+              </details>
             </div>
           </div>
 

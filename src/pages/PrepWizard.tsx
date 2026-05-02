@@ -147,7 +147,7 @@ const PrepWizard = () => {
     }
     if (isTeamWorkspace && !selectedCandidateId) {
       toast({ title: "Pick a candidate", description: "Select which candidate this prep session is for.", variant: "destructive" });
-      setStep(0);
+      setStep(1);
       return;
     }
     if (!canCreateSession) {
@@ -161,12 +161,12 @@ const PrepWizard = () => {
     }
     if (!form.target_role.trim()) {
       toast({ title: "Add a target role", description: "We need the role you're interviewing for to tailor the questions.", variant: "destructive" });
-      setStep(0);
+      setStep(1);
       return;
     }
     if (!form.job_description.trim() && !form.job_spec_url.trim() && !form.job_title.trim()) {
       toast({ title: "Tell us about the role", description: "Paste the job description, share a link, or at least add a job title.", variant: "destructive" });
-      setStep(2);
+      setStep(3);
       return;
     }
     const hasLinkedinUrl = /^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(form.linkedin_url.trim());
@@ -176,7 +176,7 @@ const PrepWizard = () => {
         description: "Add your LinkedIn profile, upload your CV, or paste your CV text.",
         variant: "destructive",
       });
-      setStep(1);
+      setStep(2);
       return;
     }
     // If only a LinkedIn URL is provided, we can't read it server-side yet.
@@ -187,7 +187,7 @@ const PrepWizard = () => {
         description: "Please upload your CV or paste your details so we can tailor your questions.",
         variant: "destructive",
       });
-      setStep(1);
+      setStep(2);
       return;
     }
     setSubmitting(true);

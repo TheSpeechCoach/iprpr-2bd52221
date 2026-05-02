@@ -124,8 +124,8 @@ const Practice = () => {
   const [mode, setMode] = useState<PracticeMode>("category");
   const [setupCategory, setSetupCategory] = useState<string>("all");
   const [setupCount, setSetupCount] = useState<number>(10);
-  // Timer defaults to OFF; user opts in via Timed mode toggle.
-  const [setupTimer, setSetupTimer] = useState<number>(0);
+  // Target answer length used when Timed mode is on (default 90s).
+  const [setupTimer, setSetupTimer] = useState<number>(90);
 
   // Practice run state
   const [orderedIds, setOrderedIds] = useState<string[]>([]);

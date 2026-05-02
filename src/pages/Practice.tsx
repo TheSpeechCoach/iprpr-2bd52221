@@ -152,7 +152,7 @@ const Practice = () => {
   const elapsedRef = useRef(0);
 
   // Free evaluation allowance (server is the source of truth — this is for UI only).
-  const FREE_EVALUATION_LIMIT = 3;
+  const FREE_EVALUATION_LIMIT = 2;
   const [freeEvalsUsed, setFreeEvalsUsed] = useState<number>(0);
 
   const isCoachPlus = plan === "coach_plus";
@@ -459,7 +459,7 @@ const Practice = () => {
     if (!current || !id) return;
     if (!isPaid && freeEvalsRemaining <= 0) {
       toast({
-        title: "You've used your 3 free evaluations this month.",
+        title: "You've used your 2 free evaluations this month.",
         description: "Upgrade to continue receiving AI feedback.",
       });
       return;
@@ -941,7 +941,7 @@ const Practice = () => {
                               ? freeEvalsUsed === 0
                                 ? "You have 3 free answer evaluations each month."
                                 : `You have ${freeEvalsRemaining} free evaluation${freeEvalsRemaining === 1 ? "" : "s"} left this month.`
-                              : "You've used your 3 free evaluations this month. Upgrade to continue receiving AI feedback."}
+                              : "You've used your 2 free evaluations this month. Upgrade to continue receiving AI feedback."}
                           </>
                         )}
                       </p>

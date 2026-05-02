@@ -690,36 +690,55 @@ const Practice = () => {
           {/* Question card */}
           <div className="space-y-6">
             <div className="border border-border bg-card p-6 md:p-8">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" className="text-[10px]">
+              <div className="grid grid-cols-1 md:grid-cols-[88px_1fr] gap-5 md:gap-6">
+                {/* Left meta column: number + badges */}
+                <div className="flex md:flex-col flex-wrap items-start gap-2 md:gap-2.5 md:border-r md:border-border md:pr-5">
+                  <span className="font-display text-2xl md:text-3xl tabular-nums text-foreground/80 leading-none">
+                    {String(current?.position ?? 0).padStart(3, "0")}
+                  </span>
+                  {current?.difficulty && (
+                    <DifficultyBadge value={current.difficulty} />
+                  )}
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] uppercase tracking-wider border-border text-muted-foreground bg-transparent font-normal"
+                  >
                     {current?.category}
                   </Badge>
-                  {current?.difficulty && (
-                    <Badge variant="outline" className="text-[10px]">
-                      {current.difficulty}
+                  {current?.why_matters && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] uppercase tracking-wider border-accent/30 text-accent bg-accent/5 gap-1 font-normal"
+                    >
+                      <Sparkles className="h-3 w-3" /> Coach insight
                     </Badge>
                   )}
                   {current?.practised && (
-                    <Badge className="text-[10px] gap-1">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] uppercase tracking-wider border-foreground/30 text-foreground bg-foreground/5 gap-1 font-normal"
+                    >
                       <CheckCircle2 className="h-3 w-3" /> Practised
                     </Badge>
                   )}
                   {current?.starred && (
-                    <Badge variant="outline" className="text-[10px] gap-1">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] uppercase tracking-wider border-border text-muted-foreground gap-1 font-normal"
+                    >
                       <Star className="h-3 w-3 fill-accent text-accent" />
                       Starred
                     </Badge>
                   )}
                 </div>
-                <span className="font-display text-xs text-muted-foreground shrink-0">
-                  {String(current?.position ?? 0).padStart(3, "0")}
-                </span>
-              </div>
 
-              <p className="font-display text-xl md:text-2xl leading-snug">
-                {current?.question}
-              </p>
+                {/* Right: question text only */}
+                <div className="min-w-0">
+                  <p className="font-display text-xl md:text-2xl leading-snug">
+                    {current?.question}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* ── Answer support cascade ─────────────────────────────── */}
@@ -737,28 +756,32 @@ const Practice = () => {
                   lockedCta: "",
                   lockedHref: "/upgrade",
                   unlockedBody: (
-                    <div className="space-y-4 pb-2 text-sm text-muted-foreground">
+                    <div className="space-y-3 pb-2 text-sm">
                       <p className="text-xs italic text-muted-foreground/80">
                         Understand the question before you answer it.
                       </p>
                       {current?.why_matters ? (
-                        <div>
-                          <div className="text-[10px] uppercase tracking-widest mb-1 text-foreground/70">
-                            Why this question matters
+                        <div className="rounded-sm border border-accent/20 border-l-2 border-l-accent/60 bg-accent/[0.04] px-4 py-3">
+                          <div className="text-[10px] uppercase tracking-widest mb-1 text-accent flex items-center gap-1.5">
+                            <Sparkles className="h-3 w-3" /> Coach insight
                           </div>
-                          <p>{current.why_matters}</p>
+                          <p className="text-sm text-foreground/85 leading-relaxed">
+                            {current.why_matters}
+                          </p>
                         </div>
                       ) : null}
                       {current?.what_good_covers ? (
-                        <div>
+                        <div className="rounded-sm border border-border bg-muted/30 px-4 py-3">
                           <div className="text-[10px] uppercase tracking-widest mb-1 text-foreground/70">
-                            What a strong answer should cover
+                            Strategy
                           </div>
-                          <p>{current.what_good_covers}</p>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {current.what_good_covers}
+                          </p>
                         </div>
                       ) : null}
                       {!current?.why_matters && !current?.what_good_covers && (
-                        <p className="italic">
+                        <p className="italic text-sm text-muted-foreground">
                           Take a moment to think about what the interviewer is
                           really looking for here.
                         </p>
@@ -777,11 +800,10 @@ const Practice = () => {
                   lockedCta: "Unlock Pro",
                   lockedHref: "/upgrade",
                   unlockedBody: (
-                    <div className="space-y-3 pb-2 text-sm text-muted-foreground">
-                      <p className="text-xs italic text-muted-foreground/80">
-                        Build stronger answers with structure, examples and
-                        targeted feedback.
-                      </p>
+                    <div className="rounded-sm border border-accent/20 bg-accent/[0.03] px-4 py-3 text-sm text-muted-foreground space-y-2">
+                      <div className="text-[10px] uppercase tracking-widest text-accent">
+                        Build your answer
+                      </div>
                       <p>
                         Use the answer tiers and suggested structure on the{" "}
                         <Link
@@ -1104,7 +1126,7 @@ const Practice = () => {
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-1.5">
-                    <TimerIcon className="h-3 w-3" /> Timed answer practice
+                    <TimerIcon className="h-3 w-3" /> Timed practice
                   </div>
                   <p className="text-[12px] text-muted-foreground leading-relaxed">
                     Use this when you want to practise concise answers under
@@ -1218,6 +1240,28 @@ const SetupChoices = ({
     ))}
   </div>
 );
+
+const DifficultyBadge = ({ value }: { value: string }) => {
+  const v = value.toLowerCase();
+  const tone =
+    v === "hard"
+      ? "border-accent/40 text-accent bg-accent/5"
+      : v === "medium"
+        ? "border-amber-500/30 text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-500/10"
+        : "border-border text-muted-foreground bg-transparent";
+  const label = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "text-[10px] uppercase tracking-wider font-normal",
+        tone,
+      )}
+    >
+      {label}
+    </Badge>
+  );
+};
 
 const ScoreChip = ({ label, value }: { label: string; value: number | null }) => (
   <div className="border border-border p-2.5">

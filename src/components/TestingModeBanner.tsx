@@ -19,7 +19,7 @@ export const TestingModeBanner = () => {
         .eq("key", "testing_mode")
         .maybeSingle();
       if (cancelled) return;
-      setEnabled(data?.value === true || (data?.value as any) === "true");
+      setEnabled(data?.value === true || (data?.value as unknown) === "true");
     })();
     return () => { cancelled = true; };
   }, []);

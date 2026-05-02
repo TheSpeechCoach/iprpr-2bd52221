@@ -27,55 +27,68 @@ interface Tier {
   key: Plan;
   name: string;
   price: string;
-  tagline: string;
+  positioning: string;
+  ctaLabel: string;
   priceId?: string;
   features: string[];
+  footnote?: string;
   highlight?: boolean;
+  premium?: boolean;
 }
+
+const TIER_BENEFITS = {
+  free: [
+    "10 interview questions per month",
+    "2 answer evaluations per month",
+    "Understand why each question is asked",
+    "What strong answers should cover",
+  ],
+  pro: [
+    "50 interview questions",
+    "Unlimited answer evaluations",
+    "Clear answer structures and guidance",
+    "Saved answers and progress tracking",
+    "Timed practice mode",
+    "Structured feedback on clarity, relevance and strength",
+  ],
+  coach: [
+    "Everything in Pro",
+    "Deeper coaching insights",
+    "Feedback on tone, presence and delivery",
+    "Strategic positioning for senior roles",
+    "Sharper critique and ‘coach’s notes’",
+  ],
+} as const;
 
 const TIERS: Tier[] = [
   {
     key: "free",
     name: PRICING.free.name,
     price: `$${PRICING.free.price}`,
-    tagline: "Start preparing",
-    features: [
-      "1 prep session",
-      "First 10 questions visible",
-      "No answer tiers",
-      "No saved answers",
-      "No exports",
-    ],
+    positioning: "Understand the question. Try it. Get a taste of feedback.",
+    ctaLabel: "Start free",
+    features: [...TIER_BENEFITS.free],
+    footnote: "You have 2 free feedback sessions each month.",
   },
   {
     key: "pro",
     name: PRICING.pro.name,
     price: `$${PRICING.pro.price}`,
-    tagline: "Prepare properly",
+    positioning: "Build strong answers with structure and consistent feedback.",
+    ctaLabel: "Unlock Pro",
     priceId: "pro_monthly",
     highlight: true,
-    features: [
-      "Unlimited prep sessions",
-      "Full 50 questions per pack",
-      "All three answer tiers",
-      "Save written answers",
-      "Progress tracking",
-      "PDF & DOCX exports",
-    ],
+    features: [...TIER_BENEFITS.pro],
   },
   {
     key: "coach_plus",
-    name: PRICING.coach_plus.name,
+    name: "Coach+",
     price: `$${PRICING.coach_plus.price}`,
-    tagline: "Prepare like it matters",
+    positioning: "Refine how your answers land — tone, judgement and presence.",
+    ctaLabel: "Unlock Coach+",
     priceId: "coach_plus_monthly",
-    features: [
-      "Everything in Pro",
-      "Enhanced answer guidance",
-      "Reality Check on every answer",
-      "Priority AI generation",
-      "Live coaching integration (coming soon)",
-    ],
+    premium: true,
+    features: [...TIER_BENEFITS.coach],
   },
 ];
 
@@ -215,7 +228,11 @@ const Upgrade = () => {
               <div
                 key={tier.key}
                 className={`bg-background p-8 relative ${
-                  tier.highlight ? "border-l border-r border-accent/40 md:border-l-0" : ""
+                  tier.premium
+                    ? "border-l-2 border-r-2 border-foreground/60 md:border-l-2 ring-1 ring-foreground/10"
+                    : tier.highlight
+                      ? "border-l border-r border-accent/40 md:border-l-0"
+                      : ""
                 }`}
               >
                 {tier.highlight && (
@@ -223,9 +240,18 @@ const Upgrade = () => {
                     Most popular
                   </div>
                 )}
+                {tier.premium && (
+                  <div className="absolute top-0 right-0 bg-foreground text-background text-[10px] uppercase tracking-[0.2em] px-2 py-1">
+                    Premium
+                  </div>
+                )}
                 <div
                   className={`text-[10px] uppercase tracking-[0.22em] mb-2 ${
-                    tier.highlight ? "text-accent" : "text-muted-foreground"
+                    tier.highlight
+                      ? "text-accent"
+                      : tier.premium
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {tier.name}
@@ -249,18 +275,22 @@ const Upgrade = () => {
                     </>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                   {showIntroOffer && tier.key === "pro"
                     ? `Then ${copy.upgrade.proPrice}/month. Cancel anytime.`
-                    : tier.tagline}
-                </div>
+                    : tier.positioning}
+                </p>
 
                 <ul className="mt-6 space-y-2.5 text-sm">
                   {tier.features.map((f) => (
                     <li key={f} className="flex gap-2.5 items-start">
                       <Check
                         className={`h-4 w-4 mt-0.5 shrink-0 ${
-                          tier.highlight ? "text-accent" : "text-foreground"
+                          tier.highlight
+                            ? "text-accent"
+                            : tier.premium
+                              ? "text-foreground"
+                              : "text-foreground"
                         }`}
                         strokeWidth={2}
                       />
@@ -269,10 +299,16 @@ const Upgrade = () => {
                   ))}
                 </ul>
 
+                {tier.footnote && (
+                  <p className="mt-4 text-xs text-muted-foreground italic">
+                    {tier.footnote}
+                  </p>
+                )}
+
                 <div className="mt-7">
                   {tier.key === "free" ? (
                     <Button variant="outline" className="w-full" disabled>
-                      {plan === "free" ? "Current plan" : "Free tier"}
+                      {plan === "free" ? "Current plan" : tier.ctaLabel}
                     </Button>
                   ) : isCurrent ? (
                     <Button variant="outline" className="w-full" disabled>
@@ -301,15 +337,15 @@ const Upgrade = () => {
                       className={`w-full ${
                         tier.highlight
                           ? "bg-accent hover:bg-accent/90 text-accent-foreground"
-                          : ""
+                          : tier.premium
+                            ? "bg-foreground hover:bg-foreground/90 text-background"
+                            : ""
                       }`}
-                      variant={tier.highlight ? "default" : "secondary"}
+                      variant={tier.highlight || tier.premium ? "default" : "secondary"}
                     >
                       {showIntroOffer && tier.key === "pro"
                         ? copy.upgrade.intro.buttonCta
-                        : plan === "pro" && tier.key === "coach_plus"
-                          ? "Upgrade to Coach+"
-                          : `Get ${tier.name}`}
+                        : tier.ctaLabel}
                     </Button>
                   )}
                 </div>

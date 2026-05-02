@@ -52,7 +52,7 @@ serve(async (req: Request) => {
 
     // Plan check — Free users get a monthly evaluation allowance, paid keep
     // existing access. Honour testing override via get_user_plan.
-    const FREE_EVALUATION_LIMIT = 3;
+    const FREE_EVALUATION_LIMIT = 2;
     const { data: planRow } = await admin.rpc("get_user_plan", { _user_id: user.id, _env: "sandbox" });
     const { data: planRowLive } = await admin.rpc("get_user_plan", { _user_id: user.id, _env: "live" });
     const isCoachPlus = planRow === "coach_plus" || planRowLive === "coach_plus";

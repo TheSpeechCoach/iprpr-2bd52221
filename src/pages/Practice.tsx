@@ -459,7 +459,7 @@ const Practice = () => {
     if (!current || !id) return;
     if (!isPaid && freeEvalsRemaining <= 0) {
       toast({
-        title: "You've used your 3 free evaluations this month.",
+        title: "You've used your 2 free evaluations this month.",
         description: "Upgrade to continue receiving AI feedback.",
       });
       return;

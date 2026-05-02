@@ -1241,6 +1241,28 @@ const SetupChoices = ({
   </div>
 );
 
+const DifficultyBadge = ({ value }: { value: string }) => {
+  const v = value.toLowerCase();
+  const tone =
+    v === "hard"
+      ? "border-accent/40 text-accent bg-accent/5"
+      : v === "medium"
+        ? "border-amber-500/30 text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-500/10"
+        : "border-border text-muted-foreground bg-transparent";
+  const label = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "text-[10px] uppercase tracking-wider font-normal",
+        tone,
+      )}
+    >
+      {label}
+    </Badge>
+  );
+};
+
 const ScoreChip = ({ label, value }: { label: string; value: number | null }) => (
   <div className="border border-border p-2.5">
     <div className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">

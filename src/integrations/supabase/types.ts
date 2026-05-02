@@ -835,6 +835,7 @@ export type Database = {
           include_followups: boolean
           include_rubric: boolean
           interview_style: string | null
+          interview_track: string
           interview_type: string | null
           job_description: string | null
           job_spec_url: string | null
@@ -875,6 +876,7 @@ export type Database = {
           include_followups?: boolean
           include_rubric?: boolean
           interview_style?: string | null
+          interview_track?: string
           interview_type?: string | null
           job_description?: string | null
           job_spec_url?: string | null
@@ -915,6 +917,7 @@ export type Database = {
           include_followups?: boolean
           include_rubric?: boolean
           interview_style?: string | null
+          interview_track?: string
           interview_type?: string | null
           job_description?: string | null
           job_spec_url?: string | null

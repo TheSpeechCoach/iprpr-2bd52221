@@ -35,7 +35,7 @@ export const ResetTestAccountsPanel = () => {
       setIsAdmin(!!roleRow);
     })();
     return () => { cancelled = true; };
-  }, [user?.id]);
+  }, [user]);
 
   if (!user || !enabled || !isAdmin) return null;
 

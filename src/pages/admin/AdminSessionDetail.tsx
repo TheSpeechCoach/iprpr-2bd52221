@@ -198,6 +198,30 @@ export default function AdminSessionDetail() {
             </Card>
 
             <Card>
+              <CardHeader className="p-4 pb-2"><CardTitle className="text-sm">Organisation research</CardTitle></CardHeader>
+              <CardContent className="p-4 pt-0 text-sm space-y-2">
+                {(() => {
+                  const r = session.organisation_research;
+                  if (!r || typeof r !== "object") {
+                    return <p className="text-muted-foreground">Not run.</p>;
+                  }
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <Field label="Status" value={<Badge variant={r.status === "failed" ? "destructive" : "secondary"}>{r.status ?? "ok"}</Badge>} />
+                        <Field label="Sources" value={String(Array.isArray(r.sources) ? r.sources.length : 0)} />
+                        <Field label="Last researched" value={r.last_researched_at ? format(new Date(r.last_researched_at), "d MMM yyyy HH:mm") : "—"} />
+                        <Field label="Track" value={session.interview_track ?? "professional"} />
+                      </div>
+                      {r.summary && <Block label="Summary" body={r.summary} />}
+                      {r.note && <p className="text-xs text-muted-foreground italic">{r.note}</p>}
+                    </>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+
+            <Card>
               <CardHeader className="p-4 pb-2"><CardTitle className="text-sm">Generation jobs ({jobs.length})</CardTitle></CardHeader>
               <CardContent className="p-4 pt-0 text-sm">
                 {jobs.length === 0 ? (

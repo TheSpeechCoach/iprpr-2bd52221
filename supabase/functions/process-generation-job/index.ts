@@ -14,6 +14,7 @@
 //     for diagnosis.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { ukifyJson } from "../_shared/ukEnglish.ts";
+import { TRACK_PROMPT_GUIDANCE, normaliseTrack } from "../_shared/tracks.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -241,7 +242,11 @@ After position 10, distribute the remaining categories naturally across the inte
 COACH INSIGHTS (selective):
 Choose EXACTLY 3–5 of the most pivotal questions in the entire pack and attach a "coach_insight" object to each. Strongly prefer questions inside positions 1–10. Every other question MUST omit "coach_insight" entirely. Coach insights follow the same clarity rules: spoken register, short sentences, real behaviour over abstractions.`;
 
-    const candidateRoleBlock = `CANDIDATE PROFILE
+    const trackGuidance = TRACK_PROMPT_GUIDANCE[normaliseTrack((session as any).interview_track)];
+
+    const candidateRoleBlock = `${trackGuidance}
+
+CANDIDATE PROFILE
 - Name: ${session.full_name || "—"}
 - Current role: ${session.candidate_current_role || "—"}
 - Years experience: ${session.years_experience || "—"}

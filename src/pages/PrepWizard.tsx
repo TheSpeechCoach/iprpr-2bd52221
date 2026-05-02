@@ -395,6 +395,8 @@ const PrepWizard = () => {
             })}
           </div>
         )}
+
+        {step === 1 && (
           <div className="space-y-5">
             {isTeamWorkspace && (
               <Field

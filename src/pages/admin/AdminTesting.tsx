@@ -35,7 +35,7 @@ export default function AdminTesting() {
 
       const ovrList = (ovr.data ?? []) as Array<{ user_id: string; override_plan: string; created_at: string }>;
       const userIds = ovrList.map((o) => o.user_id);
-      let emails: Record<string, string> = {};
+      const emails: Record<string, string> = {};
       if (userIds.length) {
         const { data: profs } = await supabase.from("profiles").select("id,email").in("id", userIds);
         for (const p of profs ?? []) emails[p.id] = p.email ?? "";

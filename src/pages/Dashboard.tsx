@@ -14,6 +14,7 @@ import { SoftUrgencyNote } from "@/components/SoftUrgencyNote";
 import { useProIntroOfferEligibility } from "@/hooks/useProIntroOfferEligibility";
 import { ProUsageBanner } from "@/components/ProUsageBanner";
 import { AccountFlagBanner } from "@/components/AccountFlagBanner";
+import { trackLabel } from "@/config/tracks";
 
 interface Session {
   id: string;
@@ -22,6 +23,7 @@ interface Session {
   company_name: string | null;
   status: string;
   created_at: string;
+  interview_track: string | null;
 }
 
 const Dashboard = () => {
@@ -45,9 +47,9 @@ const Dashboard = () => {
     const load = async () => {
       const { data } = await supabase
         .from("prep_sessions")
-        .select("id, title, target_role, company_name, status, created_at")
+        .select("id, title, target_role, company_name, status, created_at, interview_track")
         .order("created_at", { ascending: false });
-      setSessions(data ?? []);
+      setSessions((data ?? []) as Session[]);
       setLoading(false);
     };
     if (user) load();
@@ -192,6 +194,8 @@ const Dashboard = () => {
                   <div className="min-w-0">
                     <div className="font-display font-medium truncate">{s.title}</div>
                     <div className="text-xs text-muted-foreground mt-1 truncate">
+                      <span className="text-foreground/80">Track: {trackLabel(s.interview_track)}</span>
+                      {" · "}
                       {s.target_role ?? "Role not set"}{s.company_name ? ` · ${s.company_name}` : ""} · Created {formatDistanceToNow(new Date(s.created_at), { addSuffix: true })}
                     </div>
                   </div>

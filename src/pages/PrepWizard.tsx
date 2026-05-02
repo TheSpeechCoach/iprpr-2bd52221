@@ -16,8 +16,9 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { track } from "@/lib/analytics";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, Lock } from "lucide-react";
+import { INTERVIEW_TRACKS, type InterviewTrack } from "@/config/tracks";
 
-const STEPS = ["Candidate", "Career", "Job", "Parameters", "Train"] as const;
+const STEPS = ["Track", "Candidate", "Career", "Job", "Parameters", "Train"] as const;
 
 const PrepWizard = () => {
   const { user } = useAuth();
@@ -57,6 +58,7 @@ const PrepWizard = () => {
   );
 
   const [form, setForm] = useState({
+    interview_track: "professional" as InterviewTrack,
     full_name: "",
     candidate_current_role: "",
     years_experience: "",
@@ -145,7 +147,7 @@ const PrepWizard = () => {
     }
     if (isTeamWorkspace && !selectedCandidateId) {
       toast({ title: "Pick a candidate", description: "Select which candidate this prep session is for.", variant: "destructive" });
-      setStep(0);
+      setStep(1);
       return;
     }
     if (!canCreateSession) {
@@ -159,12 +161,12 @@ const PrepWizard = () => {
     }
     if (!form.target_role.trim()) {
       toast({ title: "Add a target role", description: "We need the role you're interviewing for to tailor the questions.", variant: "destructive" });
-      setStep(0);
+      setStep(1);
       return;
     }
     if (!form.job_description.trim() && !form.job_spec_url.trim() && !form.job_title.trim()) {
       toast({ title: "Tell us about the role", description: "Paste the job description, share a link, or at least add a job title.", variant: "destructive" });
-      setStep(2);
+      setStep(3);
       return;
     }
     const hasLinkedinUrl = /^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(form.linkedin_url.trim());
@@ -174,7 +176,7 @@ const PrepWizard = () => {
         description: "Add your LinkedIn profile, upload your CV, or paste your CV text.",
         variant: "destructive",
       });
-      setStep(1);
+      setStep(2);
       return;
     }
     // If only a LinkedIn URL is provided, we can't read it server-side yet.
@@ -185,7 +187,7 @@ const PrepWizard = () => {
         description: "Please upload your CV or paste your details so we can tailor your questions.",
         variant: "destructive",
       });
-      setStep(1);
+      setStep(2);
       return;
     }
     setSubmitting(true);
@@ -350,22 +352,51 @@ const PrepWizard = () => {
 
         <div className="mb-8">
           <h1 className="font-display text-3xl font-semibold">
-            {step === 0 && "Tell us about you"}
-            {step === 1 && "Add your career evidence"}
-            {step === 2 && "Describe the role"}
-            {step === 3 && "Shape the questions"}
-            {step === 4 && "Ready to train"}
+            {step === 0 && "What are you preparing for?"}
+            {step === 1 && "Tell us about you"}
+            {step === 2 && "Add your career evidence"}
+            {step === 3 && "Describe the role"}
+            {step === 4 && "Shape the questions"}
+            {step === 5 && "Ready to train"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-            {step === 0 && "A few details so we can tailor the questions to your level and the role you're going for."}
-            {step === 1 && "Add your LinkedIn profile, upload your CV, or paste your CV text. The more we know, the sharper the questions."}
-            {step === 2 && "Paste the job description, share a link, or describe the role in your own words."}
-            {step === 3 && "Optional. Adjust difficulty, balance, and the style of the interview you expect."}
-            {step === 4 && "Have a quick look. You can come back and create more sessions any time."}
+            {step === 0 && "Choose your interview track so we can tailor the questions to the room you're walking into."}
+            {step === 1 && "A few details so we can tailor the questions to your level and the role you're going for."}
+            {step === 2 && "Add your LinkedIn profile, upload your CV, or paste your CV text. The more we know, the sharper the questions."}
+            {step === 3 && "Paste the job description, share a link, or describe the role in your own words."}
+            {step === 4 && "Optional. Adjust difficulty, balance, and the style of the interview you expect."}
+            {step === 5 && "Have a quick look. You can come back and create more sessions any time."}
           </p>
         </div>
 
         {step === 0 && (
+          <div className="space-y-3">
+            {INTERVIEW_TRACKS.map((t) => {
+              const selected = form.interview_track === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => update("interview_track", t.value)}
+                  className={`w-full text-left border p-5 transition-colors ${
+                    selected
+                      ? "border-foreground bg-secondary/40"
+                      : "border-border hover:bg-secondary/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="font-display text-lg font-semibold">{t.label}</div>
+                    <div className={`h-3 w-3 rounded-full border ${selected ? "bg-accent border-accent" : "border-border"}`} />
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1">{t.blurb}</div>
+                  <div className="text-xs text-muted-foreground/80 mt-2">{t.description}</div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {step === 1 && (
           <div className="space-y-5">
             {isTeamWorkspace && (
               <Field
@@ -457,7 +488,7 @@ const PrepWizard = () => {
           </div>
         )}
 
-        {step === 1 && (
+        {step === 2 && (
           <div className="space-y-6">
             <div className="border border-border p-5 space-y-4">
               <div>
@@ -497,7 +528,7 @@ const PrepWizard = () => {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Job title" hint="As written on the posting.">
@@ -535,7 +566,7 @@ const PrepWizard = () => {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Difficulty" hint="How tough should the panel feel?">
@@ -603,7 +634,7 @@ const PrepWizard = () => {
           </div>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <div className="space-y-6">
             <div className="border border-border p-6 bg-secondary/30">
               <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">You're about to build your training set</div>

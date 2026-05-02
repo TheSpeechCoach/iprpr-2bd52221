@@ -488,7 +488,7 @@ const PrepWizard = () => {
           </div>
         )}
 
-        {step === 1 && (
+        {step === 2 && (
           <div className="space-y-6">
             <div className="border border-border p-5 space-y-4">
               <div>
@@ -528,7 +528,7 @@ const PrepWizard = () => {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Job title" hint="As written on the posting.">
@@ -566,7 +566,7 @@ const PrepWizard = () => {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Difficulty" hint="How tough should the panel feel?">
@@ -634,7 +634,7 @@ const PrepWizard = () => {
           </div>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <div className="space-y-6">
             <div className="border border-border p-6 bg-secondary/30">
               <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">You're about to build your training set</div>

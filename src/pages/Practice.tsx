@@ -720,155 +720,311 @@ const Practice = () => {
               <p className="font-display text-xl md:text-2xl leading-snug">
                 {current?.question}
               </p>
-
-              {(current?.why_matters || current?.what_good_covers) && (
-                <div className="mt-6 space-y-3 border-t border-border pt-5 text-sm text-muted-foreground">
-                  {current?.why_matters && (
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest mb-1">
-                        Why this matters
-                      </div>
-                      <p>{current.why_matters}</p>
-                    </div>
-                  )}
-                  {current?.what_good_covers && (
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest mb-1">
-                        What good answers cover
-                      </div>
-                      <p>{current.what_good_covers}</p>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
-            {/* Answer notes */}
-            <div>
-              <div className="flex items-baseline justify-between mb-2">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Write your answer in your own words
-                </div>
-                <div className="text-[11px] text-muted-foreground">
-                  {savingAnswer ? "Saving…" : savedAnswerExists ? "Saved" : "Autosaves as you type"}
-                </div>
-              </div>
-              <p className="text-[11px] text-muted-foreground mb-2">
-                This is how you train your real delivery.
-              </p>
-              <Textarea
-                value={answer}
-                onChange={(e) => onAnswerChange(e.target.value)}
-                placeholder="Don't copy the model answer. Write what you would actually say…"
-                rows={7}
-              />
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {/* Primary action */}
-                <Button
-                  size="sm"
-                  onClick={() => persistAnswer(answer)}
-                  disabled={savingAnswer || !answer.trim()}
-                >
-                  Save answer
-                </Button>
-
-                {/* Feedback CTA — clearer wording, gated by allowance, not by plan */}
-                {canEvaluate ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={scoreAnswer}
-                    disabled={scoring || !answer.trim()}
-                    className="gap-1.5"
-                  >
-                    {scoring ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-3.5 w-3.5" />
-                    )}
-                    {isPaid ? "Get feedback on this answer" : "Get free feedback"}
-                  </Button>
-                ) : (
-                  <Link to="/upgrade">
-                    <Button size="sm" variant="outline" className="gap-1.5">
-                      <Lock className="h-3.5 w-3.5" />
-                      Upgrade for more feedback
-                    </Button>
-                  </Link>
-                )}
-              </div>
-              <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
-                We'll assess structure, clarity, relevance and delivery strength.
-                {!isPaid && (
-                  <>
-                    {" "}
-                    {freeEvalsRemaining > 0
-                      ? freeEvalsUsed === 0
-                        ? "You have 3 free answer evaluations each month."
-                        : `You have ${freeEvalsRemaining} free evaluation${freeEvalsRemaining === 1 ? "" : "s"} left this month.`
-                      : "You've used your 3 free evaluations this month. Upgrade to continue receiving AI feedback."}
-                  </>
-                )}
-              </p>
-            </div>
-
-            {/* Coach feedback */}
-            {currentScore && (
-              <div className="border border-border bg-card p-6">
-                <div className="flex items-baseline justify-between mb-4">
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                    <Sparkles className="h-3 w-3" /> Coach feedback
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">
-                      Performance score
+            {/* ── Answer support cascade ─────────────────────────────── */}
+            <AnswerSupportCascade
+              plan={plan}
+              defaultOpen="understand"
+              steps={[
+                {
+                  key: "understand",
+                  number: 1,
+                  title: "Understand the question",
+                  tier: "free",
+                  unlocked: true,
+                  lockedTeaser: "",
+                  lockedCta: "",
+                  lockedHref: "/upgrade",
+                  unlockedBody: (
+                    <div className="space-y-4 pb-2 text-sm text-muted-foreground">
+                      <p className="text-xs italic text-muted-foreground/80">
+                        Understand the question before you answer it.
+                      </p>
+                      {current?.why_matters ? (
+                        <div>
+                          <div className="text-[10px] uppercase tracking-widest mb-1 text-foreground/70">
+                            Why this question matters
+                          </div>
+                          <p>{current.why_matters}</p>
+                        </div>
+                      ) : null}
+                      {current?.what_good_covers ? (
+                        <div>
+                          <div className="text-[10px] uppercase tracking-widest mb-1 text-foreground/70">
+                            What a strong answer should cover
+                          </div>
+                          <p>{current.what_good_covers}</p>
+                        </div>
+                      ) : null}
+                      {!current?.why_matters && !current?.what_good_covers && (
+                        <p className="italic">
+                          Take a moment to think about what the interviewer is
+                          really looking for here.
+                        </p>
+                      )}
                     </div>
-                    <div className="font-display text-3xl font-semibold tabular-nums">
-                      {currentScore.overall_score ?? "—"}
-                      <span className="text-base text-muted-foreground">/10</span>
+                  ),
+                },
+                {
+                  key: "build",
+                  number: 2,
+                  title: "Build your answer",
+                  tier: "pro",
+                  unlocked: isPaid,
+                  lockedTeaser:
+                    "Pro unlocks suggested answer structure, key points to include, what to avoid and stronger model answers — plus saved training history.",
+                  lockedCta: "Unlock Pro",
+                  lockedHref: "/upgrade",
+                  unlockedBody: (
+                    <div className="space-y-3 pb-2 text-sm text-muted-foreground">
+                      <p className="text-xs italic text-muted-foreground/80">
+                        Build stronger answers with structure, examples and
+                        targeted feedback.
+                      </p>
+                      <p>
+                        Use the answer tiers and suggested structure on the{" "}
+                        <Link
+                          to={`/prep/${id}/results`}
+                          className="underline underline-offset-2 hover:text-foreground"
+                        >
+                          results page
+                        </Link>{" "}
+                        to plan how you'll open, what evidence to bring, and
+                        what to leave out. Then write it in your own words in
+                        the next step.
+                      </p>
                     </div>
-                  </div>
-                </div>
+                  ),
+                },
+                {
+                  key: "practise",
+                  number: 3,
+                  title: "Practise your answer",
+                  tier: "pro",
+                  unlocked: isPaid,
+                  lockedTeaser:
+                    "Pro lets you write, save and refine answers, plus train under timed interview pressure.",
+                  lockedCta: "Unlock Pro",
+                  lockedHref: "/upgrade",
+                  unlockedBody: (
+                    <div className="pb-2">
+                      <div className="flex items-baseline justify-between mb-2">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                          Write your answer in your own words
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {savingAnswer
+                            ? "Saving…"
+                            : savedAnswerExists
+                              ? "Saved"
+                              : "Autosaves as you type"}
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mb-2">
+                        This is how you train your real delivery.
+                      </p>
+                      <Textarea
+                        value={answer}
+                        onChange={(e) => onAnswerChange(e.target.value)}
+                        placeholder="Don't copy the model answer. Write what you would actually say…"
+                        rows={7}
+                      />
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => persistAnswer(answer)}
+                          disabled={savingAnswer || !answer.trim()}
+                        >
+                          Save answer
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={next}
+                          className="gap-1.5"
+                        >
+                          Next question <ArrowRight className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  key: "feedback",
+                  number: 4,
+                  title: "Get feedback",
+                  tier: isCoachPlus ? "coach_plus" : "pro",
+                  // Free users can open feedback to use their 3/month allowance.
+                  unlocked: true,
+                  lockedTeaser: "",
+                  lockedCta: "",
+                  lockedHref: "/upgrade",
+                  unlockedBody: (
+                    <div className="space-y-4 pb-2">
+                      {!isPaid && (
+                        <p className="text-xs italic text-muted-foreground/80">
+                          You get 3 free AI feedback evaluations every month.
+                        </p>
+                      )}
+                      {isPaid && !isCoachPlus && (
+                        <p className="text-xs italic text-muted-foreground/80">
+                          Full AI feedback on saved answers — structure,
+                          clarity, relevance and confidence.
+                        </p>
+                      )}
+                      {isCoachPlus && (
+                        <p className="text-xs italic text-muted-foreground/80">
+                          Refine how your answer lands: judgement, tone,
+                          presence and strategic clarity.
+                        </p>
+                      )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-                  <ScoreChip label="Clarity" value={currentScore.clarity_score} />
-                  <ScoreChip label="Structure" value={currentScore.structure_score} />
-                  <ScoreChip label="Relevance" value={currentScore.relevance_score} />
-                  <ScoreChip label="Evidence" value={currentScore.evidence_score} />
-                  <ScoreChip label="Concision" value={currentScore.concision_score} />
-                  <ScoreChip label="Authenticity" value={currentScore.authenticity_score} />
-                  <ScoreChip
-                    label="Interview impact"
-                    value={currentScore.interview_impact_score}
-                  />
-                </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {canEvaluate ? (
+                          <Button
+                            size="sm"
+                            onClick={scoreAnswer}
+                            disabled={scoring || !answer.trim()}
+                            className="gap-1.5"
+                          >
+                            {scoring ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-3.5 w-3.5" />
+                            )}
+                            {isCoachPlus
+                              ? "Get Coach+ feedback"
+                              : isPaid
+                                ? "Get feedback on this answer"
+                                : "Get free feedback"}
+                          </Button>
+                        ) : (
+                          <Link to="/upgrade">
+                            <Button size="sm" className="gap-1.5">
+                              <Lock className="h-3.5 w-3.5" />
+                              Upgrade for more feedback
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
 
-                {currentScore.feedback_json && (
-                  <div className="space-y-4 text-sm">
-                    <FeedbackBlock
-                      label="What works"
-                      body={currentScore.feedback_json.what_works}
-                    />
-                    <FeedbackBlock
-                      label="What needs improving"
-                      body={currentScore.feedback_json.needs_improving}
-                    />
-                    <FeedbackBlock
-                      label="What to remove"
-                      body={currentScore.feedback_json.what_to_remove}
-                    />
-                    <FeedbackBlock
-                      label="Make more specific"
-                      body={currentScore.feedback_json.make_more_specific}
-                    />
-                    <FeedbackBlock
-                      label="Suggested stronger version"
-                      body={currentScore.feedback_json.stronger_version}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        We'll assess structure, clarity, relevance and delivery
+                        strength.
+                        {!isPaid && (
+                          <>
+                            {" "}
+                            {freeEvalsRemaining > 0
+                              ? freeEvalsUsed === 0
+                                ? "You have 3 free answer evaluations each month."
+                                : `You have ${freeEvalsRemaining} free evaluation${freeEvalsRemaining === 1 ? "" : "s"} left this month.`
+                              : "You've used your 3 free evaluations this month. Upgrade to continue receiving AI feedback."}
+                          </>
+                        )}
+                      </p>
+
+                      {isCoachPlus && (
+                        <div className="rounded-sm border border-foreground/20 bg-foreground/[0.02] p-3 text-[12px] text-muted-foreground">
+                          <div className="text-[10px] uppercase tracking-widest text-foreground/70 mb-1 flex items-center gap-1.5">
+                            <Sparkles className="h-3 w-3" /> Coach's note
+                          </div>
+                          Coach+ adds deeper coaching on delivery, tone,
+                          judgement and interview presence — sharper critique
+                          for senior roles.
+                        </div>
+                      )}
+
+                      {currentScore && (
+                        <div className="border border-border bg-card p-5 mt-2">
+                          <div className="flex items-baseline justify-between mb-4">
+                            <div className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                              <Sparkles className="h-3 w-3" /> Coach feedback
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">
+                                Performance score
+                              </div>
+                              <div className="font-display text-3xl font-semibold tabular-nums">
+                                {currentScore.overall_score ?? "—"}
+                                <span className="text-base text-muted-foreground">
+                                  /10
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+                            <ScoreChip
+                              label="Clarity"
+                              value={currentScore.clarity_score}
+                            />
+                            <ScoreChip
+                              label="Structure"
+                              value={currentScore.structure_score}
+                            />
+                            <ScoreChip
+                              label="Relevance"
+                              value={currentScore.relevance_score}
+                            />
+                            <ScoreChip
+                              label="Evidence"
+                              value={currentScore.evidence_score}
+                            />
+                            <ScoreChip
+                              label="Concision"
+                              value={currentScore.concision_score}
+                            />
+                            <ScoreChip
+                              label="Authenticity"
+                              value={currentScore.authenticity_score}
+                            />
+                            <ScoreChip
+                              label="Interview impact"
+                              value={currentScore.interview_impact_score}
+                            />
+                          </div>
+
+                          {currentScore.feedback_json && (
+                            <div className="space-y-4 text-sm">
+                              <FeedbackBlock
+                                label="What works"
+                                body={currentScore.feedback_json.what_works}
+                              />
+                              <FeedbackBlock
+                                label="What needs improving"
+                                body={
+                                  currentScore.feedback_json.needs_improving
+                                }
+                              />
+                              <FeedbackBlock
+                                label="What to remove"
+                                body={
+                                  currentScore.feedback_json.what_to_remove
+                                }
+                              />
+                              <FeedbackBlock
+                                label="Make more specific"
+                                body={
+                                  currentScore.feedback_json.make_more_specific
+                                }
+                              />
+                              <FeedbackBlock
+                                label="Suggested stronger version"
+                                body={
+                                  currentScore.feedback_json.stronger_version
+                                }
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ),
+                },
+              ]}
+            />
+
 
             {/* Self ratings */}
             <div className="grid sm:grid-cols-2 gap-6">

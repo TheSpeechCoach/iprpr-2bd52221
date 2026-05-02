@@ -46,11 +46,11 @@ export const TestingPlanSwitcher = () => {
         : { action: "set", user_id: user.id, plan: next };
       const { error } = await supabase.functions.invoke("set-testing-plan-override", { body });
       if (error) throw error;
-      try { localStorage.setItem("testing_plan_override", next); } catch {}
+      try { localStorage.setItem("testing_plan_override", next); } catch { /* ignore storage errors (private mode, quota) */ }
       await refresh();
       toast.success(next === "clear" ? "Testing override cleared" : `Testing plan: ${next}`);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to update testing plan");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update testing plan");
     } finally {
       setBusy(false);
     }

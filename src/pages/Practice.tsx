@@ -255,9 +255,9 @@ const Practice = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.id]);
 
-  // Timer tick (only when timer is enabled, duration > 0)
+  // Timer tick (only when Timed mode is on, timer enabled, and running)
   useEffect(() => {
-    if (!running || duration === 0) return;
+    if (!timedMode || !running || duration === 0) return;
     const t = setInterval(() => {
       setRemaining((r) => {
         if (r <= 1) {
@@ -270,10 +270,20 @@ const Practice = () => {
       elapsedRef.current += 1;
     }, 1000);
     return () => clearInterval(t);
-  }, [running, duration]);
+  }, [running, duration, timedMode]);
+
+  // When Timed mode is toggled off, stop and reset countdown.
+  useEffect(() => {
+    if (!timedMode) {
+      setRunning(false);
+      setRemaining(duration);
+      elapsedRef.current = 0;
+      startedAtRef.current = null;
+    }
+  }, [timedMode, duration]);
 
   const startTimer = () => {
-    if (duration === 0) return;
+    if (duration === 0 || !timedMode) return;
     if (!running) {
       if (startedAtRef.current === null) startedAtRef.current = Date.now();
       setRunning(true);

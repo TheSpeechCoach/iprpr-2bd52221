@@ -1096,6 +1096,92 @@ const Results = () => {
           </EditorialSection>
         )}
 
+        {/* Organisation insight */}
+        {(() => {
+          const r = (session as any)?.organisation_research;
+          const has = r && typeof r === "object";
+          return (
+            <Collapsible defaultOpen={false}>
+              <div className="border border-border p-4 mt-8">
+                <CollapsibleTrigger className="w-full flex items-center justify-between gap-4 text-left">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
+                      Organisation insight
+                    </div>
+                    <div className="text-sm font-medium">
+                      {has
+                        ? (r.organisation_name || session?.company_name || "What we found")
+                        : "Research the organisation"}
+                      {has && r.status === "limited" && (
+                        <span className="ml-2 text-[11px] uppercase tracking-wider text-muted-foreground">limited</span>
+                      )}
+                      {has && r.status === "failed" && (
+                        <span className="ml-2 text-[11px] uppercase tracking-wider text-destructive">failed</span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">expand</span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4 space-y-3 text-sm">
+                  {!has && (
+                    <p className="text-muted-foreground">
+                      We can research the organisation and likely interview style based on the brief you provided.
+                    </p>
+                  )}
+                  {has && r.summary && <p className="text-foreground/90">{r.summary}</p>}
+                  {has && Array.isArray(r.mission_values) && r.mission_values.length > 0 && (
+                    <Field2 label="Values">{r.mission_values.join(" · ")}</Field2>
+                  )}
+                  {has && r.preferred_interview_style && (
+                    <Field2 label="Likely interview style">{r.preferred_interview_style}</Field2>
+                  )}
+                  {has && Array.isArray(r.likely_assessment_criteria) && r.likely_assessment_criteria.length > 0 && (
+                    <Field2 label="What they may be assessing">
+                      <ul className="list-disc pl-5 space-y-1">
+                        {r.likely_assessment_criteria.map((x: string, i: number) => <li key={i}>{x}</li>)}
+                      </ul>
+                    </Field2>
+                  )}
+                  {has && Array.isArray(r.known_interview_methods) && r.known_interview_methods.length > 0 && (
+                    <Field2 label="Known interview methods">{r.known_interview_methods.join(" · ")}</Field2>
+                  )}
+                  {has && Array.isArray(r.track_specific_notes) && r.track_specific_notes.length > 0 && (
+                    <Field2 label="Useful preparation notes">
+                      <ul className="list-disc pl-5 space-y-1">
+                        {r.track_specific_notes.map((x: string, i: number) => <li key={i}>{x}</li>)}
+                      </ul>
+                    </Field2>
+                  )}
+                  {has && Array.isArray(r.sources) && r.sources.length > 0 && (
+                    <Field2 label="Sources">
+                      <ul className="space-y-1">
+                        {r.sources.slice(0, 8).map((u: string, i: number) => (
+                          <li key={i}><a className="underline break-all" href={u} target="_blank" rel="noreferrer">{u}</a></li>
+                        ))}
+                      </ul>
+                    </Field2>
+                  )}
+                  {has && r.note && (
+                    <p className="text-xs text-muted-foreground italic">{r.note}</p>
+                  )}
+                  {has && r.status === "failed" && (
+                    <p className="text-xs text-muted-foreground">
+                      We could not research this automatically. We'll use the information you provided.
+                    </p>
+                  )}
+                  <div className="pt-1">
+                    <Button size="sm" variant="outline" onClick={runOrganisationResearch} disabled={researching}>
+                      {researching
+                        ? "Researching the organisation and likely interview style…"
+                        : has ? "Re-run research" : "Research organisation"}
+                    </Button>
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          );
+        })()}
+
         {/* Section divider into the question bank */}
         <div className="flex items-end justify-between mt-14 mb-6 pb-3 border-b border-border">
           <div>

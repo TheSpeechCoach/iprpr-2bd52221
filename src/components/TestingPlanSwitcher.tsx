@@ -30,7 +30,7 @@ export const TestingPlanSwitcher = () => {
         supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
       ]);
       if (cancelled) return;
-      setEnabled(setting?.value === true || (setting?.value as any) === "true");
+      setEnabled(setting?.value === true || (setting?.value as unknown) === "true");
       setIsAdmin(!!roleRow);
     })();
     return () => { cancelled = true; };

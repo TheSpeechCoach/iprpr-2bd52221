@@ -220,7 +220,30 @@ serve(async (req: Request) => {
       return json({ error: "Could not save score" }, 500);
     }
 
-    return json({ score: inserted });
+    // Increment Free monthly usage after a successful evaluation.
+    let evaluationsRemaining: number | null = null;
+    if (!isPaid) {
+      if (usageRow) {
+        const newUsed = (usageRow.evaluations_used ?? 0) + 1;
+        await admin
+          .from("answer_evaluation_usage")
+          .update({ evaluations_used: newUsed })
+          .eq("id", usageRow.id);
+        evaluationsRemaining = Math.max(0, FREE_EVALUATION_LIMIT - newUsed);
+      } else {
+        await admin
+          .from("answer_evaluation_usage")
+          .insert({ user_id: user.id, period_start: periodStart, evaluations_used: 1 });
+        evaluationsRemaining = FREE_EVALUATION_LIMIT - 1;
+      }
+    }
+
+    return json({
+      score: inserted,
+      plan_tier: isCoachPlus ? "coach_plus" : isPro ? "pro" : "free",
+      evaluations_limit: isPaid ? null : FREE_EVALUATION_LIMIT,
+      evaluations_remaining: evaluationsRemaining,
+    });
   } catch (e) {
     console.error("score-answer error", e);
     return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);

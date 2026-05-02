@@ -124,7 +124,8 @@ const Practice = () => {
   const [mode, setMode] = useState<PracticeMode>("category");
   const [setupCategory, setSetupCategory] = useState<string>("all");
   const [setupCount, setSetupCount] = useState<number>(10);
-  const [setupTimer, setSetupTimer] = useState<number>(60);
+  // Timer defaults to OFF; user opts in via Timed mode toggle.
+  const [setupTimer, setSetupTimer] = useState<number>(0);
 
   // Practice run state
   const [orderedIds, setOrderedIds] = useState<string[]>([]);
@@ -139,13 +140,21 @@ const Practice = () => {
   const autosaveTimerRef = useRef<number | null>(null);
 
   // Timer
-  const [duration, setDuration] = useState(60);
-  const [remaining, setRemaining] = useState(60);
+  const [timedMode, setTimedMode] = useState(false);
+  const [duration, setDuration] = useState(90);
+  const [remaining, setRemaining] = useState(90);
   const [running, setRunning] = useState(false);
   const startedAtRef = useRef<number | null>(null);
   const elapsedRef = useRef(0);
 
+  // Free evaluation allowance (server is the source of truth — this is for UI only).
+  const FREE_EVALUATION_LIMIT = 3;
+  const [freeEvalsUsed, setFreeEvalsUsed] = useState<number>(0);
+
   const isCoachPlus = plan === "coach_plus";
+  const isPaid = plan === "pro" || plan === "coach_plus";
+  const freeEvalsRemaining = Math.max(0, FREE_EVALUATION_LIMIT - freeEvalsUsed);
+  const canEvaluate = isPaid || freeEvalsRemaining > 0;
 
   useEffect(() => {
     if (!id || !user) return;

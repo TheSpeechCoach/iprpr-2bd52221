@@ -941,7 +941,7 @@ const Practice = () => {
                               ? freeEvalsUsed === 0
                                 ? "You have 3 free answer evaluations each month."
                                 : `You have ${freeEvalsRemaining} free evaluation${freeEvalsRemaining === 1 ? "" : "s"} left this month.`
-                              : "You've used your 3 free evaluations this month. Upgrade to continue receiving AI feedback."}
+                              : "You've used your 2 free evaluations this month. Upgrade to continue receiving AI feedback."}
                           </>
                         )}
                       </p>

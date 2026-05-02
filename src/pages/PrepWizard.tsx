@@ -274,6 +274,19 @@ const PrepWizard = () => {
         plan,
         sessionId: session.id,
       });
+      // Fire-and-forget: research the organisation in the background so the
+      // generation prompt can pick it up. Non-blocking — generation still runs
+      // even if research is slow or unavailable.
+      void supabase.functions.invoke("research-organisation-context", {
+        body: {
+          prep_session_id: session.id,
+          track: (form as any).interview_track,
+          organisation_name: form.company_name,
+          job_spec_text: form.job_description,
+          job_spec_url: form.job_spec_url,
+          role_title: form.job_title || form.target_role,
+        },
+      }).catch(() => {});
       const { data: genData, error: fnErr } = await supabase.functions.invoke("generate-interview-pack", {
         body: { session_id: session.id },
       });

@@ -352,22 +352,49 @@ const PrepWizard = () => {
 
         <div className="mb-8">
           <h1 className="font-display text-3xl font-semibold">
-            {step === 0 && "Tell us about you"}
-            {step === 1 && "Add your career evidence"}
-            {step === 2 && "Describe the role"}
-            {step === 3 && "Shape the questions"}
-            {step === 4 && "Ready to train"}
+            {step === 0 && "What are you preparing for?"}
+            {step === 1 && "Tell us about you"}
+            {step === 2 && "Add your career evidence"}
+            {step === 3 && "Describe the role"}
+            {step === 4 && "Shape the questions"}
+            {step === 5 && "Ready to train"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-            {step === 0 && "A few details so we can tailor the questions to your level and the role you're going for."}
-            {step === 1 && "Add your LinkedIn profile, upload your CV, or paste your CV text. The more we know, the sharper the questions."}
-            {step === 2 && "Paste the job description, share a link, or describe the role in your own words."}
-            {step === 3 && "Optional. Adjust difficulty, balance, and the style of the interview you expect."}
-            {step === 4 && "Have a quick look. You can come back and create more sessions any time."}
+            {step === 0 && "Choose your interview track so we can tailor the questions to the room you're walking into."}
+            {step === 1 && "A few details so we can tailor the questions to your level and the role you're going for."}
+            {step === 2 && "Add your LinkedIn profile, upload your CV, or paste your CV text. The more we know, the sharper the questions."}
+            {step === 3 && "Paste the job description, share a link, or describe the role in your own words."}
+            {step === 4 && "Optional. Adjust difficulty, balance, and the style of the interview you expect."}
+            {step === 5 && "Have a quick look. You can come back and create more sessions any time."}
           </p>
         </div>
 
         {step === 0 && (
+          <div className="space-y-3">
+            {INTERVIEW_TRACKS.map((t) => {
+              const selected = form.interview_track === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => update("interview_track", t.value)}
+                  className={`w-full text-left border p-5 transition-colors ${
+                    selected
+                      ? "border-foreground bg-secondary/40"
+                      : "border-border hover:bg-secondary/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="font-display text-lg font-semibold">{t.label}</div>
+                    <div className={`h-3 w-3 rounded-full border ${selected ? "bg-accent border-accent" : "border-border"}`} />
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1">{t.blurb}</div>
+                  <div className="text-xs text-muted-foreground/80 mt-2">{t.description}</div>
+                </button>
+              );
+            })}
+          </div>
+        )}
           <div className="space-y-5">
             {isTeamWorkspace && (
               <Field

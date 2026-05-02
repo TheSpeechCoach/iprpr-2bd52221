@@ -28,6 +28,8 @@ interface PrepSession {
   linkedin_text: string | null;
   candidate_summary: string | null;
   role_summary: string | null;
+  organisation_research: any;
+  interview_track: string | null;
   created_at: string;
 }
 

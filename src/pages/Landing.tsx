@@ -157,6 +157,44 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Tracks */}
+      <section id="tracks" className="border-b border-border py-24">
+        <div className="container-tight">
+          <div className="max-w-2xl mb-12">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-4">Tracks</div>
+            <h2 className="font-display text-4xl font-semibold">Choose your interview track</h2>
+            <p className="mt-4 text-base text-muted-foreground">
+              Different interviews test different things. Choose the track that fits the room you are preparing to enter.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-px bg-border">
+            {[
+              {
+                name: "iPrpr: Scholar",
+                blurb: "Admissions, scholarship and academic interviews.",
+                body: "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
+              },
+              {
+                name: "iPrpr: Grad",
+                blurb: "Graduate schemes, internships and first professional roles.",
+                body: "Build clear answers around potential, experience, judgement and fit.",
+              },
+              {
+                name: "iPrpr: Media",
+                blurb: "Podcast, broadcast and public-facing interviews.",
+                body: "Practise clear, quotable answers that hold attention and land under pressure.",
+              },
+            ].map((t) => (
+              <div key={t.name} className="bg-background p-8">
+                <h3 className="font-display text-xl font-semibold">{t.name}</h3>
+                <p className="mt-2 text-sm text-foreground/80">{t.blurb}</p>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{t.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="border-b border-border py-24">
         <div className="container-tight">

@@ -50,12 +50,40 @@ serve(async (req: Request) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
-    // Plan check (Coach+ only) — honour testing override
+    // Plan check — Free users get a monthly evaluation allowance, paid keep
+    // existing access. Honour testing override via get_user_plan.
+    const FREE_EVALUATION_LIMIT = 3;
     const { data: planRow } = await admin.rpc("get_user_plan", { _user_id: user.id, _env: "sandbox" });
     const { data: planRowLive } = await admin.rpc("get_user_plan", { _user_id: user.id, _env: "live" });
-    const plan = planRow === "coach_plus" || planRowLive === "coach_plus" ? "coach_plus" : (planRow ?? "free");
-    if (plan !== "coach_plus") {
-      return json({ error: "Answer scoring is available on Coach+." }, 402);
+    const isCoachPlus = planRow === "coach_plus" || planRowLive === "coach_plus";
+    const isPro = planRow === "pro" || planRowLive === "pro";
+    const isPaid = isCoachPlus || isPro;
+
+    // Calendar-month period start (UTC) used as the bucket key.
+    const now = new Date();
+    const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+      .toISOString()
+      .slice(0, 10);
+
+    let usageRow: { id: string; evaluations_used: number } | null = null;
+    if (!isPaid) {
+      const { data: existing } = await admin
+        .from("answer_evaluation_usage")
+        .select("id, evaluations_used")
+        .eq("user_id", user.id)
+        .eq("period_start", periodStart)
+        .maybeSingle();
+      const used = existing?.evaluations_used ?? 0;
+      if (used >= FREE_EVALUATION_LIMIT) {
+        return json({
+          error:
+            "You've used your 3 free evaluations this month. Upgrade to continue receiving AI feedback.",
+          code: "FREE_EVALUATION_LIMIT_REACHED",
+          evaluations_used: used,
+          evaluations_limit: FREE_EVALUATION_LIMIT,
+        }, 402);
+      }
+      usageRow = (existing as any) ?? null;
     }
 
     // Load question + saved answer + session context

@@ -209,7 +209,7 @@ const Landing = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
-              { name: "Free", price: "$0", desc: "Try it once.", features: ["1 prep session", "10 questions", "Read in-app"] },
+              { name: "Free", price: "$0", desc: "Try before you upgrade.", features: ["10 interview questions per month", "2 answer evaluations per month", "Basic question guidance", "No exports", "No saved answer history", "Upgrade required for full 50-question set"] },
               { name: "Pro", price: "$29", desc: "For serious candidates.", features: ["Unlimited sessions", "50 questions per role", "Training mode", "PDF & DOCX export", "Saved history"], featured: true },
               { name: "Coach+", price: "$79", desc: "For executives & coaches.", features: ["Everything in Pro", "AI answer guidance", "Training analytics", "Premium templates", "Priority support"] },
             ].map((p) => (

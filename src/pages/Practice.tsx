@@ -454,7 +454,7 @@ const Practice = () => {
     toast({ title: "Attempt saved" });
   };
 
-  // ---------- Answer evaluation (Free: 3/month, Paid: existing access) ----------
+  // ---------- Answer evaluation (Free: 2/month, Paid: existing access) ----------
   const scoreAnswer = async () => {
     if (!current || !id) return;
     if (!isPaid && freeEvalsRemaining <= 0) {
@@ -939,7 +939,7 @@ const Practice = () => {
                             {" "}
                             {freeEvalsRemaining > 0
                               ? freeEvalsUsed === 0
-                                ? "You have 3 free answer evaluations each month."
+                                ? "You get 2 free AI feedback evaluations every month."
                                 : `You have ${freeEvalsRemaining} free evaluation${freeEvalsRemaining === 1 ? "" : "s"} left this month.`
                               : "You've used your 2 free evaluations this month. Upgrade to continue receiving AI feedback."}
                           </>

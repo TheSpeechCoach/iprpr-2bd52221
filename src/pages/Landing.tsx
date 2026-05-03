@@ -170,13 +170,13 @@ const Landing = () => {
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
               {
-                name: "iPrpr: Scholar",
-                blurb: "Admissions, scholarship and academic interviews.",
+                name: "iPrpr: Academic",
+                blurb: "School, university, and scholarship interviews.",
                 body: "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
               },
               {
-                name: "iPrpr: Grad",
-                blurb: "Graduate schemes, internships and first professional roles.",
+                name: "iPrpr: Graduate",
+                blurb: "Graduate schemes and early-career roles.",
                 body: "Build clear answers around potential, experience, judgement and fit.",
               },
               {

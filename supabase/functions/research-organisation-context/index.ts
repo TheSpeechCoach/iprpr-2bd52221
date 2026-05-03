@@ -8,8 +8,8 @@
 //   to enrich the summary with public information.
 // - Always falls back to a "limited" status if web research is unavailable or
 //   fails — never blocks generation, never invents facts.
-// - Track-aware: prompt biases what to extract for professional / scholar /
-//   grad / media tracks.
+// - Track-aware: prompt biases what to extract for professional / academic /
+//   graduate / media tracks.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 

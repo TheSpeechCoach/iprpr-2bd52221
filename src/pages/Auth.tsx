@@ -82,16 +82,30 @@ const Auth = () => {
       }
     } catch (err: any) {
       const msg = err?.message ?? "";
-      const friendly = /invalid login credentials/i.test(msg)
-        ? "We couldn't complete sign-in. Please check your details or request a new link."
-        : /already registered|already been registered|user already/i.test(msg)
+      const code = err?.code ?? err?.error_code ?? "";
+      const isWeakPassword =
+        code === "weak_password" ||
+        /weak[_ ]password|pwned|known to be weak|easy to guess/i.test(msg);
+      const isExisting =
+        code === "user_already_exists" ||
+        /already registered|already been registered|user already/i.test(msg);
+      const isSignupAttempt = mode === "signup";
+
+      const friendly = isWeakPassword
+        ? "This password has appeared in a known data breach. Please choose a stronger, unique password (try a longer passphrase)."
+        : isExisting
         ? "An account with this email already exists. Try signing in, or use \"Forgotten password?\" to reset it."
+        : /invalid login credentials/i.test(msg)
+        ? "We couldn't complete sign-in. Please check your details or request a new link."
         : /email not confirmed/i.test(msg)
-        ? "We couldn't complete sign-in. Please check your email verification link or request a new one."
+        ? "Your email isn't confirmed yet. Please check your inbox for the verification link or request a new one."
         : /rate limit|too many/i.test(msg)
         ? "Too many attempts. Please wait a moment and try again."
+        : isSignupAttempt
+        ? "We couldn't create your account. Please check your details and try again."
         : "We couldn't complete sign-in. Please check your details or request a new link.";
-      toast({ title: "Sign-in problem", description: friendly, variant: "destructive" });
+      const title = isSignupAttempt ? "Sign-up problem" : "Sign-in problem";
+      toast({ title, description: friendly, variant: "destructive" });
     } finally {
       setLoading(false);
     }

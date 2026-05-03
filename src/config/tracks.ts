@@ -18,20 +18,20 @@ export const INTERVIEW_TRACKS: Array<{
     description: "Standard professional interview preparation.",
   },
   {
-    value: "academic",
-    label: "iPrpr: Academic",
-    shortLabel: "iPrpr: Academic",
-    blurb: "School, university, and scholarship interviews.",
-    description:
-      "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
-  },
-  {
     value: "graduate",
     label: "iPrpr: Graduate",
     shortLabel: "iPrpr: Graduate",
     blurb: "Graduate schemes and early-career roles.",
     description:
       "Build clear answers around potential, experience, judgement and fit.",
+  },
+  {
+    value: "academic",
+    label: "iPrpr: Academic",
+    shortLabel: "iPrpr: Academic",
+    blurb: "School, university, and scholarship interviews.",
+    description:
+      "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
   },
   {
     value: "media",

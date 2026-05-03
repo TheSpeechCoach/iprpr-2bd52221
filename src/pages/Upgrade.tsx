@@ -40,8 +40,10 @@ const TIER_BENEFITS = {
   free: [
     "10 interview questions per month",
     "2 answer evaluations per month",
-    "Understand why each question is asked",
-    "What strong answers should cover",
+    "Basic question guidance",
+    "No exports",
+    "No saved answer history",
+    "Upgrade required for full 50-question set",
   ],
   pro: [
     "50 interview questions",

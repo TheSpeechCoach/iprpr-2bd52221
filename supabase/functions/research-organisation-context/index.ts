@@ -8,8 +8,8 @@
 //   to enrich the summary with public information.
 // - Always falls back to a "limited" status if web research is unavailable or
 //   fails — never blocks generation, never invents facts.
-// - Track-aware: prompt biases what to extract for professional / scholar /
-//   grad / media tracks.
+// - Track-aware: prompt biases what to extract for professional / academic /
+//   graduate / media tracks.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -22,21 +22,24 @@ const corsHeaders = {
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
 
-type Track = "professional" | "scholar" | "grad" | "media";
+type Track = "professional" | "academic" | "graduate" | "media";
 
 const TRACK_RESEARCH_GUIDANCE: Record<Track, string> = {
   professional:
     "Focus on: company background, sector, products/services, leadership, values, recent news, likely interview format and stages, known interview techniques, and role-specific expectations.",
-  grad:
+  graduate:
     "Focus on: graduate scheme structure, assessment centre style, competency framework, values-based interview approach, likely psychometric / group / case exercises, and early-career expectations.",
-  scholar:
+  academic:
     "Focus on: school / university / department background, course or programme focus, admissions criteria, interview style, academic values, likely subject-area questions, intellectual curiosity expectations, and scholarship/fellowship priorities.",
   media:
     "Focus on: podcast / show / broadcaster format, host style, audience profile, recurring themes, interview rhythm, likely challenge areas, public-facing message risks, and quotable answer opportunities.",
 };
 
 function normaliseTrack(value: unknown): Track {
-  if (value === "scholar" || value === "grad" || value === "media") return value;
+  if (value === "academic" || value === "graduate" || value === "media") return value;
+  // Back-compat for legacy IDs.
+  if (value === "scholar") return "academic";
+  if (value === "grad") return "graduate";
   return "professional";
 }
 
@@ -273,8 +276,8 @@ Deno.serve(async (req) => {
     if (hasFirecrawl && organisationName) {
       const trackQuery = (() => {
         switch (track) {
-          case "scholar": return `${organisationName} admissions interview process`;
-          case "grad": return `${organisationName} graduate scheme assessment centre interview`;
+          case "academic": return `${organisationName} admissions interview process`;
+          case "graduate": return `${organisationName} graduate scheme assessment centre interview`;
           case "media": return `${organisationName} podcast host interview style audience`;
           default: return `${organisationName} ${roleTitle} interview process culture values`;
         }

@@ -58,12 +58,23 @@ export function trackLabel(track: string | null | undefined): string {
 // Track-specific guidance injected into the generation prompt. Keep these
 // concise — they augment, not replace, the core interview-coach prompt.
 export const TRACK_PROMPT_GUIDANCE: Record<InterviewTrack, string> = {
-  professional:
-    "TRACK: iPrpr: Professional. Standard professional interview preparation across industries.",
-  academic:
-    "TRACK: iPrpr: Academic (school / university / admissions / scholarship / fellowship). Focus on motivation, subject knowledge, intellectual curiosity, academic judgement, values, resilience and the candidate's ability to think aloud. Questions should probe how the candidate reasons, where their interest comes from, and how they handle ideas under scrutiny — not professional career outcomes.",
-  graduate:
-    "TRACK: iPrpr: Graduate (graduate scheme / internship / early-career). Focus on potential, transferable skills, career motivation, teamwork, initiative, judgement, communication and learning agility. Calibrate examples to early-career evidence (university projects, internships, part-time work, societies). Avoid assuming senior leadership experience.",
-  media:
-    "TRACK: iPrpr: Media (podcast / broadcast / panel / press / public-facing). Focus on clarity, brevity, audience awareness, message control, quotable answers, handling pressure, avoiding rambling and staying on point. Questions should mirror what a journalist, host or panel chair would actually ask. Coaching should reward tight, headline-ready delivery.",
+  professional: `
+Focus on structured, competency-based responses.
+Prioritise clarity, outcomes, and commercial awareness.
+`,
+
+  academic: `
+Focus on intellectual curiosity, subject depth, and reflective thinking.
+Include reasoning, motivation, and academic engagement.
+`,
+
+  graduate: `
+Focus on potential, learning agility, and transferable skills.
+Balance structure with personality and coachability.
+`,
+
+  media: `
+Focus on clarity under pressure, brevity, and audience engagement.
+Encourage strong hooks, quotable lines, and controlled delivery.
+`,
 };

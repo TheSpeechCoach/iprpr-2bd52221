@@ -20,7 +20,7 @@ export const INTERVIEW_TRACKS: Array<{
   {
     value: "graduate",
     label: "iPrpr: Graduate",
-    shortLabel: "iPrpr: Graduate",
+    shortLabel: "Graduate",
     blurb: "Graduate schemes and early-career roles.",
     description:
       "Build clear answers around potential, experience, judgement and fit.",
@@ -28,7 +28,7 @@ export const INTERVIEW_TRACKS: Array<{
   {
     value: "academic",
     label: "iPrpr: Academic",
-    shortLabel: "iPrpr: Academic",
+    shortLabel: "Academic",
     blurb: "School, university, and scholarship interviews.",
     description:
       "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
@@ -36,7 +36,7 @@ export const INTERVIEW_TRACKS: Array<{
   {
     value: "media",
     label: "iPrpr: Media",
-    shortLabel: "iPrpr: Media",
+    shortLabel: "Media",
     blurb: "Podcast, broadcast, and press interviews.",
     description:
       "Practise clear, quotable answers that hold attention and land under pressure.",

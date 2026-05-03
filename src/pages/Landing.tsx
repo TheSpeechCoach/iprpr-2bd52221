@@ -239,9 +239,9 @@ const Landing = () => {
             <div className="text-xs mt-3">© {new Date().getFullYear()} The Speech Coach. All rights reserved.</div>
           </div>
           <nav className="flex gap-6 text-xs">
-            <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Terms</a>
-            <a href="#" className="hover:text-foreground">Contact</a>
+            <a href="/privacy" className="hover:text-foreground">Privacy</a>
+            <a href="/terms" className="hover:text-foreground">Terms</a>
+            <a href={`mailto:${BRAND.supportEmail}`} className="hover:text-foreground">Contact</a>
           </nav>
         </div>
       </footer>

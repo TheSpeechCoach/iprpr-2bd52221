@@ -27,6 +27,8 @@ import AdminSessionDetail from "./pages/admin/AdminSessionDetail";
 import AdminGenerationJobs from "./pages/admin/AdminGenerationJobs";
 import AdminFeedback from "./pages/admin/AdminFeedback";
 import AdminTesting from "./pages/admin/AdminTesting";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -41,6 +43,8 @@ const App = () => (
           <WorkspaceProvider>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/signup/team" element={<AuthTeam />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -877,7 +877,7 @@ const Practice = () => {
                   number: 4,
                   title: "Get feedback",
                   tier: isCoachPlus ? "coach_plus" : "pro",
-                  // Free users can open feedback to use their 3/month allowance.
+                  // Free users can open feedback to use their 2/month allowance.
                   unlocked: true,
                   lockedTeaser: "",
                   lockedCta: "",
@@ -886,7 +886,7 @@ const Practice = () => {
                     <div className="space-y-4 pb-2">
                       {!isPaid && (
                         <p className="text-xs italic text-muted-foreground/80">
-                          You get 3 free AI feedback evaluations every month.
+                          You get 2 free AI feedback evaluations every month.
                         </p>
                       )}
                       {isPaid && !isCoachPlus && (

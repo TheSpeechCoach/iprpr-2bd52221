@@ -210,8 +210,8 @@ const Landing = () => {
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
               { name: "Free", price: "$0", desc: "Try before you upgrade.", features: ["10 interview questions per month", "2 answer evaluations per month", "Basic question guidance", "No exports", "No saved answer history", "Upgrade required for full 50-question set"] },
-              { name: "Pro", price: "$29", desc: "For serious candidates.", features: ["Unlimited sessions", "50 questions per role", "Training mode", "PDF & DOCX export", "Saved history"], featured: true },
-              { name: "Coach+", price: "$79", desc: "For executives & coaches.", features: ["Everything in Pro", "AI answer guidance", "Training analytics", "Premium templates", "Priority support"] },
+              { name: "Pro", price: "$29", desc: "For serious candidates.", features: ["50 interview questions", "Unlimited answer evaluations", "Clear answer structures and guidance", "Saved answers and progress tracking", "Timed practice mode", "Structured feedback on clarity, relevance and strength"], featured: true },
+              { name: "Coach+", price: "$79", desc: "For executives & coaches.", features: ["Everything in Pro", "Deeper coaching insights", "Feedback on tone, presence and delivery", "Strategic positioning for senior roles", "Sharper critique and coach's notes"] },
             ].map((p) => (
               <div key={p.name} className={`bg-background p-8 ${p.featured ? "ring-1 ring-foreground" : ""}`}>
                 {p.featured && <div className="text-[10px] uppercase tracking-widest text-accent mb-3">Most popular</div>}

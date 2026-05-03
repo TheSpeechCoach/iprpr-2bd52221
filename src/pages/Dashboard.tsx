@@ -216,7 +216,7 @@ const Dashboard = () => {
 const STATUS_LABEL: Record<string, string> = {
   draft: "Draft",
   generating: "Generating…",
-  initial_ready: "First questions ready",
+  initial_ready: "Questions ready",
   ready: "Ready",
   failed: "Needs retry",
   blocked: "Blocked",

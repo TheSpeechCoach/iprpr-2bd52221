@@ -216,8 +216,10 @@ const Dashboard = () => {
 const STATUS_LABEL: Record<string, string> = {
   draft: "Draft",
   generating: "Generating…",
+  initial_ready: "First questions ready",
   ready: "Ready",
   failed: "Needs retry",
+  blocked: "Blocked",
 };
 
 const StatusBadge = ({ status }: { status: string }) => {
@@ -225,9 +227,9 @@ const StatusBadge = ({ status }: { status: string }) => {
   const cls =
     status === "ready"
       ? "bg-foreground text-background"
-      : status === "failed"
+      : status === "failed" || status === "blocked"
       ? "bg-accent/10 text-accent"
-      : status === "generating"
+      : status === "generating" || status === "initial_ready"
       ? "bg-secondary text-foreground"
       : "bg-secondary text-muted-foreground";
   return (

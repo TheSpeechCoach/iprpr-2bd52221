@@ -877,7 +877,7 @@ const Practice = () => {
                   number: 4,
                   title: "Get feedback",
                   tier: isCoachPlus ? "coach_plus" : "pro",
-                  // Free users can open feedback to use their 3/month allowance.
+                  // Free users can open feedback to use their 2/month allowance.
                   unlocked: true,
                   lockedTeaser: "",
                   lockedCta: "",

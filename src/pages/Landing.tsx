@@ -167,17 +167,22 @@ const Landing = () => {
               Different interviews test different things. Choose the track that fits the room you are preparing to enter.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-px bg-border">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-border">
             {[
               {
-                name: "iPrpr: Academic",
-                blurb: "School, university, and scholarship interviews.",
-                body: "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
+                name: "iPrpr: Professional",
+                blurb: "Professional job interviews across industries.",
+                body: "Prepare structured, competency-based answers with clarity, outcomes and commercial awareness.",
               },
               {
                 name: "iPrpr: Graduate",
                 blurb: "Graduate schemes and early-career roles.",
                 body: "Build clear answers around potential, experience, judgement and fit.",
+              },
+              {
+                name: "iPrpr: Academic",
+                blurb: "School, university, and scholarship interviews.",
+                body: "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
               },
               {
                 name: "iPrpr: Media",

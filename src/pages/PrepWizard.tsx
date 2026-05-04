@@ -710,7 +710,20 @@ const PrepWizard = () => {
               </Field>
             </div>
             <div className="border border-border p-4 space-y-3">
-              <Field label={isAcademic ? "School or course URL" : "Job spec link"} hint={isAcademic ? "Link to the admissions page, course page, or prospectus." : "Paste a public URL and we'll pull the description for you."}>
+              <Field
+                label={
+                  isAcademic ? "School or course URL"
+                  : isGraduate ? "Scheme or role URL"
+                  : isMedia ? "Show, programme, or outlet URL"
+                  : "Job spec link"
+                }
+                hint={
+                  isAcademic ? "Link to the admissions page, course page, or prospectus."
+                  : isGraduate ? "Link to the graduate scheme page, job posting, or application portal."
+                  : isMedia ? "Link to the podcast page, show website, or publication. Helps us understand the format and audience."
+                  : "Paste a public URL and we'll pull the description for you."
+                }
+              >
                 <div className="flex gap-2">
                   <Input
                     value={form.job_spec_url}

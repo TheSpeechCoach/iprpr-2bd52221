@@ -444,22 +444,89 @@ const PrepWizard = () => {
             <Field label="Full name" hint="Used in the candidate summary on your pack.">
               <Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="e.g. Alex Morgan" />
             </Field>
-            <Field label={isAcademic ? "Current school / year group" : "Current role"} hint="Your job title today.">
-              <Input value={form.candidate_current_role} onChange={(e) => update("candidate_current_role", e.target.value)} placeholder={isAcademic ? "e.g. Year 9 at St Paul's School / Year 13 at local grammar" : "e.g. Senior Product Manager"} />
+            <Field
+              label={
+                isAcademic ? "Current school / year group"
+                : isGraduate ? "Degree / current course"
+                : isMedia ? "Your role / area of expertise"
+                : "Current role"
+              }
+              hint="Your job title today."
+            >
+              <Input
+                value={form.candidate_current_role}
+                onChange={(e) => update("candidate_current_role", e.target.value)}
+                placeholder={
+                  isAcademic ? "e.g. Year 9 at St Paul's School / Year 13 at local grammar"
+                  : isGraduate ? "e.g. Economics at University of Edinburgh / MBA at London Business School"
+                  : isMedia ? "e.g. CEO of Acme Ltd / Author, The Hidden Economy / Climate scientist"
+                  : "e.g. Senior Product Manager"
+                }
+              />
             </Field>
             <div className="grid grid-cols-2 gap-4">
-              <Field label={isAcademic ? "Age" : "Years of experience"}>
-                <Input value={form.years_experience} onChange={(e) => update("years_experience", e.target.value)} placeholder={isAcademic ? "e.g. 13" : "e.g. 8"} />
+              <Field
+                label={
+                  isAcademic ? "Age"
+                  : isGraduate ? "Year of study / graduation year"
+                  : isMedia ? "Media experience level"
+                  : "Years of experience"
+                }
+              >
+                <Input
+                  value={form.years_experience}
+                  onChange={(e) => update("years_experience", e.target.value)}
+                  placeholder={
+                    isAcademic ? "e.g. 13"
+                    : isGraduate ? "e.g. Final year / Graduated 2024"
+                    : isMedia ? "e.g. First appearance / Occasional contributor / Regular broadcaster"
+                    : "e.g. 8"
+                  }
+                />
               </Field>
               <Field label="Country">
                 <Input value={form.country} onChange={(e) => update("country", e.target.value)} placeholder="e.g. United Kingdom" />
               </Field>
             </div>
-            <Field label={isAcademic ? "Target school / course" : "Target role"} hint="The job you're interviewing for. Required.">
-              <Input value={form.target_role} onChange={(e) => update("target_role", e.target.value)} placeholder={isAcademic ? "e.g. Entry to Eton College / PPE at Oxford / Medicine at UCL" : "e.g. Head of Product"} />
+            <Field
+              label={
+                isAcademic ? "Target school / course"
+                : isGraduate ? "Target scheme or role"
+                : isMedia ? "Type of appearance"
+                : "Target role"
+              }
+              hint="The job you're interviewing for. Required."
+            >
+              <Input
+                value={form.target_role}
+                onChange={(e) => update("target_role", e.target.value)}
+                placeholder={
+                  isAcademic ? "e.g. Entry to Eton College / PPE at Oxford / Medicine at UCL"
+                  : isGraduate ? "e.g. Goldman Sachs Graduate Analyst / Civil Service Fast Stream / Unilever Future Leaders"
+                  : isMedia ? "e.g. Podcast guest / BBC news interview / Conference keynote Q&A"
+                  : "e.g. Head of Product"
+                }
+              />
             </Field>
-            <Field label={isAcademic ? "Subject area" : "Target industry"} hint="Optional, but helps us pick the right examples.">
-              <Input value={form.target_industry} onChange={(e) => update("target_industry", e.target.value)} placeholder={isAcademic ? "e.g. Sciences / Humanities / Mathematics / Medicine" : "e.g. Fintech"} />
+            <Field
+              label={
+                isAcademic ? "Subject area"
+                : isGraduate ? "Target sector"
+                : isMedia ? "Your subject / expertise area"
+                : "Target industry"
+              }
+              hint="Optional, but helps us pick the right examples."
+            >
+              <Input
+                value={form.target_industry}
+                onChange={(e) => update("target_industry", e.target.value)}
+                placeholder={
+                  isAcademic ? "e.g. Sciences / Humanities / Mathematics / Medicine"
+                  : isGraduate ? "e.g. Investment banking / Management consulting / Technology / Public sector"
+                  : isMedia ? "e.g. Climate policy / Fintech / Mental health / Leadership"
+                  : "e.g. Fintech"
+                }
+              />
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Interview type" hint="What kind of conversation are you preparing for?">
@@ -473,6 +540,21 @@ const PrepWizard = () => {
                       ["ivy-league", "Ivy League admissions"],
                       ["sixth-form", "Sixth form entry"],
                       ["scholarship", "Scholarship interview"],
+                    ] : isGraduate ? [
+                      ["scheme-interview", "Graduate scheme interview"],
+                      ["strengths-based", "Strengths-based interview"],
+                      ["assessment-centre", "Assessment centre debrief"],
+                      ["video-interview", "Video / async interview"],
+                      ["partner-interview", "Partner / manager interview"],
+                      ["internship-conversion", "Internship conversion interview"],
+                    ] : isMedia ? [
+                      ["broadcast-live", "Live broadcast (TV / radio)"],
+                      ["podcast-longform", "Podcast (long-form conversation)"],
+                      ["press-interview", "Press / print interview"],
+                      ["panel-discussion", "Panel discussion"],
+                      ["conference-qa", "Conference / keynote Q&A"],
+                      ["spokesperson", "Spokesperson / PR brief"],
+                      ["social-media", "Social media video interview"],
                     ] : [
                       ["HR", "HR / first stage"],
                       ["hiring manager", "Hiring manager"],
@@ -497,6 +579,16 @@ const PrepWizard = () => {
                       ["12-13", "Age 12–13 (12+/13+ entry)"],
                       ["15-16", "Age 15–16 (16+ / Sixth Form)"],
                       ["17-18", "Age 17–18 (University / Oxbridge)"],
+                    ] : isGraduate ? [
+                      ["penultimate-year", "Penultimate year student"],
+                      ["final-year", "Final year student"],
+                      ["recent-graduate", "Recent graduate (0–1 year)"],
+                      ["early-professional", "Early professional (1–2 years)"],
+                    ] : isMedia ? [
+                      ["first-appearance", "First-time appearance"],
+                      ["occasional", "Occasional contributor"],
+                      ["regular", "Regular contributor / PR professional"],
+                      ["experienced", "Experienced public figure / executive"],
                     ] : [
                       ["graduate", "Graduate"],
                       ["junior", "Junior"],
@@ -512,7 +604,15 @@ const PrepWizard = () => {
                 </Select>
               </Field>
             </div>
-            <Field label="Anything else we should know?" hint={isAcademic ? "Optional. e.g. scholarship candidate, boarding entry, state school applying to selective independent, career changer returning to education." : "Optional. e.g. career change, gap to explain, sector pivot."}>
+            <Field
+              label="Anything else we should know?"
+              hint={
+                isAcademic ? "Optional. e.g. scholarship candidate, boarding entry, state school applying to selective independent, career changer returning to education."
+                : isGraduate ? "Optional. e.g. switching degree discipline, applying speculatively, disability disclosure concern, mature student, international applicant."
+                : isMedia ? "Optional. e.g. controversial topic, pending litigation, specific hostile question anticipated, embargo restrictions, co-author appearing too."
+                : "Optional. e.g. career change, gap to explain, sector pivot."
+              }
+            >
               <Textarea value={form.candidate_notes} onChange={(e) => update("candidate_notes", e.target.value)} rows={3} placeholder="Optional context that will sharpen the questions…" />
             </Field>
           </div>

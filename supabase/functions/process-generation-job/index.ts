@@ -97,6 +97,89 @@ const QUESTION_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+// Academic-track variant: same shape as QUESTION_SCHEMA, with an
+// academic-specific `category` enum on each question.
+const ACADEMIC_QUESTION_SCHEMA = {
+  type: "object",
+  properties: {
+    candidate_summary: { type: "string", description: "2-3 sentence British-English summary of the candidate." },
+    role_summary: { type: "string", description: "2-3 sentence British-English summary of the role and what the interviewer cares about." },
+    top_themes: { type: "array", items: { type: "string" } },
+    red_flag_areas: { type: "array", items: { type: "string" } },
+    questions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          position: { type: "integer" },
+          category: {
+            type: "string",
+            enum: [
+              "Opening",
+              "Academic Background",
+              "Subject Motivation",
+              "Subject Knowledge",
+              "Critical Thinking",
+              "Personal Qualities",
+              "Extra-Curricular",
+              "Institution Fit",
+              "Ethical Reasoning",
+              "Current Affairs",
+              "Challenge & Resilience",
+              "Future Aspirations",
+              "Closing",
+            ],
+          },
+          difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
+          question: { type: "string" },
+          why_this_question_matters: { type: "string" },
+          what_good_answers_should_cover: { type: "string" },
+          optional_follow_up: { type: "string" },
+          answer_framework: { type: "string" },
+          answer_direction: {
+            type: "object",
+            properties: {
+              structure: { type: "string" },
+              length: { type: "string" },
+              avoid: { type: "array", items: { type: "string" } },
+            },
+            required: ["structure", "length", "avoid"],
+            additionalProperties: false,
+          },
+          example_answers: {
+            type: "object",
+            properties: {
+              foundation: { type: "string" },
+              strong: { type: "string" },
+              standout: { type: "string" },
+            },
+            required: ["foundation", "strong", "standout"],
+            additionalProperties: false,
+          },
+          coach_insight: {
+            type: "object",
+            properties: {
+              really_testing: { type: "string" },
+              common_mistake: { type: "string" },
+              how_to_approach: { type: "string" },
+            },
+            required: ["really_testing", "common_mistake", "how_to_approach"],
+            additionalProperties: false,
+          },
+        },
+        required: [
+          "position", "category", "difficulty", "question",
+          "why_this_question_matters", "what_good_answers_should_cover",
+          "answer_direction", "example_answers",
+        ],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["candidate_summary", "role_summary", "top_themes", "red_flag_areas", "questions"],
+  additionalProperties: false,
+} as const;
+
 function clip(s: string | null | undefined, n: number): string {
   if (!s) return "";
   return s.length > n ? s.slice(0, n) : s;
@@ -301,9 +384,13 @@ INTERVIEW PARAMETERS
     // Lean question schema for fast beta generation: drop expensive fields
     // (answer_direction, example_answers, coach_insight) so the model can
     // return the first 10 questions in seconds. Enrichment is added on demand.
+    const activeSchema = normaliseTrack((session as any).interview_track) === "academic"
+      ? ACADEMIC_QUESTION_SCHEMA
+      : QUESTION_SCHEMA;
+
     const LEAN_QUESTION_PROPS = {
       position: { type: "integer" },
-      category: (QUESTION_SCHEMA.properties.questions as any).items.properties.category,
+      category: (activeSchema.properties.questions as any).items.properties.category,
       difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
       question: { type: "string" },
       why_this_question_matters: { type: "string" },
@@ -326,14 +413,14 @@ INTERVIEW PARAMETERS
 
     const buildChunkSchema = (includeSummary: boolean, lean: boolean) => {
       const props: any = {
-        questions: lean ? LEAN_QUESTION_SCHEMA : QUESTION_SCHEMA.properties.questions,
+        questions: lean ? LEAN_QUESTION_SCHEMA : activeSchema.properties.questions,
       };
       const required: string[] = ["questions"];
       if (includeSummary) {
-        props.candidate_summary = QUESTION_SCHEMA.properties.candidate_summary;
-        props.role_summary = QUESTION_SCHEMA.properties.role_summary;
-        props.top_themes = QUESTION_SCHEMA.properties.top_themes;
-        props.red_flag_areas = QUESTION_SCHEMA.properties.red_flag_areas;
+        props.candidate_summary = activeSchema.properties.candidate_summary;
+        props.role_summary = activeSchema.properties.role_summary;
+        props.top_themes = activeSchema.properties.top_themes;
+        props.red_flag_areas = activeSchema.properties.red_flag_areas;
         required.push("candidate_summary", "role_summary", "top_themes", "red_flag_areas");
       }
       return { type: "object", properties: props, required, additionalProperties: false };

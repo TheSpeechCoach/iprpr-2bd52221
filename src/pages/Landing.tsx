@@ -171,23 +171,23 @@ const Landing = () => {
             {[
               {
                 name: "iPrpr: Professional",
-                blurb: "Professional job interviews across industries.",
-                body: "Prepare structured, competency-based answers with clarity, outcomes and commercial awareness.",
+                blurb: "Professional interviews across all sectors and levels.",
+                body: "Competency-based, behavioural, and executive interview prep — from first professional role to C-suite. Questions calibrated to your seniority, sector, and the specific employer.",
               },
               {
                 name: "iPrpr: Graduate",
-                blurb: "Graduate schemes and early-career roles.",
-                body: "Build clear answers around potential, experience, judgement and fit.",
+                blurb: "Graduate schemes, early-career roles, and internship conversion.",
+                body: "Prep built around limited experience — strengths-based, behavioural, and commercial awareness questions that work with what graduates actually have: degrees, placements, societies, and early work.",
               },
               {
                 name: "iPrpr: Academic",
                 blurb: "From 7+ entry to Oxford and the Ivy League.",
-                body: "Tailored admissions interview prep across age groups — prep school, grammar, independent, sixth form, Russell Group and Ivy League. Questions calibrated to your age, institution, and subject.",
+                body: "Admissions prep calibrated to your age group — prep school, grammar, independent, sixth form, Russell Group, and Ivy League. Questions adjust to your subject, institution, and developmental stage.",
               },
               {
                 name: "iPrpr: Media",
-                blurb: "Podcast, broadcast and public-facing interviews.",
-                body: "Practise clear, quotable answers that hold attention and land under pressure.",
+                blurb: "Broadcast, podcast, press, and public-facing appearances.",
+                body: "Media training for experts, founders, executives, and spokespeople. Message control, hostile challenge handling, soundbites, and performance under real scrutiny.",
               },
             ].map((t) => (
               <div key={t.name} className="bg-background p-8">

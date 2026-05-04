@@ -739,7 +739,15 @@ const PrepWizard = () => {
                 </p>
               </Field>
             </div>
-            <Field label={isAcademic ? "Paste admissions information or course description" : "Job description"} hint="Paste the full text. The more detail, the sharper the questions.">
+            <Field
+              label={
+                isAcademic ? "Paste admissions information or course description"
+                : isGraduate ? "Paste the role or scheme description"
+                : isMedia ? "Paste the interview brief or topic description"
+                : "Job description"
+              }
+              hint="Paste the full text. The more detail, the sharper the questions."
+            >
               <Textarea
                 value={form.job_description}
                 onChange={(e) => update("job_description", e.target.value)}

@@ -485,7 +485,7 @@ Hard rules:
 CRITICAL — THE FIRST 10 QUESTIONS (positions 1–10):
 These ten questions are the only thing many candidates will ever see. They MUST feel uncomfortably accurate. Every one of the first 10 must reference a specific, named detail from the CV, the job description, or the company.
 
-The first 10 must include AT LEAST: 2 × CV/Background, 2 × Behavioural, 2 × Role-Fit, 1 × Pressure, 1 × Company Motivation. Remaining 2 = next-most-revealing.
+The first 10 question distribution is specified per track in the TRACK GUIDANCE block above. Follow that distribution exactly. If no track-specific distribution is given, use the default: 2 × CV/Background, 2 × Behavioural, 2 × Role-Fit, 1 × Pressure, 1 × Company Motivation, Remaining 2 = most revealing given this candidate.
 
 After position 10, distribute the remaining categories naturally across the interview arc.
 

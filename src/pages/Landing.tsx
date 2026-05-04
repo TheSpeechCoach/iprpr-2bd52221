@@ -181,8 +181,8 @@ const Landing = () => {
               },
               {
                 name: "iPrpr: Academic",
-                blurb: "School, university, and scholarship interviews.",
-                body: "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
+                blurb: "From 7+ entry to Oxford and the Ivy League.",
+                body: "Tailored admissions interview prep across age groups — prep school, grammar, independent, sixth form, Russell Group and Ivy League. Questions calibrated to your age, institution, and subject.",
               },
               {
                 name: "iPrpr: Media",

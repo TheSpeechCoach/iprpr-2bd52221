@@ -384,9 +384,13 @@ INTERVIEW PARAMETERS
     // Lean question schema for fast beta generation: drop expensive fields
     // (answer_direction, example_answers, coach_insight) so the model can
     // return the first 10 questions in seconds. Enrichment is added on demand.
+    const activeSchema = normaliseTrack((session as any).interview_track) === "academic"
+      ? ACADEMIC_QUESTION_SCHEMA
+      : QUESTION_SCHEMA;
+
     const LEAN_QUESTION_PROPS = {
       position: { type: "integer" },
-      category: (QUESTION_SCHEMA.properties.questions as any).items.properties.category,
+      category: (activeSchema.properties.questions as any).items.properties.category,
       difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
       question: { type: "string" },
       why_this_question_matters: { type: "string" },
@@ -409,14 +413,14 @@ INTERVIEW PARAMETERS
 
     const buildChunkSchema = (includeSummary: boolean, lean: boolean) => {
       const props: any = {
-        questions: lean ? LEAN_QUESTION_SCHEMA : QUESTION_SCHEMA.properties.questions,
+        questions: lean ? LEAN_QUESTION_SCHEMA : activeSchema.properties.questions,
       };
       const required: string[] = ["questions"];
       if (includeSummary) {
-        props.candidate_summary = QUESTION_SCHEMA.properties.candidate_summary;
-        props.role_summary = QUESTION_SCHEMA.properties.role_summary;
-        props.top_themes = QUESTION_SCHEMA.properties.top_themes;
-        props.red_flag_areas = QUESTION_SCHEMA.properties.red_flag_areas;
+        props.candidate_summary = activeSchema.properties.candidate_summary;
+        props.role_summary = activeSchema.properties.role_summary;
+        props.top_themes = activeSchema.properties.top_themes;
+        props.red_flag_areas = activeSchema.properties.red_flag_areas;
         required.push("candidate_summary", "role_summary", "top_themes", "red_flag_areas");
       }
       return { type: "object", properties: props, required, additionalProperties: false };

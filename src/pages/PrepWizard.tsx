@@ -520,9 +520,11 @@ const PrepWizard = () => {
           <div className="space-y-6">
             <div className="border border-border p-5 space-y-4">
               <div>
-                <h2 className="font-display text-lg font-semibold">Add your LinkedIn profile</h2>
+                <h2 className="font-display text-lg font-semibold">{isAcademic ? "Add a LinkedIn profile (if applicable)" : "Add your LinkedIn profile"}</h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Use your LinkedIn profile for the fastest setup.
+                  {isAcademic
+                    ? "Add a LinkedIn profile if the candidate has one. For younger candidates, skip this and use the CV or personal statement section below."
+                    : "Use your LinkedIn profile for the fastest setup."}
                 </p>
               </div>
               <Field label="LinkedIn URL">
@@ -542,7 +544,7 @@ const PrepWizard = () => {
                   Either option works. Use whichever you have to hand.
                 </p>
               </div>
-              <Field label="Upload CV" hint="PDF or DOCX, up to 10 MB.">
+              <Field label={isAcademic ? "Upload CV or personal statement" : "Upload CV"} hint={isAcademic ? "PDF or DOCX. For university applicants, upload the personal statement. For school applicants, any academic record or school report works." : "PDF or DOCX, up to 10 MB."}>
                 <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
                 {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
               </Field>

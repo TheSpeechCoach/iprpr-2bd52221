@@ -106,8 +106,8 @@ const Landing = () => {
           </div>
           <div className="mt-16 grid md:grid-cols-5 gap-12">
             {[
-              ["01", "Add your details", "Link your LinkedIn profile, or upload your CV in PDF or DOCX."],
-              ["02", "Add the role", "Paste the job spec, link to a public posting, or describe it."],
+              ["01", "Add your details", "Add your profile — LinkedIn, CV, personal statement, or speaker bio."],
+              ["02", "Add the role", "Tell us your target — a role, a scheme, an institution, or an appearance."],
               ["03", "Analyse", "We identify what matters most — your strengths, gaps, and likely focus areas."],
               ["04", "Train", "Work through 50 tailored questions, structured for the role and your level."],
               ["05", "Improve", "Refine your answers with clear, structured feedback on how you actually deliver."],

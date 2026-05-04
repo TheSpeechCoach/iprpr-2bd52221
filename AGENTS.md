@@ -16,10 +16,7 @@ Aim. Prepare. Land.
 Train your interview performance.
 
 Hero/supporting copy:
-Link your LinkedIn profile or upload your CV.  
-Add the job spec.  
-Practise real interview questions.  
-Get clear, structured feedback.
+Your profile. Your target. Fifty questions built for both. Feedback on how you actually perform.
 
 Question limits:
 - Free: 10 visible questions once per month

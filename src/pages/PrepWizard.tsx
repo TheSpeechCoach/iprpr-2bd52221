@@ -564,12 +564,12 @@ const PrepWizard = () => {
               <Field label="Job title" hint="As written on the posting.">
                 <Input value={form.job_title} onChange={(e) => update("job_title", e.target.value)} placeholder="e.g. Director of Product" />
               </Field>
-              <Field label="Company" hint="Helps tailor company-specific motivation questions.">
-                <Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} placeholder="e.g. Monzo" />
+              <Field label={isAcademic ? "Institution name" : "Company"} hint="Helps tailor company-specific motivation questions.">
+                <Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} placeholder={isAcademic ? "e.g. University of Oxford / Eton College / The Perse School" : "e.g. Monzo"} />
               </Field>
             </div>
             <div className="border border-border p-4 space-y-3">
-              <Field label="Job spec link" hint="Paste a public URL and we'll pull the description for you.">
+              <Field label={isAcademic ? "School or course URL" : "Job spec link"} hint={isAcademic ? "Link to the admissions page, course page, or prospectus." : "Paste a public URL and we'll pull the description for you."}>
                 <div className="flex gap-2">
                   <Input
                     value={form.job_spec_url}
@@ -585,7 +585,7 @@ const PrepWizard = () => {
                 </p>
               </Field>
             </div>
-            <Field label="Job description" hint="Paste the full text. The more detail, the sharper the questions.">
+            <Field label={isAcademic ? "Paste admissions information or course description" : "Job description"} hint="Paste the full text. The more detail, the sharper the questions.">
               <Textarea
                 value={form.job_description}
                 onChange={(e) => update("job_description", e.target.value)}

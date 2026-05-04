@@ -622,10 +622,19 @@ const PrepWizard = () => {
           <div className="space-y-6">
             <div className="border border-border p-5 space-y-4">
               <div>
-                <h2 className="font-display text-lg font-semibold">{isAcademic ? "Add a LinkedIn profile (if applicable)" : "Add your LinkedIn profile"}</h2>
+                <h2 className="font-display text-lg font-semibold">{
+                  isAcademic ? "Add a LinkedIn profile (if applicable)"
+                  : isGraduate ? "Add your LinkedIn profile"
+                  : isMedia ? "Add your LinkedIn or public profile"
+                  : "Add your LinkedIn profile"
+                }</h2>
                 <p className="text-xs text-muted-foreground mt-1">
                   {isAcademic
                     ? "Add a LinkedIn profile if the candidate has one. For younger candidates, skip this and use the CV or personal statement section below."
+                    : isGraduate
+                    ? "Add your LinkedIn if it has your degree, internships, and society roles. Helps us tailor questions to your actual experience."
+                    : isMedia
+                    ? "Your LinkedIn, personal website, or bio page. Helps us understand your credentials and public positioning."
                     : "Use your LinkedIn profile for the fastest setup."}
                 </p>
               </div>

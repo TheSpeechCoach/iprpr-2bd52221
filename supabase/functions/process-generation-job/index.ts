@@ -97,6 +97,89 @@ const QUESTION_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+// Academic-track variant: same shape as QUESTION_SCHEMA, with an
+// academic-specific `category` enum on each question.
+const ACADEMIC_QUESTION_SCHEMA = {
+  type: "object",
+  properties: {
+    candidate_summary: { type: "string", description: "2-3 sentence British-English summary of the candidate." },
+    role_summary: { type: "string", description: "2-3 sentence British-English summary of the role and what the interviewer cares about." },
+    top_themes: { type: "array", items: { type: "string" } },
+    red_flag_areas: { type: "array", items: { type: "string" } },
+    questions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          position: { type: "integer" },
+          category: {
+            type: "string",
+            enum: [
+              "Opening",
+              "Academic Background",
+              "Subject Motivation",
+              "Subject Knowledge",
+              "Critical Thinking",
+              "Personal Qualities",
+              "Extra-Curricular",
+              "Institution Fit",
+              "Ethical Reasoning",
+              "Current Affairs",
+              "Challenge & Resilience",
+              "Future Aspirations",
+              "Closing",
+            ],
+          },
+          difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
+          question: { type: "string" },
+          why_this_question_matters: { type: "string" },
+          what_good_answers_should_cover: { type: "string" },
+          optional_follow_up: { type: "string" },
+          answer_framework: { type: "string" },
+          answer_direction: {
+            type: "object",
+            properties: {
+              structure: { type: "string" },
+              length: { type: "string" },
+              avoid: { type: "array", items: { type: "string" } },
+            },
+            required: ["structure", "length", "avoid"],
+            additionalProperties: false,
+          },
+          example_answers: {
+            type: "object",
+            properties: {
+              foundation: { type: "string" },
+              strong: { type: "string" },
+              standout: { type: "string" },
+            },
+            required: ["foundation", "strong", "standout"],
+            additionalProperties: false,
+          },
+          coach_insight: {
+            type: "object",
+            properties: {
+              really_testing: { type: "string" },
+              common_mistake: { type: "string" },
+              how_to_approach: { type: "string" },
+            },
+            required: ["really_testing", "common_mistake", "how_to_approach"],
+            additionalProperties: false,
+          },
+        },
+        required: [
+          "position", "category", "difficulty", "question",
+          "why_this_question_matters", "what_good_answers_should_cover",
+          "answer_direction", "example_answers",
+        ],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["candidate_summary", "role_summary", "top_themes", "red_flag_areas", "questions"],
+  additionalProperties: false,
+} as const;
+
 function clip(s: string | null | undefined, n: number): string {
   if (!s) return "";
   return s.length > n ? s.slice(0, n) : s;

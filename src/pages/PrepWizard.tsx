@@ -86,6 +86,8 @@ const PrepWizard = () => {
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
 
+  const isAcademic = form.interview_track === "academic";
+
   const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
   const updateMix = (k: string, v: number) => setForm((f) => ({ ...f, focus_mix: { ...f.focus_mix, [k]: v } }));
 
@@ -440,29 +442,36 @@ const PrepWizard = () => {
             <Field label="Full name" hint="Used in the candidate summary on your pack.">
               <Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="e.g. Alex Morgan" />
             </Field>
-            <Field label="Current role" hint="Your job title today.">
-              <Input value={form.candidate_current_role} onChange={(e) => update("candidate_current_role", e.target.value)} placeholder="e.g. Senior Product Manager" />
+            <Field label={isAcademic ? "Current school / year group" : "Current role"} hint="Your job title today.">
+              <Input value={form.candidate_current_role} onChange={(e) => update("candidate_current_role", e.target.value)} placeholder={isAcademic ? "e.g. Year 9 at St Paul's School / Year 13 at local grammar" : "e.g. Senior Product Manager"} />
             </Field>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Years of experience">
-                <Input value={form.years_experience} onChange={(e) => update("years_experience", e.target.value)} placeholder="e.g. 8" />
+              <Field label={isAcademic ? "Age" : "Years of experience"}>
+                <Input value={form.years_experience} onChange={(e) => update("years_experience", e.target.value)} placeholder={isAcademic ? "e.g. 13" : "e.g. 8"} />
               </Field>
               <Field label="Country">
                 <Input value={form.country} onChange={(e) => update("country", e.target.value)} placeholder="e.g. United Kingdom" />
               </Field>
             </div>
-            <Field label="Target role" hint="The job you're interviewing for. Required.">
-              <Input value={form.target_role} onChange={(e) => update("target_role", e.target.value)} placeholder="e.g. Head of Product" />
+            <Field label={isAcademic ? "Target school / course" : "Target role"} hint="The job you're interviewing for. Required.">
+              <Input value={form.target_role} onChange={(e) => update("target_role", e.target.value)} placeholder={isAcademic ? "e.g. Entry to Eton College / PPE at Oxford / Medicine at UCL" : "e.g. Head of Product"} />
             </Field>
-            <Field label="Target industry" hint="Optional, but helps us pick the right examples.">
-              <Input value={form.target_industry} onChange={(e) => update("target_industry", e.target.value)} placeholder="e.g. Fintech" />
+            <Field label={isAcademic ? "Subject area" : "Target industry"} hint="Optional, but helps us pick the right examples.">
+              <Input value={form.target_industry} onChange={(e) => update("target_industry", e.target.value)} placeholder={isAcademic ? "e.g. Sciences / Humanities / Mathematics / Medicine" : "e.g. Fintech"} />
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Interview type" hint="What kind of conversation are you preparing for?">
                 <Select value={form.interview_type} onValueChange={(v) => update("interview_type", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[
+                    {(isAcademic ? [
+                      ["admissions", "Admissions interview"],
+                      ["entrance exam", "Entrance exam interview"],
+                      ["oxbridge", "Oxbridge / tutorial-style"],
+                      ["ivy-league", "Ivy League admissions"],
+                      ["sixth-form", "Sixth form entry"],
+                      ["scholarship", "Scholarship interview"],
+                    ] : [
                       ["HR", "HR / first stage"],
                       ["hiring manager", "Hiring manager"],
                       ["technical", "Technical"],
@@ -470,7 +479,7 @@ const PrepWizard = () => {
                       ["executive", "Executive"],
                       ["competency-based", "Competency-based"],
                       ["case study", "Case study"],
-                    ].map(([v, label]) => (
+                    ]).map(([v, label]) => (
                       <SelectItem key={v} value={v}>{label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -480,7 +489,13 @@ const PrepWizard = () => {
                 <Select value={form.seniority_level} onValueChange={(v) => update("seniority_level", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[
+                    {(isAcademic ? [
+                      ["7-8", "Age 7–8 (7+/8+ entry)"],
+                      ["10-11", "Age 10–11 (10+/11+ entry)"],
+                      ["12-13", "Age 12–13 (12+/13+ entry)"],
+                      ["15-16", "Age 15–16 (16+ / Sixth Form)"],
+                      ["17-18", "Age 17–18 (University / Oxbridge)"],
+                    ] : [
                       ["graduate", "Graduate"],
                       ["junior", "Junior"],
                       ["mid", "Mid-level"],
@@ -488,14 +503,14 @@ const PrepWizard = () => {
                       ["lead", "Lead"],
                       ["director", "Director"],
                       ["executive", "Executive"],
-                    ].map(([v, label]) => (
+                    ]).map(([v, label]) => (
                       <SelectItem key={v} value={v}>{label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </Field>
             </div>
-            <Field label="Anything else we should know?" hint="Optional. e.g. career change, gap to explain, sector pivot.">
+            <Field label="Anything else we should know?" hint={isAcademic ? "Optional. e.g. scholarship candidate, boarding entry, state school applying to selective independent, career changer returning to education." : "Optional. e.g. career change, gap to explain, sector pivot."}>
               <Textarea value={form.candidate_notes} onChange={(e) => update("candidate_notes", e.target.value)} rows={3} placeholder="Optional context that will sharpen the questions…" />
             </Field>
           </div>
@@ -505,9 +520,11 @@ const PrepWizard = () => {
           <div className="space-y-6">
             <div className="border border-border p-5 space-y-4">
               <div>
-                <h2 className="font-display text-lg font-semibold">Add your LinkedIn profile</h2>
+                <h2 className="font-display text-lg font-semibold">{isAcademic ? "Add a LinkedIn profile (if applicable)" : "Add your LinkedIn profile"}</h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Use your LinkedIn profile for the fastest setup.
+                  {isAcademic
+                    ? "Add a LinkedIn profile if the candidate has one. For younger candidates, skip this and use the CV or personal statement section below."
+                    : "Use your LinkedIn profile for the fastest setup."}
                 </p>
               </div>
               <Field label="LinkedIn URL">
@@ -527,7 +544,7 @@ const PrepWizard = () => {
                   Either option works. Use whichever you have to hand.
                 </p>
               </div>
-              <Field label="Upload CV" hint="PDF or DOCX, up to 10 MB.">
+              <Field label={isAcademic ? "Upload CV or personal statement" : "Upload CV"} hint={isAcademic ? "PDF or DOCX. For university applicants, upload the personal statement. For school applicants, any academic record or school report works." : "PDF or DOCX, up to 10 MB."}>
                 <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
                 {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
               </Field>
@@ -547,12 +564,12 @@ const PrepWizard = () => {
               <Field label="Job title" hint="As written on the posting.">
                 <Input value={form.job_title} onChange={(e) => update("job_title", e.target.value)} placeholder="e.g. Director of Product" />
               </Field>
-              <Field label="Company" hint="Helps tailor company-specific motivation questions.">
-                <Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} placeholder="e.g. Monzo" />
+              <Field label={isAcademic ? "Institution name" : "Company"} hint="Helps tailor company-specific motivation questions.">
+                <Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} placeholder={isAcademic ? "e.g. University of Oxford / Eton College / The Perse School" : "e.g. Monzo"} />
               </Field>
             </div>
             <div className="border border-border p-4 space-y-3">
-              <Field label="Job spec link" hint="Paste a public URL and we'll pull the description for you.">
+              <Field label={isAcademic ? "School or course URL" : "Job spec link"} hint={isAcademic ? "Link to the admissions page, course page, or prospectus." : "Paste a public URL and we'll pull the description for you."}>
                 <div className="flex gap-2">
                   <Input
                     value={form.job_spec_url}
@@ -568,7 +585,7 @@ const PrepWizard = () => {
                 </p>
               </Field>
             </div>
-            <Field label="Job description" hint="Paste the full text. The more detail, the sharper the questions.">
+            <Field label={isAcademic ? "Paste admissions information or course description" : "Job description"} hint="Paste the full text. The more detail, the sharper the questions.">
               <Textarea
                 value={form.job_description}
                 onChange={(e) => update("job_description", e.target.value)}

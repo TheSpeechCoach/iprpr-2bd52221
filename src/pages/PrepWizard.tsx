@@ -688,8 +688,25 @@ const PrepWizard = () => {
               <Field label="Job title" hint="As written on the posting.">
                 <Input value={form.job_title} onChange={(e) => update("job_title", e.target.value)} placeholder="e.g. Director of Product" />
               </Field>
-              <Field label={isAcademic ? "Institution name" : "Company"} hint="Helps tailor company-specific motivation questions.">
-                <Input value={form.company_name} onChange={(e) => update("company_name", e.target.value)} placeholder={isAcademic ? "e.g. University of Oxford / Eton College / The Perse School" : "e.g. Monzo"} />
+              <Field
+                label={
+                  isAcademic ? "Institution name"
+                  : isGraduate ? "Employer / scheme name"
+                  : isMedia ? "Show / outlet / platform"
+                  : "Company"
+                }
+                hint="Helps tailor company-specific motivation questions."
+              >
+                <Input
+                  value={form.company_name}
+                  onChange={(e) => update("company_name", e.target.value)}
+                  placeholder={
+                    isAcademic ? "e.g. University of Oxford / Eton College / The Perse School"
+                    : isGraduate ? "e.g. Deloitte / Civil Service Fast Stream / Teach First"
+                    : isMedia ? "e.g. Diary of a CEO / BBC Radio 4 Today / The Times"
+                    : "e.g. Monzo"
+                  }
+                />
               </Field>
             </div>
             <div className="border border-border p-4 space-y-3">

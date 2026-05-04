@@ -551,9 +551,14 @@ INTERVIEW PARAMETERS
     // Lean question schema for fast beta generation: drop expensive fields
     // (answer_direction, example_answers, coach_insight) so the model can
     // return the first 10 questions in seconds. Enrichment is added on demand.
-    const activeSchema = normaliseTrack((session as any).interview_track) === "academic"
-      ? ACADEMIC_QUESTION_SCHEMA
-      : QUESTION_SCHEMA;
+    const activeSchema =
+      normaliseTrack((session as any).interview_track) === "academic"
+        ? ACADEMIC_QUESTION_SCHEMA
+        : normaliseTrack((session as any).interview_track) === "graduate"
+        ? GRADUATE_QUESTION_SCHEMA
+        : normaliseTrack((session as any).interview_track) === "media"
+        ? MEDIA_QUESTION_SCHEMA
+        : QUESTION_SCHEMA;
 
     const LEAN_QUESTION_PROPS = {
       position: { type: "integer" },

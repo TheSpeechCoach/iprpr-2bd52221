@@ -442,29 +442,36 @@ const PrepWizard = () => {
             <Field label="Full name" hint="Used in the candidate summary on your pack.">
               <Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="e.g. Alex Morgan" />
             </Field>
-            <Field label="Current role" hint="Your job title today.">
-              <Input value={form.candidate_current_role} onChange={(e) => update("candidate_current_role", e.target.value)} placeholder="e.g. Senior Product Manager" />
+            <Field label={isAcademic ? "Current school / year group" : "Current role"} hint="Your job title today.">
+              <Input value={form.candidate_current_role} onChange={(e) => update("candidate_current_role", e.target.value)} placeholder={isAcademic ? "e.g. Year 9 at St Paul's School / Year 13 at local grammar" : "e.g. Senior Product Manager"} />
             </Field>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Years of experience">
-                <Input value={form.years_experience} onChange={(e) => update("years_experience", e.target.value)} placeholder="e.g. 8" />
+              <Field label={isAcademic ? "Age" : "Years of experience"}>
+                <Input value={form.years_experience} onChange={(e) => update("years_experience", e.target.value)} placeholder={isAcademic ? "e.g. 13" : "e.g. 8"} />
               </Field>
               <Field label="Country">
                 <Input value={form.country} onChange={(e) => update("country", e.target.value)} placeholder="e.g. United Kingdom" />
               </Field>
             </div>
-            <Field label="Target role" hint="The job you're interviewing for. Required.">
-              <Input value={form.target_role} onChange={(e) => update("target_role", e.target.value)} placeholder="e.g. Head of Product" />
+            <Field label={isAcademic ? "Target school / course" : "Target role"} hint="The job you're interviewing for. Required.">
+              <Input value={form.target_role} onChange={(e) => update("target_role", e.target.value)} placeholder={isAcademic ? "e.g. Entry to Eton College / PPE at Oxford / Medicine at UCL" : "e.g. Head of Product"} />
             </Field>
-            <Field label="Target industry" hint="Optional, but helps us pick the right examples.">
-              <Input value={form.target_industry} onChange={(e) => update("target_industry", e.target.value)} placeholder="e.g. Fintech" />
+            <Field label={isAcademic ? "Subject area" : "Target industry"} hint="Optional, but helps us pick the right examples.">
+              <Input value={form.target_industry} onChange={(e) => update("target_industry", e.target.value)} placeholder={isAcademic ? "e.g. Sciences / Humanities / Mathematics / Medicine" : "e.g. Fintech"} />
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Interview type" hint="What kind of conversation are you preparing for?">
                 <Select value={form.interview_type} onValueChange={(v) => update("interview_type", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[
+                    {(isAcademic ? [
+                      ["admissions", "Admissions interview"],
+                      ["entrance exam", "Entrance exam interview"],
+                      ["oxbridge", "Oxbridge / tutorial-style"],
+                      ["ivy-league", "Ivy League admissions"],
+                      ["sixth-form", "Sixth form entry"],
+                      ["scholarship", "Scholarship interview"],
+                    ] : [
                       ["HR", "HR / first stage"],
                       ["hiring manager", "Hiring manager"],
                       ["technical", "Technical"],
@@ -472,7 +479,7 @@ const PrepWizard = () => {
                       ["executive", "Executive"],
                       ["competency-based", "Competency-based"],
                       ["case study", "Case study"],
-                    ].map(([v, label]) => (
+                    ]).map(([v, label]) => (
                       <SelectItem key={v} value={v}>{label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -482,7 +489,13 @@ const PrepWizard = () => {
                 <Select value={form.seniority_level} onValueChange={(v) => update("seniority_level", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[
+                    {(isAcademic ? [
+                      ["7-8", "Age 7–8 (7+/8+ entry)"],
+                      ["10-11", "Age 10–11 (10+/11+ entry)"],
+                      ["12-13", "Age 12–13 (12+/13+ entry)"],
+                      ["15-16", "Age 15–16 (16+ / Sixth Form)"],
+                      ["17-18", "Age 17–18 (University / Oxbridge)"],
+                    ] : [
                       ["graduate", "Graduate"],
                       ["junior", "Junior"],
                       ["mid", "Mid-level"],
@@ -490,14 +503,14 @@ const PrepWizard = () => {
                       ["lead", "Lead"],
                       ["director", "Director"],
                       ["executive", "Executive"],
-                    ].map(([v, label]) => (
+                    ]).map(([v, label]) => (
                       <SelectItem key={v} value={v}>{label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </Field>
             </div>
-            <Field label="Anything else we should know?" hint="Optional. e.g. career change, gap to explain, sector pivot.">
+            <Field label="Anything else we should know?" hint={isAcademic ? "Optional. e.g. scholarship candidate, boarding entry, state school applying to selective independent, career changer returning to education." : "Optional. e.g. career change, gap to explain, sector pivot."}>
               <Textarea value={form.candidate_notes} onChange={(e) => update("candidate_notes", e.target.value)} rows={3} placeholder="Optional context that will sharpen the questions…" />
             </Field>
           </div>

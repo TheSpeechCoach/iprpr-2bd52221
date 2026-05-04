@@ -655,7 +655,20 @@ const PrepWizard = () => {
                   Either option works. Use whichever you have to hand.
                 </p>
               </div>
-              <Field label={isAcademic ? "Upload CV or personal statement" : "Upload CV"} hint={isAcademic ? "PDF or DOCX. For university applicants, upload the personal statement. For school applicants, any academic record or school report works." : "PDF or DOCX, up to 10 MB."}>
+              <Field
+                label={
+                  isAcademic ? "Upload CV or personal statement"
+                  : isGraduate ? "Upload CV, covering letter, or academic transcript"
+                  : isMedia ? "Upload your bio, press kit, or speaker profile"
+                  : "Upload CV"
+                }
+                hint={
+                  isAcademic ? "PDF or DOCX. For university applicants, upload the personal statement. For school applicants, any academic record or school report works."
+                  : isGraduate ? "PDF or DOCX. Include your CV and any covering letter — both help us understand how you're presenting yourself."
+                  : isMedia ? "PDF or DOCX. A speaker bio, press release, or previous interview transcript all help us build relevant questions."
+                  : "PDF or DOCX, up to 10 MB."
+                }
+              >
                 <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
                 {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
               </Field>

@@ -29,9 +29,9 @@ export const INTERVIEW_TRACKS: Array<{
     value: "academic",
     label: "iPrpr: Academic",
     shortLabel: "Academic",
-    blurb: "School, university, and scholarship interviews.",
+    blurb: "From 7+ entry to Oxford and the Ivy League.",
     description:
-      "Prepare to explain your thinking, motivation, subject interest and intellectual curiosity.",
+      "Admissions prep calibrated to your age group — prep school, grammar, independent, sixth form, Russell Group, and Ivy League. Questions adjust to your subject, institution, and developmental stage.",
   },
   {
     value: "media",

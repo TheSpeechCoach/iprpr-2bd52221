@@ -87,6 +87,8 @@ const PrepWizard = () => {
   const [cvFile, setCvFile] = useState<File | null>(null);
 
   const isAcademic = form.interview_track === "academic";
+  const isGraduate = form.interview_track === "graduate";
+  const isMedia = form.interview_track === "media";
 
   const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
   const updateMix = (k: string, v: number) => setForm((f) => ({ ...f, focus_mix: { ...f.focus_mix, [k]: v } }));

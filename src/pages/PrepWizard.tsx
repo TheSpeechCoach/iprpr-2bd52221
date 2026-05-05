@@ -231,33 +231,27 @@ const PrepWizard = () => {
       return;
     }
     if (!form.target_role.trim()) {
-      toast({ title: "Add a target role", description: "We need the role you're interviewing for to tailor the questions.", variant: "destructive" });
       setStep(1);
+      setStepError("Please add the role you're targeting before we generate your questions.");
       return;
     }
     if (!form.job_description.trim() && !form.job_spec_url.trim() && !form.job_title.trim()) {
-      toast({ title: "Tell us about the role", description: "Paste the job description, share a link, or at least add a job title.", variant: "destructive" });
       setStep(3);
+      setStepError("Please paste the job description, add a link, or at least enter a job title.");
       return;
     }
     const hasLinkedinUrl = /^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(form.linkedin_url.trim());
     if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim() && !hasLinkedinUrl) {
-      toast({
-        title: "Add your details",
-        description: "Add your LinkedIn profile, upload your CV, or paste your CV text.",
-        variant: "destructive",
-      });
       setStep(2);
+      setStepError("Please upload your CV or paste your profile text so we can tailor the questions.");
       return;
     }
     // If only a LinkedIn URL is provided, we can't read it server-side yet.
-    // Ask the user to add CV evidence so generation has something to tailor against.
     if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim() && hasLinkedinUrl) {
-      toast({
-        title: "We couldn't read that profile",
-        description: "Please upload your CV or paste your details so we can tailor your questions.",
-        variant: "destructive",
-      });
+      setStep(2);
+      setStepError("We couldn't read your LinkedIn profile automatically. Please paste your CV or profile text below.");
+      return;
+    }
       setStep(2);
       return;
     }

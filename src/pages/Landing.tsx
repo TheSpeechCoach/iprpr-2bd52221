@@ -22,6 +22,9 @@ const Landing = () => {
             <p className="mt-4 md:mt-6 max-w-xl text-xl md:text-2xl font-display font-medium text-foreground">
               {BRAND.line}
             </p>
+            <p className="mt-2 md:mt-3 max-w-xl text-base md:text-lg text-muted-foreground font-medium">
+              {BRAND.subline}
+            </p>
             <p className="mt-3 md:mt-4 max-w-xl text-base md:text-lg text-muted-foreground whitespace-pre-line">
               {BRAND.tagline}
             </p>
@@ -83,9 +86,9 @@ const Landing = () => {
         <div className="container-tight">
           <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
-              { icon: FileText, title: "50 tailored questions", body: "Train with real interview questions, generated against your LinkedIn profile/CV and the exact job spec." },
-              { icon: Target, title: "Train across key areas", body: "Behavioural, technical, leadership and commercial." },
-              { icon: Compass, title: "In-Depth Guidance", body: "What a strong answer includes, why the question matters and how to follow-up." },
+              { icon: FileText, title: "50 tailored questions", body: "50 questions built around your profile and your target. Tailored to your track, level, and the specific opportunity." },
+              { icon: Target, title: "Train across key areas", body: "Covers every angle — behavioural, technical, leadership, and commercial awareness." },
+              { icon: Compass, title: "In-Depth Guidance", body: "What good looks like, why it's asked, and what the interviewer is really testing." },
             ].map((f) => (
               <div key={f.title} className="bg-background p-10">
                 <f.icon className="h-6 w-6" strokeWidth={1.5} />

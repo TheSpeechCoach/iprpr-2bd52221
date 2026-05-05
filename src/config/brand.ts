@@ -10,6 +10,7 @@ export const BRAND = {
   shortName: "iPrpr",
   supportEmail: "support@thespeech.coach",
   line: "Aim. Prepare. Land.",
+  subline: "Interview training that builds real performance.",
   tagline: `Your profile. Your target. Fifty questions built for both. Feedback on how you actually perform.`,
 } as const;
 

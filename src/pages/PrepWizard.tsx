@@ -445,6 +445,11 @@ const PrepWizard = () => {
 
         {step === 1 && (
           <div className="space-y-5">
+            {stepError && (
+              <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm p-3 rounded">
+                {stepError}
+              </div>
+            )}
             {isTeamWorkspace && (
               <Field
                 label="Candidate"
@@ -687,6 +692,11 @@ const PrepWizard = () => {
 
         {step === 2 && (
           <div className="space-y-6">
+            {stepError && (
+              <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm p-3 rounded">
+                {stepError}
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
@@ -733,6 +743,11 @@ const PrepWizard = () => {
 
         {step === 3 && (
           <div className="space-y-5">
+            {stepError && (
+              <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm p-3 rounded">
+                {stepError}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <Field label="Job title" hint="As written on the posting.">
                 <Input value={form.job_title} onChange={(e) => update("job_title", e.target.value)} placeholder="e.g. Director of Product" />

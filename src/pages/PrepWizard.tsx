@@ -90,6 +90,7 @@ const PrepWizard = () => {
   const [linkedinFetchError, setLinkedinFetchError] = useState<string | null>(null);
   const [extractingCv, setExtractingCv] = useState(false);
   const [cvExtractError, setCvExtractError] = useState<string | null>(null);
+  const [stepError, setStepError] = useState<string | null>(null);
 
   const isAcademic = form.interview_track === "academic";
   const isGraduate = form.interview_track === "graduate";
@@ -231,34 +232,25 @@ const PrepWizard = () => {
       return;
     }
     if (!form.target_role.trim()) {
-      toast({ title: "Add a target role", description: "We need the role you're interviewing for to tailor the questions.", variant: "destructive" });
       setStep(1);
+      setStepError("Please add the role you're targeting before we generate your questions.");
       return;
     }
     if (!form.job_description.trim() && !form.job_spec_url.trim() && !form.job_title.trim()) {
-      toast({ title: "Tell us about the role", description: "Paste the job description, share a link, or at least add a job title.", variant: "destructive" });
       setStep(3);
+      setStepError("Please paste the job description, add a link, or at least enter a job title.");
       return;
     }
     const hasLinkedinUrl = /^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(form.linkedin_url.trim());
     if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim() && !hasLinkedinUrl) {
-      toast({
-        title: "Add your details",
-        description: "Add your LinkedIn profile, upload your CV, or paste your CV text.",
-        variant: "destructive",
-      });
       setStep(2);
+      setStepError("Please upload your CV or paste your profile text so we can tailor the questions.");
       return;
     }
     // If only a LinkedIn URL is provided, we can't read it server-side yet.
-    // Ask the user to add CV evidence so generation has something to tailor against.
     if (!cvFile && !form.cv_text.trim() && !form.linkedin_text.trim() && hasLinkedinUrl) {
-      toast({
-        title: "We couldn't read that profile",
-        description: "Please upload your CV or paste your details so we can tailor your questions.",
-        variant: "destructive",
-      });
       setStep(2);
+      setStepError("We couldn't read your LinkedIn profile automatically. Please paste your CV or profile text below.");
       return;
     }
     setSubmitting(true);
@@ -453,6 +445,11 @@ const PrepWizard = () => {
 
         {step === 1 && (
           <div className="space-y-5">
+            {stepError && (
+              <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm p-3 rounded">
+                {stepError}
+              </div>
+            )}
             {isTeamWorkspace && (
               <Field
                 label="Candidate"
@@ -695,6 +692,11 @@ const PrepWizard = () => {
 
         {step === 2 && (
           <div className="space-y-6">
+            {stepError && (
+              <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm p-3 rounded">
+                {stepError}
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
@@ -741,6 +743,11 @@ const PrepWizard = () => {
 
         {step === 3 && (
           <div className="space-y-5">
+            {stepError && (
+              <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm p-3 rounded">
+                {stepError}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <Field label="Job title" hint="As written on the posting.">
                 <Input value={form.job_title} onChange={(e) => update("job_title", e.target.value)} placeholder="e.g. Director of Product" />
@@ -906,11 +913,11 @@ const PrepWizard = () => {
         )}
 
         <div className="flex justify-between mt-10 pt-6 border-t border-border">
-          <Button variant="outline" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0 || submitting}>
+          <Button variant="outline" onClick={() => { setStepError(null); setStep(Math.max(0, step - 1)); }} disabled={step === 0 || submitting}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
           {step < STEPS.length - 1 && (
-            <Button onClick={() => setStep(step + 1)}>
+            <Button onClick={() => { setStepError(null); setStep(step + 1); }}>
               Continue <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           )}

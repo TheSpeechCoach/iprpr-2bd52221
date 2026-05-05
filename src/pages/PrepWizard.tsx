@@ -173,6 +173,43 @@ const PrepWizard = () => {
     }
   };
 
+  const handleCvFileChange = async (file: File | null) => {
+    setCvFile(file);
+    setCvExtractError(null);
+    if (!file || !user || !workspace) return;
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (!["pdf", "docx"].includes(ext ?? "")) {
+      setCvExtractError("Please upload a PDF or DOCX file.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setCvExtractError("File is over 10 MB. Please upload a smaller file.");
+      return;
+    }
+    setExtractingCv(true);
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${user.id}/${Date.now()}_${safeName}`;
+      const { error: upErr } = await supabase.storage.from("cvs").upload(path, file, {
+        contentType: file.type || undefined,
+        upsert: false,
+      });
+      if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+      const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
+        body: { file_path: path, bucket: "cvs", workspace_id: workspace.id, candidate_id: selectedCandidateId || null },
+      });
+      if (exErr || ex?.error) throw new Error(ex?.message || exErr?.message || "Extraction failed");
+      if (ex?.text) {
+        update("cv_text", ex.text);
+        update("_cv_file_path", path);
+      }
+    } catch (err: any) {
+      setCvExtractError(err?.message ?? "We couldn't read your CV. You can paste the text below instead.");
+    } finally {
+      setExtractingCv(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!user) return;
     if (!workspace) {
@@ -680,8 +717,17 @@ const PrepWizard = () => {
                   : "PDF or DOCX, up to 10 MB."
                 }
               >
-                <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
+                <Input type="file" accept=".pdf,.docx" onChange={(e) => handleCvFileChange(e.target.files?.[0] ?? null)} />
                 {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
+                {extractingCv && (
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Reading your CV…
+                  </p>
+                )}
+                {cvExtractError && <p className="text-xs text-destructive mt-1">{cvExtractError}</p>}
+                {!extractingCv && !cvExtractError && form.cv_text.trim() && (
+                  <p className="text-xs text-green-600 mt-1">CV read — {Math.round(form.cv_text.length / 5)} words extracted.</p>
+                )}
               </Field>
               <Field label="Paste CV text" hint="Use this if you don't have a file handy.">
                 <Textarea value={form.cv_text} onChange={(e) => update("cv_text", e.target.value)} rows={8} placeholder="Paste the contents of your CV here…" />

@@ -252,9 +252,6 @@ const PrepWizard = () => {
       setStepError("We couldn't read your LinkedIn profile automatically. Please paste your CV or profile text below.");
       return;
     }
-      setStep(2);
-      return;
-    }
     setSubmitting(true);
     let createdSessionId: string | null = null;
     try {

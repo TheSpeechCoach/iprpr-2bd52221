@@ -85,6 +85,8 @@ const PrepWizard = () => {
     interview_style: "formal",
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
+  const [fetchingLinkedin, setFetchingLinkedin] = useState(false);
+  const [linkedinFetchError, setLinkedinFetchError] = useState<string | null>(null);
 
   const isAcademic = form.interview_track === "academic";
   const isGraduate = form.interview_track === "graduate";
@@ -140,6 +142,31 @@ const PrepWizard = () => {
       });
     } finally {
       setFetchingSpec(false);
+    }
+  };
+
+  const handleFetchLinkedin = async () => {
+    if (!form.linkedin_url.trim()) return;
+    setFetchingLinkedin(true);
+    setLinkedinFetchError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-job-spec", {
+        body: { url: form.linkedin_url.trim() },
+      });
+      if (error || !data?.ok) {
+        setLinkedinFetchError(
+          "We couldn't read this profile automatically. Please paste your About section or CV text in the next step."
+        );
+        return;
+      }
+      update("linkedin_text", data.raw_text || "");
+      setLinkedinFetchError(null);
+    } catch {
+      setLinkedinFetchError(
+        "We couldn't read this profile automatically. Please paste your About section or CV text in the next step."
+      );
+    } finally {
+      setFetchingLinkedin(false);
     }
   };
 
@@ -371,7 +398,7 @@ const PrepWizard = () => {
           <h1 className="font-display text-3xl font-semibold">
             {step === 0 && "What are you preparing for?"}
             {step === 1 && "Tell us about you"}
-            {step === 2 && "Add your career evidence"}
+            {step === 2 && "Add your CV or profile text"}
             {step === 3 && "Describe the role"}
             {step === 4 && "Shape the questions"}
             {step === 5 && "Ready to train"}
@@ -379,7 +406,7 @@ const PrepWizard = () => {
           <p className="mt-2 text-sm text-muted-foreground max-w-xl">
             {step === 0 && "Choose your interview track so we can tailor the questions to the room you're walking into."}
             {step === 1 && "A few details so we can tailor the questions to your level and the role you're going for."}
-            {step === 2 && "Add your LinkedIn profile, upload your CV, or paste your CV text. The more we know, the sharper the questions."}
+            {step === 2 && "Upload your CV or paste your CV text. The more we know, the sharper the questions."}
             {step === 3 && "Paste the job description, share a link, or describe the role in your own words."}
             {step === 4 && "Optional. Adjust difficulty, balance, and the style of the interview you expect."}
             {step === 5 && "Have a quick look. You can come back and create more sessions any time."}
@@ -443,6 +470,43 @@ const PrepWizard = () => {
             )}
             <Field label="Full name" hint="Used in the candidate summary on your pack.">
               <Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="e.g. Alex Morgan" />
+            </Field>
+            <Field
+              label={isAcademic ? "LinkedIn profile (if applicable)" : "LinkedIn profile URL"}
+              hint={
+                isAcademic
+                  ? "Optional for younger candidates."
+                  : isMedia
+                  ? "LinkedIn, personal website, or public bio URL."
+                  : "Paste your LinkedIn URL — we'll try to pull your profile."
+              }
+            >
+              <Input
+                type="url"
+                value={form.linkedin_url}
+                onChange={(e) => update("linkedin_url", e.target.value)}
+                placeholder="https://www.linkedin.com/in/your-profile"
+              />
+              <div className="mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleFetchLinkedin}
+                  disabled={fetchingLinkedin || !form.linkedin_url.trim()}
+                >
+                  {fetchingLinkedin && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+                  Fetch profile
+                </Button>
+              </div>
+              {linkedinFetchError && (
+                <p className="text-xs text-destructive mt-1">{linkedinFetchError}</p>
+              )}
+              {!linkedinFetchError && form.linkedin_text.trim() && (
+                <p className="text-xs text-green-600 mt-1">
+                  Profile loaded — we'll use this to tailor your questions.
+                </p>
+              )}
             </Field>
             <Field
               label={
@@ -620,33 +684,6 @@ const PrepWizard = () => {
 
         {step === 2 && (
           <div className="space-y-6">
-            <div className="border border-border p-5 space-y-4">
-              <div>
-                <h2 className="font-display text-lg font-semibold">{
-                  isAcademic ? "Add a LinkedIn profile (if applicable)"
-                  : isGraduate ? "Add your LinkedIn profile"
-                  : isMedia ? "Add your LinkedIn or public profile"
-                  : "Add your LinkedIn profile"
-                }</h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {isAcademic
-                    ? "Add a LinkedIn profile if the candidate has one. For younger candidates, skip this and use the CV or personal statement section below."
-                    : isGraduate
-                    ? "Add your LinkedIn if it has your degree, internships, and society roles. Helps us tailor questions to your actual experience."
-                    : isMedia
-                    ? "Your LinkedIn, personal website, or bio page. Helps us understand your credentials and public positioning."
-                    : "Use your LinkedIn profile for the fastest setup."}
-                </p>
-              </div>
-              <Field label="LinkedIn URL">
-                <Input
-                  type="url"
-                  value={form.linkedin_url}
-                  onChange={(e) => update("linkedin_url", e.target.value)}
-                  placeholder="https://www.linkedin.com/in/your-profile"
-                />
-              </Field>
-            </div>
 
             <div className="space-y-4">
               <div>

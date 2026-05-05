@@ -898,11 +898,11 @@ const PrepWizard = () => {
         )}
 
         <div className="flex justify-between mt-10 pt-6 border-t border-border">
-          <Button variant="outline" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0 || submitting}>
+          <Button variant="outline" onClick={() => { setStepError(null); setStep(Math.max(0, step - 1)); }} disabled={step === 0 || submitting}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
           {step < STEPS.length - 1 && (
-            <Button onClick={() => setStep(step + 1)}>
+            <Button onClick={() => { setStepError(null); setStep(step + 1); }}>
               Continue <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           )}

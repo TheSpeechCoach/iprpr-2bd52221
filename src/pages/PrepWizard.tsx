@@ -90,6 +90,7 @@ const PrepWizard = () => {
   const [linkedinFetchError, setLinkedinFetchError] = useState<string | null>(null);
   const [extractingCv, setExtractingCv] = useState(false);
   const [cvExtractError, setCvExtractError] = useState<string | null>(null);
+  const [stepError, setStepError] = useState<string | null>(null);
 
   const isAcademic = form.interview_track === "academic";
   const isGraduate = form.interview_track === "graduate";

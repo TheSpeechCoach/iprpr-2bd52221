@@ -83,10 +83,13 @@ const PrepWizard = () => {
     include_rubric: false,
     output_tone: "supportive",
     interview_style: "formal",
+    _cv_file_path: "",
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [fetchingLinkedin, setFetchingLinkedin] = useState(false);
   const [linkedinFetchError, setLinkedinFetchError] = useState<string | null>(null);
+  const [extractingCv, setExtractingCv] = useState(false);
+  const [cvExtractError, setCvExtractError] = useState<string | null>(null);
 
   const isAcademic = form.interview_track === "academic";
   const isGraduate = form.interview_track === "graduate";
@@ -170,6 +173,43 @@ const PrepWizard = () => {
     }
   };
 
+  const handleCvFileChange = async (file: File | null) => {
+    setCvFile(file);
+    setCvExtractError(null);
+    if (!file || !user || !workspace) return;
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (!["pdf", "docx"].includes(ext ?? "")) {
+      setCvExtractError("Please upload a PDF or DOCX file.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setCvExtractError("File is over 10 MB. Please upload a smaller file.");
+      return;
+    }
+    setExtractingCv(true);
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${user.id}/${Date.now()}_${safeName}`;
+      const { error: upErr } = await supabase.storage.from("cvs").upload(path, file, {
+        contentType: file.type || undefined,
+        upsert: false,
+      });
+      if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+      const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
+        body: { file_path: path, bucket: "cvs", workspace_id: workspace.id, candidate_id: selectedCandidateId || null },
+      });
+      if (exErr || ex?.error) throw new Error(ex?.message || exErr?.message || "Extraction failed");
+      if (ex?.text) {
+        update("cv_text", ex.text);
+        update("_cv_file_path", path);
+      }
+    } catch (err: any) {
+      setCvExtractError(err?.message ?? "We couldn't read your CV. You can paste the text below instead.");
+    } finally {
+      setExtractingCv(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!user) return;
     if (!workspace) {
@@ -224,41 +264,11 @@ const PrepWizard = () => {
     setSubmitting(true);
     let createdSessionId: string | null = null;
     try {
-      // 1) Upload CV if present, then extract text server-side
-      let cv_file_path: string | null = null;
-      let extracted_cv_text = form.cv_text;
+      // 1) Use already-extracted CV text and uploaded path from step 2
+      const cv_file_path: string | null = form._cv_file_path || null;
+      const extracted_cv_text = form.cv_text;
       if (cvFile) {
-        if (cvFile.size > 10 * 1024 * 1024) throw new Error("Your CV is over 10 MB. Please upload a smaller file.");
         const ext = cvFile.name.split(".").pop()?.toLowerCase();
-        if (!["pdf", "docx"].includes(ext ?? "")) throw new Error("CVs must be PDF or DOCX. Please convert and try again.");
-
-        const safeName = cvFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${user.id}/${Date.now()}_${safeName}`;
-        toast({ title: "Uploading your CV", description: "This usually takes a few seconds." });
-        const { error: upErr } = await supabase.storage.from("cvs").upload(path, cvFile, {
-          contentType: cvFile.type || undefined,
-          upsert: false,
-        });
-        if (upErr) throw new Error(`We couldn't upload your CV: ${upErr.message}`);
-        cv_file_path = path;
-
-        toast({ title: "Reading your CV", description: "Pulling out the text we'll use to tailor your pack." });
-        const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
-          body: { file_path: path, bucket: "cvs", workspace_id: workspace.id, candidate_id: selectedCandidateId || null },
-        });
-        if (exErr) {
-          let friendly = `We couldn't read your CV: ${exErr.message}`;
-          try {
-            const ctx: any = (exErr as any).context;
-            if (ctx?.json) {
-              const j = await ctx.json();
-              if (j?.message) friendly = j.message;
-            }
-          } catch (_) {}
-          throw new Error(friendly);
-        }
-        if (ex?.error) throw new Error(ex.message || ex.error);
-        if (ex?.text) extracted_cv_text = ex.text;
         void track("cv_uploaded", {
           userId: user.id,
           plan,
@@ -273,13 +283,14 @@ const PrepWizard = () => {
       }
 
       // 2) Create session
+      const { _cv_file_path: _omit, ...formForInsert } = form;
       const { data: session, error: sErr } = await supabase.from("prep_sessions").insert({
         user_id: user.id,
         workspace_id: workspace.id,
         candidate_id: selectedCandidateId || null,
         title: `${form.target_role.trim()}${form.company_name ? ` · ${form.company_name.trim()}` : ""}`,
         status: "generating",
-        ...form,
+        ...formForInsert,
         num_questions: 50,
         cv_text: extracted_cv_text,
         cv_file_path,
@@ -706,8 +717,17 @@ const PrepWizard = () => {
                   : "PDF or DOCX, up to 10 MB."
                 }
               >
-                <Input type="file" accept=".pdf,.docx" onChange={(e) => setCvFile(e.target.files?.[0] ?? null)} />
+                <Input type="file" accept=".pdf,.docx" onChange={(e) => handleCvFileChange(e.target.files?.[0] ?? null)} />
                 {cvFile && <p className="text-xs text-muted-foreground mt-2">Selected: {cvFile.name}</p>}
+                {extractingCv && (
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Reading your CV…
+                  </p>
+                )}
+                {cvExtractError && <p className="text-xs text-destructive mt-1">{cvExtractError}</p>}
+                {!extractingCv && !cvExtractError && form.cv_text.trim() && (
+                  <p className="text-xs text-green-600 mt-1">CV read — {Math.round(form.cv_text.length / 5)} words extracted.</p>
+                )}
               </Field>
               <Field label="Paste CV text" hint="Use this if you don't have a file handy.">
                 <Textarea value={form.cv_text} onChange={(e) => update("cv_text", e.target.value)} rows={8} placeholder="Paste the contents of your CV here…" />

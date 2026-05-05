@@ -83,10 +83,13 @@ const PrepWizard = () => {
     include_rubric: false,
     output_tone: "supportive",
     interview_style: "formal",
+    _cv_file_path: "",
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [fetchingLinkedin, setFetchingLinkedin] = useState(false);
   const [linkedinFetchError, setLinkedinFetchError] = useState<string | null>(null);
+  const [extractingCv, setExtractingCv] = useState(false);
+  const [cvExtractError, setCvExtractError] = useState<string | null>(null);
 
   const isAcademic = form.interview_track === "academic";
   const isGraduate = form.interview_track === "graduate";
@@ -224,41 +227,11 @@ const PrepWizard = () => {
     setSubmitting(true);
     let createdSessionId: string | null = null;
     try {
-      // 1) Upload CV if present, then extract text server-side
-      let cv_file_path: string | null = null;
-      let extracted_cv_text = form.cv_text;
+      // 1) Use already-extracted CV text and uploaded path from step 2
+      const cv_file_path: string | null = form._cv_file_path || null;
+      const extracted_cv_text = form.cv_text;
       if (cvFile) {
-        if (cvFile.size > 10 * 1024 * 1024) throw new Error("Your CV is over 10 MB. Please upload a smaller file.");
         const ext = cvFile.name.split(".").pop()?.toLowerCase();
-        if (!["pdf", "docx"].includes(ext ?? "")) throw new Error("CVs must be PDF or DOCX. Please convert and try again.");
-
-        const safeName = cvFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${user.id}/${Date.now()}_${safeName}`;
-        toast({ title: "Uploading your CV", description: "This usually takes a few seconds." });
-        const { error: upErr } = await supabase.storage.from("cvs").upload(path, cvFile, {
-          contentType: cvFile.type || undefined,
-          upsert: false,
-        });
-        if (upErr) throw new Error(`We couldn't upload your CV: ${upErr.message}`);
-        cv_file_path = path;
-
-        toast({ title: "Reading your CV", description: "Pulling out the text we'll use to tailor your pack." });
-        const { data: ex, error: exErr } = await supabase.functions.invoke("extract-cv-text", {
-          body: { file_path: path, bucket: "cvs", workspace_id: workspace.id, candidate_id: selectedCandidateId || null },
-        });
-        if (exErr) {
-          let friendly = `We couldn't read your CV: ${exErr.message}`;
-          try {
-            const ctx: any = (exErr as any).context;
-            if (ctx?.json) {
-              const j = await ctx.json();
-              if (j?.message) friendly = j.message;
-            }
-          } catch (_) {}
-          throw new Error(friendly);
-        }
-        if (ex?.error) throw new Error(ex.message || ex.error);
-        if (ex?.text) extracted_cv_text = ex.text;
         void track("cv_uploaded", {
           userId: user.id,
           plan,
@@ -273,13 +246,14 @@ const PrepWizard = () => {
       }
 
       // 2) Create session
+      const { _cv_file_path: _omit, ...formForInsert } = form;
       const { data: session, error: sErr } = await supabase.from("prep_sessions").insert({
         user_id: user.id,
         workspace_id: workspace.id,
         candidate_id: selectedCandidateId || null,
         title: `${form.target_role.trim()}${form.company_name ? ` · ${form.company_name.trim()}` : ""}`,
         status: "generating",
-        ...form,
+        ...formForInsert,
         num_questions: 50,
         cv_text: extracted_cv_text,
         cv_file_path,
